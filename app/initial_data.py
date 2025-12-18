@@ -28,7 +28,11 @@ def init_db(db: Session) -> None:
         db.commit()
         logger.info("Admin user created")
     else:
-        logger.info("Admin user already exists")
+        # Demo mode: Force reset password to ensure access if DB persists old/bad state
+        user.hashed_password = security.get_password_hash("admin")
+        db.add(user)
+        db.commit()
+        logger.info("Admin user already exists. Password reset to 'admin'.")
 
 def main() -> None:
     db = SessionLocal()
