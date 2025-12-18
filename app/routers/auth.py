@@ -22,11 +22,12 @@ def login_access_token(
     """
     user = db.query(User).filter(User.email == form_data.username).first()
     if not user:
-         # For security, standard practice is generic message, but for this internal tool precise is usually fine.
-         # Let's match typical patterns.
+         print(f"Login failed: User {form_data.username} not found")
          raise HTTPException(status_code=400, detail="Incorrect email or password")
     
     if not security.verify_password(form_data.password, user.hashed_password):
+        print(f"Login failed: Password mismatch for {form_data.username}")
+        # print(f"  Attempted: {form_data.password}, Stored: {user.hashed_password}") # SECURITY RISK, ONLY FOR DEBUG IF NEEDED
         raise HTTPException(status_code=400, detail="Incorrect email or password")
         
     if not user.is_active:

@@ -9,28 +9,34 @@ from app.core.database import engine
 
 def migrate():
     print("Migrating database to add plan columns...")
-    with engine.connect() as connection:
-        with connection.begin():
-            # Check and add plan_name
-            try:
+    print("Migrating database to add plan columns...")
+    
+    # plan_name
+    try:
+        with engine.connect() as connection:
+            with connection.begin():
                 connection.execute(text("ALTER TABLE users ADD COLUMN plan_name VARCHAR DEFAULT 'Starter'"))
                 print("Added column plan_name")
-            except Exception as e:
-                print(f"Skipping plan_name (probably exists): {e}")
+    except Exception as e:
+        print(f"Skipping plan_name: {e}")
 
-            # Check and add plan_price
-            try:
+    # plan_price
+    try:
+        with engine.connect() as connection:
+            with connection.begin():
                 connection.execute(text("ALTER TABLE users ADD COLUMN plan_price VARCHAR DEFAULT 'Free'"))
                 print("Added column plan_price")
-            except Exception as e:
-                print(f"Skipping plan_price (probably exists): {e}")
+    except Exception as e:
+        print(f"Skipping plan_price: {e}")
 
-            # Check and add plan_expiry
-            try:
+    # plan_expiry
+    try:
+        with engine.connect() as connection:
+            with connection.begin():
                 connection.execute(text("ALTER TABLE users ADD COLUMN plan_expiry VARCHAR"))
                 print("Added column plan_expiry")
-            except Exception as e:
-                print(f"Skipping plan_expiry (probably exists): {e}")
+    except Exception as e:
+        print(f"Skipping plan_expiry: {e}")
                 
     print("Migration complete.")
 
