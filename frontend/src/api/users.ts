@@ -6,13 +6,19 @@ export interface User {
     full_name?: string;
     is_active: boolean;
     is_superuser: boolean;
+    plan_name?: string;
+    plan_price?: string;
+    plan_expiry?: string;
 }
 
 export interface UserCreate {
     email: string;
-    password: string;
+    password?: string;
     full_name?: string;
     is_superuser?: boolean;
+    plan_name?: string;
+    plan_price?: string;
+    plan_expiry?: string;
 }
 
 export const getUsers = async (): Promise<User[]> => {

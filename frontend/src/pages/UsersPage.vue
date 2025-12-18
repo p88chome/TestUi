@@ -32,7 +32,7 @@
         
         <div class="field">
             <label for="password" class="font-bold">Password</label>
-            <Password id="password" v-model="user.password" :feedback="false" toggleMask required="true" :class="{ 'p-invalid': submitted && !user.password }" />
+            <Password id="password" v-model="user.password" :feedback="false" toggleMask :required="true" :class="{ 'p-invalid': submitted && !user.password }" />
              <small class="p-error" v-if="submitted && !user.password">Password is required.</small>
         </div>
 
