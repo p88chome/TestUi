@@ -15,12 +15,22 @@ app = FastAPI(
 
 from app.core.database import SessionLocal
 from app.initial_data import init_db
+from app.migrate_db import migrate
 
 @app.on_event("startup")
 def on_startup():
+    # 1. Run migration to ensure schema is up to date (plan columns)
+    try:
+        migrate()
+    except Exception as e:
+        print(f"Migration failed (might be fine if fresh DB): {e}")
+
+    # 2. Init DB data
     db = SessionLocal()
     try:
         init_db(db)
+    except Exception as e:
+        print(f"Init DB failed: {e}")
     finally:
         db.close()
 
