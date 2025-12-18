@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "@primevue/themes": "^4.5.3",
+    "axios": "^1.13.2",
+    "chart.js": "^4.5.1",
+    "primeflex": "^4.0.0",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.5.3",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3"
+  }
+}
