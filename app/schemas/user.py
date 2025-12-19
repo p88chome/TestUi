@@ -21,6 +21,13 @@ class UserCreate(UserBase):
 # Properties to receive via API on update
 class UserUpdate(UserBase):
     password: Optional[str] = None
+    email: Optional[EmailStr] = None
+    full_name: Optional[str] = None
+    is_active: Optional[bool] = None
+    is_superuser: Optional[bool] = None
+    plan_name: Optional[str] = None
+    plan_price: Optional[str] = None
+    plan_expiry: Optional[str] = None
 
 class UserInDBBase(UserBase):
     id: Optional[int] = None

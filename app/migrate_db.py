@@ -37,7 +37,40 @@ def migrate():
                 print("Added column plan_expiry")
     except Exception as e:
         print(f"Skipping plan_expiry: {e}")
+
+    # components configuration
+    try:
+        with engine.connect() as connection:
+            with connection.begin():
+                connection.execute(text("ALTER TABLE components ADD COLUMN configuration JSONB DEFAULT '{}'"))
+                print("Added column configuration to components")
+    except Exception as e:
+        # Fallback for SQLite or if JSONB not supported/other error
+        try:
+             with engine.connect() as connection:
+                with connection.begin():
+                    connection.execute(text("ALTER TABLE components ADD COLUMN configuration JSON DEFAULT '{}'"))
+                    print("Added column configuration to components (JSON)")
+        except Exception as e2:
+             print(f"Skipping components configuration: {e} | {e2}")
                 
+    # 3. Add configuration column to components if not exists
+    # ... existing code ...
+    with engine.connect() as conn:
+        # Check if ai_models table exists
+        result = conn.execute(text("SELECT to_regclass('public.ai_models')"))
+        if not result.scalar():
+            logger.info("Creating ai_models table...")
+            # We can use Base.metadata.create_all for this table specifically if we import it, 
+            # or just rely on global create_all in main.py. 
+            # But let's be safe and let main.py handle it via Base.metadata.create_all(bind=engine)
+            # which is called in app.main startup.
+            # So actual migration here is only needed for ALTERing existing tables.
+            # Since this is a NEW table, Base.metadata.create_all in main.py will handle it if it doesn't exist.
+            pass
+        
+    logger.info("Migration check completed (New tables handled by startup event)")
+
     print("Migration complete.")
 
 if __name__ == "__main__":

@@ -119,6 +119,8 @@ const menuGroups = computed(() => {
         title: 'Core',
         items: [
           { label: 'Dashboard', path: '/dashboard', icon: 'pi pi-home' },
+          { label: 'Workflows', path: '/workflows', icon: 'pi pi-sitemap' },
+          { label: 'Components', path: '/components', icon: 'pi pi-box' },
         ]
       },
       // Enterprise Apps - Only for Pro/Enterprise

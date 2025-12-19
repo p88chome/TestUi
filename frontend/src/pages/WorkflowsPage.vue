@@ -70,6 +70,20 @@
     <div class="column right-col w-3 flex flex-column gap-3 p-3 bg-white border-round shadow-1 h-full overflow-y-auto">
       <h3 class="m-0 text-lg text-900 border-bottom-1 surface-border pb-3">Properties</h3>
       
+      <div class="flex flex-column gap-2 border-bottom-1 surface-border pb-3 mb-3">
+        <label for="wf-load" class="font-medium text-700">Load Existing</label>
+        <Dropdown 
+            id="wf-load" 
+            v-model="selectedWorkflowId" 
+            :options="existingWorkflows" 
+            optionLabel="name" 
+            optionValue="id" 
+            placeholder="Select a workflow..." 
+            class="w-full"
+            @change="loadWorkflow"
+        />
+      </div>
+
       <div class="flex flex-column gap-2">
         <label for="wf-name" class="font-medium text-700">Name</label>
         <InputText id="wf-name" v-model="workflowMeta.name" />
@@ -82,7 +96,11 @@
       
       <Divider />
       
-      <Button label="Save Workflow" icon="pi pi-save" @click="saveWorkflow" class="w-full" />
+      <div class="flex gap-2">
+         <Button :label="savedId ? 'Update' : 'Save New'" icon="pi pi-save" @click="saveWorkflow" class="flex-1" />
+         <Button v-if="savedId" icon="pi pi-plus" label="New" severity="secondary" @click="resetForm" />
+         <Button v-if="savedId" icon="pi pi-trash" label="Delete" severity="danger" text @click="deleteCurrentWorkflow" />
+      </div>
       
       <div class="mt-4">
           <h4 class="text-900 mb-3">Test Run</h4>
@@ -91,8 +109,8 @@
             <Textarea v-model="runPayloadStr" rows="5" class="w-full font-mono text-sm" />
           </div>
           <Button 
-            :label="savedId ? 'Run Workflow' : 'Save First to Run'" 
-            :icon="savedId ? 'pi pi-play' : 'pi pi-lock'" 
+            label="Run Workflow"
+            icon="pi pi-play"
             :severity="savedId ? 'success' : 'secondary'" 
             :disabled="!savedId" 
             @click="executeRun" 
@@ -106,8 +124,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { getComponents } from '../api/components';
-import { createWorkflow, runWorkflow } from '../api/workflows';
-import type { ComponentOut, WorkflowStepConfig } from '../types';
+import { createWorkflow, runWorkflow, getWorkflows, updateWorkflow, getWorkflow, deleteWorkflow } from '../api/workflows';
+import type { ComponentOut, WorkflowStepConfig, WorkflowOut } from '../types';
 import { useRouter } from 'vue-router';
 
 // PrimeVue Components
@@ -120,9 +138,12 @@ import Avatar from 'primevue/avatar';
 import Divider from 'primevue/divider';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
+import Dropdown from 'primevue/dropdown';
 
 const router = useRouter();
 const components = ref<ComponentOut[]>([]);
+const existingWorkflows = ref<WorkflowOut[]>([]);
+const selectedWorkflowId = ref<string | null>(null);
 const filterText = ref('');
 
 // Workflow State
@@ -140,9 +161,55 @@ interface UIMappedStep {
 const steps = ref<UIMappedStep[]>([]);
 const runPayloadStr = ref('{}');
 
+const fetchWorkflows = async () => {
+    try {
+        existingWorkflows.value = await getWorkflows();
+    } catch (e) {
+        console.error("Failed to fetch workflows", e);
+    }
+};
+
 onMounted(async () => {
   components.value = await getComponents();
+  await fetchWorkflows(); // Load list on mount
 });
+
+const loadWorkflow = async () => {
+    if (!selectedWorkflowId.value) return;
+    try {
+        const wf = await getWorkflow(selectedWorkflowId.value);
+        savedId.value = wf.id;
+        workflowMeta.value = { name: wf.name, description: wf.description };
+        
+        // Map steps
+        steps.value = wf.steps.map(s => ({
+            step_id: s.step_id,
+            component_id: s.component_id,
+            configStr: JSON.stringify(s.config, null, 2),
+            inputMapStr: JSON.stringify(s.input_mapping, null, 2)
+        }));
+        
+        // Load persist payload
+        const savedPayload = localStorage.getItem(`wf_payload_${wf.id}`);
+        if (savedPayload) {
+            runPayloadStr.value = savedPayload;
+        } else {
+            runPayloadStr.value = '{}';
+        }
+
+    } catch (e) {
+        console.error("Error loading workflow", e);
+        alert("Failed to load workflow");
+    }
+};
+
+const resetForm = () => {
+    savedId.value = null;
+    selectedWorkflowId.value = null;
+    workflowMeta.value = { name: 'New Workflow', description: '' };
+    steps.value = [];
+    runPayloadStr.value = '{}';
+};
 
 const filteredComponents = computed(() => {
   const txt = filterText.value.toLowerCase();
@@ -200,12 +267,19 @@ const saveWorkflow = async () => {
       steps: apiSteps,
     };
 
-    const res = await createWorkflow(payload);
-    savedId.value = res.id;
-    alert('Workflow saved!');
-  } catch (e) {
+    if (savedId.value) {
+        await updateWorkflow(savedId.value, payload);
+        alert('Workflow updated!');
+    } else {
+        const res = await createWorkflow(payload);
+        savedId.value = res.id;
+        alert('Workflow created!');
+    }
+    await fetchWorkflows(); // Refresh list
+  } catch (e: any) {
     console.error(e);
-    alert('Error saving workflow. Check JSON syntax.');
+    const msg = e.response?.data?.detail || e.message || 'Unknown error';
+    alert(`Error saving workflow: ${JSON.stringify(msg)}`);
   }
 };
 
@@ -214,11 +288,33 @@ const executeRun = async () => {
   try {
     const payload = JSON.parse(runPayloadStr.value || '{}');
     const run = await runWorkflow(savedId.value, payload);
+    
+    // Save payload to localStorage for convenience
+    if (savedId.value) {
+        localStorage.setItem(`wf_payload_${savedId.value}`, runPayloadStr.value);
+    }
+    
     router.push(`/runs/${run.id}`);
-  } catch (e) {
+  } catch (e: any) {
     console.error(e);
-    alert('Error starting run.');
+    const msg = e.response?.data?.detail || e.message || 'Unknown error';
+    alert(`Error starting run: ${JSON.stringify(msg)}`);
   }
+};
+
+const deleteCurrentWorkflow = async () => {
+    if (!savedId.value) return;
+    if (!confirm("Are you sure you want to delete this workflow?")) return;
+    
+    try {
+        await deleteWorkflow(savedId.value);
+        alert("Workflow deleted");
+        resetForm();
+        await fetchWorkflows();
+    } catch (e) {
+        console.error(e);
+        alert("Failed to delete workflow");
+    }
 };
 </script>
 

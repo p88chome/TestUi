@@ -78,3 +78,55 @@ def update_user_me(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+@router.put("/{user_id}", response_model=UserSchema)
+def update_user(
+    *,
+    db: Session = Depends(get_db),
+    user_id: int,
+    user_in: UserUpdate,
+    current_user: User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    """
+    Update a user.
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="The user with this id does not exist in the system",
+        )
+    user_data = user_in.model_dump(exclude_unset=True)
+    if user_in.password:
+        password = user_in.password
+        hashed_password = security.get_password_hash(password)
+        del user_data["password"]
+        user_data["hashed_password"] = hashed_password
+        
+    for field in user_data:
+        setattr(user, field, user_data[field])
+        
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+@router.delete("/{user_id}", response_model=UserSchema)
+def delete_user(
+    *,
+    db: Session = Depends(get_db),
+    user_id: int,
+    current_user: User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    """
+    Delete a user.
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="The user with this id does not exist in the system",
+        )
+    db.delete(user)
+    db.commit()
+    return user

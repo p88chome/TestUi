@@ -54,7 +54,27 @@
 
       <!-- Input Area -->
       <div class="input-container p-4 bg-white">
-        <div class="input-box relative flex align-items-center border-1 border-300 border-round-2xl shadow-1 focus-within:border-400 transition-colors">
+        <!-- File Indicator -->
+        <div v-if="selectedFile" class="flex align-items-center gap-2 mb-2 p-2 surface-100 border-round w-max">
+            <i class="pi pi-file text-primary"></i>
+            <span class="text-sm font-medium">{{ selectedFile.name }}</span>
+            <i class="pi pi-times text-600 cursor-pointer hover:text-900" @click="clearFile"></i>
+        </div>
+
+        <div class="input-box relative flex align-items-center border-1 border-300 border-round-2xl shadow-1 focus-within:border-400 transition-colors pl-2">
+            
+          <!-- File Upload Button -->
+          <input type="file" ref="fileInputRef" style="display: none" @change="onFileSelected" accept="image/*,.pdf" />
+          <Button 
+            icon="pi pi-paperclip" 
+            rounded 
+            text 
+            severity="secondary"
+            class="mr-1"
+            @click="triggerFileUpload"
+            v-tooltip="'Attach File (PDF/Image)'"
+          />
+
           <Textarea 
             v-model="inputDetails" 
             @keyup.enter="sendMessage"
@@ -71,7 +91,7 @@
             text
             aria-label="Send"
             @click="sendMessage" 
-            :disabled="isLoading || !inputDetails.trim()" 
+            :disabled="isLoading || (!inputDetails.trim() && !selectedFile)" 
             class="m-2 flex-shrink-0 bg-black-alpha-90 text-white hover:bg-black-alpha-70 w-2rem h-2rem p-0"
             style="background-color: var(--brand-black) !important;"
           />
@@ -85,12 +105,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue';
+import { ref, nextTick, computed } from 'vue';
+import apiClient from '../api/client'; // Import existing Axios instance
 
 // PrimeVue Components
 import Avatar from 'primevue/avatar';
 import Button from 'primevue/button';
 import Textarea from 'primevue/textarea';
+import FileUpload from 'primevue/fileupload'; // Optional way, or simple input
+import Toast from 'primevue/toast';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -102,6 +125,10 @@ const inputDetails = ref('');
 const isLoading = ref(false);
 const messagesRef = ref<HTMLElement | null>(null);
 
+// File State
+const selectedFile = ref<File | null>(null);
+const fileInputRef = ref<HTMLInputElement | null>(null);
+
 const scrollToBottom = async () => {
   await nextTick();
   if (messagesRef.value) {
@@ -109,23 +136,64 @@ const scrollToBottom = async () => {
   }
 };
 
+const triggerFileUpload = () => {
+    fileInputRef.value?.click();
+};
+
+const onFileSelected = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files.length > 0) {
+        selectedFile.value = target.files[0];
+    }
+};
+
+const clearFile = () => {
+    selectedFile.value = null;
+    if (fileInputRef.value) {
+        fileInputRef.value.value = '';
+    }
+};
+
 const sendMessage = async () => {
-  if (!inputDetails.value.trim()) return;
+  if (!inputDetails.value.trim() && !selectedFile.value) return;
 
   const userMsg = inputDetails.value;
-  messages.value.push({ role: 'user', content: userMsg });
+  messages.value.push({ role: 'user', content: userMsg || (selectedFile.value ? `[Sent File: ${selectedFile.value.name}]` : '') });
+  
+  // Clear inputs immediately
   inputDetails.value = '';
-  // Reset height of textarea if necessary, PrimeVue autoResize usually handles it but might need force reset
+  const currentFile = selectedFile.value;
+  clearFile();
   
   isLoading.value = true;
   await scrollToBottom();
 
-  // Simulate response
-  setTimeout(async () => {
-    messages.value.push({ role: 'assistant', content: `Here is a simulated response to: "${userMsg}". In a real implementation, this would connect to your backend LLM.` });
-    isLoading.value = false;
-    await scrollToBottom();
-  }, 1000);
+  try {
+      // Build Form Data
+      const formData = new FormData();
+      formData.append('message', userMsg || "Please analyze this file.");
+      if (currentFile) {
+          formData.append('file', currentFile);
+      }
+
+      // Call API
+      const res = await apiClient.post('/chat/message', formData, {
+          headers: {
+              'Content-Type': 'multipart/form-data'
+          }
+      });
+      
+      // Axios interceptor already returns response.data, so 'res' is the actual payload
+      const reply = res.content;
+      messages.value.push({ role: 'assistant', content: reply });
+
+  } catch (e: any) {
+      console.error(e);
+      messages.value.push({ role: 'assistant', content: "Sorry, I encountered an error processing your request." });
+  } finally {
+      isLoading.value = false;
+      await scrollToBottom();
+  }
 };
 </script>
 

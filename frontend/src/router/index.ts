@@ -15,7 +15,22 @@ const routes = [
         redirect: '/dashboard',
         meta: { requiresAuth: true },
         children: [
-            // Workflows, Components, Runs removed as per request (Token usage -> Dashboard)
+            // Workflows & Components
+            {
+                path: 'workflows',
+                name: 'Workflows',
+                component: () => import('../pages/WorkflowsPage.vue')
+            },
+            {
+                path: 'components',
+                name: 'Components',
+                component: () => import('../pages/ComponentsPage.vue')
+            },
+            {
+                path: 'runs/:id',
+                name: 'RunDetail',
+                component: () => import('../pages/RunDetailPage.vue')
+            },
 
             // Enterprise Apps
             { path: 'apps/contracts', name: 'ContractAssistant', component: ChatbotPage, meta: { requiresPro: true } },
@@ -23,7 +38,7 @@ const routes = [
 
             // Operations
             { path: 'monitoring', name: 'Monitoring', component: () => import('../pages/ComingSoonPage.vue') },
-            { path: 'models', name: 'Models', component: () => import('../pages/ComingSoonPage.vue') },
+            { path: 'models', name: 'Models', component: () => import('../pages/ModelsPage.vue') },
             { path: 'settings', name: 'Settings', component: () => import('../pages/ComingSoonPage.vue') },
             // Playbooks
             { path: 'templates', name: 'Templates', component: () => import('../pages/ComingSoonPage.vue') },

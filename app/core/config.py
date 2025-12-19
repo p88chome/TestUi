@@ -24,8 +24,13 @@ class Settings(BaseSettings):
     EXECUTION_MODE: ExecutionMode = ExecutionMode.MOCK
     
     AZURE_OPENAI_ENDPOINT: str | None = None
-    AZURE_OPENAI_KEY: str | None = None
+    AZURE_OPENAI_API_KEY: str | None = None # Matches common naming
+    AZURE_OPENAI_KEY: str | None = None     # Matches what might be there locally
 
-    model_config = SettingsConfigDict(case_sensitive=True, env_file=".env")
+    # Azure Computer Vision
+    AZURE_VISION_ENDPOINT: str | None = None
+    AZURE_VISION_KEY: str | None = None
+
+    model_config = SettingsConfigDict(case_sensitive=True, env_file=".env", extra="ignore")
 
 settings = Settings()

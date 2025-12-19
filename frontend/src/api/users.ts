@@ -16,6 +16,7 @@ export interface UserCreate {
     password?: string;
     full_name?: string;
     is_superuser?: boolean;
+    is_active?: boolean;
     plan_name?: string;
     plan_price?: string;
     plan_expiry?: string;
@@ -34,4 +35,13 @@ export const createUser = async (data: UserCreate): Promise<User> => {
 export const updateMe = async (data: Partial<UserCreate>): Promise<User> => {
     const response = await apiClient.put<User>('/users/me', data);
     return response as any;
+};
+
+export const updateUser = async (id: number, data: Partial<UserCreate>): Promise<User> => {
+    const response = await apiClient.put<User>(`/users/${id}`, data);
+    return response as any;
+};
+
+export const deleteUser = async (id: number): Promise<void> => {
+    await apiClient.delete(`/users/${id}`);
 };

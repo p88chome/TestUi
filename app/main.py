@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.routers import components, workflows, runs, auth, users
+from app.routers import components, workflows, runs, auth, users, models, ocr, chat
 from app.core.database import engine, Base
 from app.models.user import User # Ensure User table is created
 
@@ -35,8 +35,11 @@ def on_startup():
         db.close()
 
 # CORS
-# For dev allow all, usually specify frontend URL
-origins = ["*"]
+# In production, set CLIENT_ORIGIN to your frontend domain (e.g. https://mypage.vercel.app)
+origins = [
+    settings.CLIENT_ORIGIN,
+    "http://localhost:5173", # Keep local dev working
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,9 +51,12 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users")
-app.include_router(components.router, prefix=settings.API_V1_STR)
-app.include_router(workflows.router, prefix=settings.API_V1_STR)
-app.include_router(runs.router, prefix=settings.API_V1_STR)
+app.include_router(workflows.router, prefix="/api/v1")
+app.include_router(runs.router, prefix="/api/v1")
+app.include_router(components.router, prefix="/api/v1")
+app.include_router(models.router, prefix="/api/v1")
+app.include_router(ocr.router, prefix="/api/v1")
+app.include_router(chat.router, prefix="/api/v1")
 
 @app.get("/")
 def root():

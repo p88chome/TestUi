@@ -29,6 +29,7 @@ class Component(Base):
     tags: Mapped[list[str]] = mapped_column(JSON)  # Simple list of strings stored as JSON
     endpoint_type: Mapped[EndpointType] = mapped_column(SQLEnum(EndpointType))
     active: Mapped[bool] = mapped_column(Boolean, default=True)
+    configuration: Mapped[dict] = mapped_column(JSON, default={})
 
 class Workflow(Base):
     __tablename__ = "workflows"
@@ -55,3 +56,13 @@ class RunExecution(Base):
     finished_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     workflow = relationship("Workflow", back_populates="runs")
+
+class AIModel(Base):
+    __tablename__ = "ai_models"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name: Mapped[str] = mapped_column(String, unique=True, index=True) # e.g., "GPT-4 Production"
+    deployment_name: Mapped[str] = mapped_column(String) # e.g., "gpt-4-prod" (Azure Deployment Name)
+    api_version: Mapped[str] = mapped_column(String) # e.g., "2023-05-15"
+    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False) # Can be used to highlight default model
