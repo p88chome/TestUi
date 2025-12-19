@@ -1,31 +1,28 @@
 import apiClient from './client';
 import type { WorkflowCreate, WorkflowOut, WorkflowUpdate, RunExecutionOut } from '../types';
 
-export const getWorkflows = async (): Promise<WorkflowOut[]> => {
-    return await apiClient.get<WorkflowOut[]>('/workflows/');
+export const getWorkflows = (): Promise<WorkflowOut[]> => {
+    return apiClient.get('/workflows') as Promise<WorkflowOut[]>;
 };
 
-export const getWorkflow = async (id: string): Promise<WorkflowOut> => {
-    return await apiClient.get<WorkflowOut>(`/workflows/${id}`);
+export const getWorkflow = (id: string): Promise<WorkflowOut> => {
+    return apiClient.get(`/workflows/${id}`) as Promise<WorkflowOut>;
 };
 
-export const createWorkflow = async (data: WorkflowCreate): Promise<WorkflowOut> => {
-    return await apiClient.post<WorkflowOut>('/workflows/', data);
+export const createWorkflow = (data: WorkflowCreate): Promise<WorkflowOut> => {
+    return apiClient.post('/workflows', data) as Promise<WorkflowOut>;
 };
 
-export const updateWorkflow = async (id: string, data: WorkflowUpdate): Promise<WorkflowOut> => {
-    return await apiClient.put<WorkflowOut>(`/workflows/${id}`, data);
+export const updateWorkflow = (id: string, data: WorkflowUpdate): Promise<WorkflowOut> => {
+    return apiClient.put(`/workflows/${id}`, data) as Promise<WorkflowOut>;
 };
 
-export const deleteWorkflow = async (id: string): Promise<void> => {
-    await apiClient.delete(`/workflows/${id}`);
+export const deleteWorkflow = (id: string): Promise<void> => {
+    return apiClient.delete(`/workflows/${id}`) as Promise<void>;
 };
 
 
 
-export const runWorkflow = async (id: string, input_payload: Record<string, any>): Promise<RunExecutionOut> => {
-    return await apiClient.post<RunExecutionOut>(`/workflows/${id}/run`, {
-        workflow_id: id,
-        input_payload
-    });
+export const runWorkflow = (id: string, payload: any): Promise<RunExecutionOut> => {
+    return apiClient.post(`/workflows/${id}/run`, payload) as Promise<RunExecutionOut>;
 };

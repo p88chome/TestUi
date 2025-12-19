@@ -105,15 +105,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, computed } from 'vue';
-import apiClient from '../api/client'; // Import existing Axios instance
+import { ref, nextTick } from 'vue'; // Removed unused computed
+import apiClient from '../api/client';
 
 // PrimeVue Components
 import Avatar from 'primevue/avatar';
 import Button from 'primevue/button';
 import Textarea from 'primevue/textarea';
-import FileUpload from 'primevue/fileupload'; // Optional way, or simple input
-import Toast from 'primevue/toast';
+// Removed unused FileUpload, Toast
 
 interface Message {
   role: 'user' | 'assistant';
@@ -143,7 +142,7 @@ const triggerFileUpload = () => {
 const onFileSelected = (event: Event) => {
     const target = event.target as HTMLInputElement;
     if (target.files && target.files.length > 0) {
-        selectedFile.value = target.files[0];
+        selectedFile.value = target.files[0] || null;
     }
 };
 
@@ -173,6 +172,7 @@ const sendMessage = async () => {
       const formData = new FormData();
       formData.append('message', userMsg || "Please analyze this file.");
       if (currentFile) {
+          // Explicit check to satisfy TS: currentFile is File here
           formData.append('file', currentFile);
       }
 
@@ -181,9 +181,8 @@ const sendMessage = async () => {
           headers: {
               'Content-Type': 'multipart/form-data'
           }
-      });
+      }) as any; // Cast to any to bypass AxiosResponse typing locally
       
-      // Axios interceptor already returns response.data, so 'res' is the actual payload
       const reply = res.content;
       messages.value.push({ role: 'assistant', content: reply });
 

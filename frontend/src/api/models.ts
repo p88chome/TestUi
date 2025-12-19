@@ -25,16 +25,16 @@ export interface AIModelUpdate {
     is_active?: boolean;
 }
 
-export const getModels = async (): Promise<AIModel[]> => {
-    return await apiClient.get<AIModel[]>('/models/');
+export const getModels = (): Promise<AIModel[]> => {
+    return apiClient.get('/models') as Promise<AIModel[]>;
 };
 
-export const createModel = async (data: AIModelCreate): Promise<AIModel> => {
-    return await apiClient.post<AIModel>('/models/', data);
+export const createModel = (data: AIModelCreate): Promise<AIModel> => {
+    return apiClient.post('/models', data) as Promise<AIModel>;
 };
 
-export const updateModel = async (id: string, data: AIModelUpdate): Promise<AIModel> => {
-    return await apiClient.put<AIModel>(`/models/${id}`, data);
+export const updateModel = (id: string, data: AIModelUpdate): Promise<AIModel> => {
+    return apiClient.put(`/models/${id}`, data) as Promise<AIModel>;
 };
 
 export const deleteModel = async (id: string): Promise<void> => {
