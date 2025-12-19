@@ -16,7 +16,8 @@
     "@primevue/themes": "^4.2.0",
     "primeicons": "^7.0.0",
     "primeflex": "^4.0.0",
-    "chart.js": "^4.4.4"
+    "chart.js": "^4.4.4",
+    "pinia": "^2.1.7"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
