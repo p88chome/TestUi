@@ -95,7 +95,9 @@ const handleLogin = async () => {
     router.push('/dashboard');
   } catch (e: any) {
     console.error(e);
-    error.value = e?.response?.data?.detail || 'Login failed. Please check your credentials.';
+    // DEBUG: Show detailed error to help user
+    const detailedError = e?.response?.data?.detail || e.message || 'Unknown Error';
+    error.value = `Login failed: ${detailedError}`;
   } finally {
     loading.value = false;
   }
