@@ -8,6 +8,7 @@ import App from './App.vue'
 import router from './router'
 
 import Tooltip from 'primevue/tooltip';
+import ToastService from 'primevue/toastservice';
 
 import { createPinia } from 'pinia'
 
@@ -15,6 +16,7 @@ const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
+app.use(ToastService);
 app.use(PrimeVue, {
     theme: {
         preset: Aura,

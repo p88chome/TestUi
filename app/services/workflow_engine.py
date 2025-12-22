@@ -9,7 +9,7 @@ class WorkflowEngine:
     def __init__(self, db: Session):
         self.db = db
 
-    def run_workflow(self, workflow_id: UUID, input_payload: dict) -> RunExecution:
+    def run_workflow(self, workflow_id: UUID, input_payload: dict, user_id: int | None = None) -> RunExecution:
         # 1. Fetch workflow
         workflow = self.db.query(Workflow).filter(Workflow.id == workflow_id).first()
         if not workflow:
@@ -64,7 +64,7 @@ class WorkflowEngine:
                 # Execution
                 start_time = datetime.now(timezone.utc)
                 try:
-                    output_data = self.execute_step(component, effective_input)
+                    output_data = self.execute_step(component, effective_input, user_id)
                     status = "success"
                     error_msg = None
                 except Exception as step_e:
@@ -105,7 +105,7 @@ class WorkflowEngine:
         self.db.refresh(run_record)
         return run_record
 
-    def execute_step(self, component: Component, input_data: dict) -> dict:
+    def execute_step(self, component: Component, input_data: dict, user_id: int | None = None) -> dict:
         config = component.configuration or {}
         kind = config.get("kind")
 
@@ -134,11 +134,9 @@ class WorkflowEngine:
             import httpx
             import os
             from app.models.domain import AIModel
+            from app.models.stats import UsageLog
 
             # 1. Determine Model Info (Deployment & API Version)
-            # Strategy: Config can specify 'model_id' (UUID) pointing to AIModel table
-            # If not specified, use the first 'active' model.
-            
             target_model_id = config.get("model_id")
             ai_model = None
             
@@ -160,9 +158,6 @@ class WorkflowEngine:
                 raise ValueError("Missing AZURE_OPENAI_API_KEY or AZURE_OPENAI_ENDPOINT in environment")
 
             # 3. Construct URL
-            # Format: https://{your-resource-name}.openai.azure.com/openai/deployments/{deployment-id}/chat/completions?api-version={api-version}
-            
-            # Clean endpoint just in case
             endpoint = endpoint.rstrip('/')
             deployment = ai_model.deployment_name
             api_version = ai_model.api_version
@@ -170,22 +165,12 @@ class WorkflowEngine:
             url = f"{endpoint}/openai/deployments/{deployment}/chat/completions?api-version={api_version}"
             
             # 4. Prepare Payload
-            # We assume input_data contains "messages" or "prompt"
-            # But usually component config has 'system_prompt' and 'user_prompt_template'.
-            # For MVP, let's assume input_data is the full payload OR we build it here.
-            # Let's support a simple template mode if config has prompts.
-            
             req_payload = {}
             if "messages" in input_data:
                 # Direct pass-through
                 req_payload = input_data
             else:
                 # Template mode
-                # Config: {"system_prompt": "You are...", "user_prompt": "Analyze {{text}}"}
-                # Input: {"text": "some doc..."}
-                # Simple implementation: Just take input_data as json for user message for now or mapped "prompt"
-                
-                # Check if we have prompt in input
                 user_content = input_data.get("prompt") or json.dumps(input_data)
                 
                 req_payload = {
@@ -205,8 +190,32 @@ class WorkflowEngine:
             
             if response.status_code != 200:
                  raise ValueError(f"Azure API Error: {response.text}")
-                 
-            return response.json()
+            
+            json_response = response.json()
+
+            # 5. Log Token Usage (if user_id provided)
+            if user_id:
+                usage = json_response.get("usage", {})
+                prompt_tokens = usage.get("prompt_tokens", 0)
+                completion_tokens = usage.get("completion_tokens", 0)
+                total_tokens = usage.get("total_tokens", 0)
+                
+                # Cost Estimation (Approximate GPT-4 rates)
+                estimated_cost = (prompt_tokens * 0.00003) + (completion_tokens * 0.00006)
+                
+                log_entry = UsageLog(
+                    user_id=user_id,
+                    app_name=component.name, # Use component name (e.g., "Contract Helper")
+                    model_name=ai_model.name,
+                    tokens_input=prompt_tokens,
+                    tokens_output=completion_tokens,
+                    total_tokens=total_tokens,
+                    estimated_cost=estimated_cost
+                )
+                self.db.add(log_entry)
+                self.db.commit()
+
+            return json_response
 
         elif kind == "ocr_api":
             import httpx
@@ -218,7 +227,6 @@ class WorkflowEngine:
                 raise ValueError("Missing 'url' in configuration for OCR API")
 
             # Expecting input_data to have 'image_path'
-            image_path_str = input_data.get("image_path") or input_data.get("image_url")
             image_path_str = input_data.get("image_path") or input_data.get("image_url")
             if not image_path_str:
                 debug_keys = list(input_data.keys())

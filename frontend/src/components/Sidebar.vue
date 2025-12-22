@@ -136,6 +136,7 @@ const menuGroups = computed(() => {
         items: [
           { label: 'Monitoring', path: '/monitoring', icon: 'pi pi-chart-line' },
           { label: 'Models', path: '/models', icon: 'pi pi-server' },
+          { label: 'News / Posts', path: '/news', icon: 'pi pi-megaphone' },
           { label: 'Settings', path: '/profile', icon: 'pi pi-cog' },
         ]
       },

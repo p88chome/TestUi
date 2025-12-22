@@ -2,6 +2,9 @@ from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.services.azure_integration import call_azure_openai, call_azure_ocr
+from app.api import deps
+from app.models.user import User
+from app.models.stats import UsageLog
 import json
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -21,7 +24,8 @@ Always provide professional, concise, and structured responses.
 async def chat_message(
     message: str = Form(...),
     file: UploadFile | None = File(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)
 ):
     """
     Enterprise Chat Endpoint.
@@ -57,11 +61,41 @@ async def chat_message(
         # Extract the assistant's reply
         reply = response.get("choices", [])[0].get("message", {}).get("content", "")
         
+        # 3. Log Token Usage
+        usage = response.get("usage", {})
+        prompt_tokens = usage.get("prompt_tokens", 0)
+        completion_tokens = usage.get("completion_tokens", 0)
+        total_tokens = usage.get("total_tokens", 0)
+        
+        # Cost Estimation (Approximate GPT-4 rates)
+        # Input: $30 / 1M tokens ($0.00003)
+        # Output: $60 / 1M tokens ($0.00006)
+        estimated_cost = (prompt_tokens * 0.00003) + (completion_tokens * 0.00006)
+        
+        log_entry = UsageLog(
+            user_id=current_user.id,
+            app_name="Enterprise Chat",
+            model_name=response.get("model", "gpt-4"),
+            tokens_input=prompt_tokens,
+            tokens_output=completion_tokens,
+            total_tokens=total_tokens,
+            estimated_cost=estimated_cost
+        )
+        db.add(log_entry)
+        db.commit()
+        
         return {
             "role": "assistant",
             "content": reply,
-            "ocr_processed": bool(file)
+            "ocr_processed": bool(file),
+            "usage_info": {
+                "tokens": total_tokens,
+                "cost": estimated_cost
+            }
         }
         
     except Exception as e:
+        # Log error but don't crash if stats fail? 
+        # Ideally we want to know, so let it raise or print
+        print(f"Error processing chat or logging stats: {e}")
         raise HTTPException(status_code=500, detail=f"AI Processing Failed: {str(e)}")

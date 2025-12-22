@@ -39,6 +39,7 @@ const routes = [
             // Operations
             { path: 'monitoring', name: 'Monitoring', component: () => import('../pages/ComingSoonPage.vue') },
             { path: 'models', name: 'Models', component: () => import('../pages/ModelsPage.vue') },
+            { path: 'news', name: 'News', component: () => import('../pages/NewsPage.vue') },
             { path: 'settings', name: 'Settings', component: () => import('../pages/ComingSoonPage.vue') },
             // Playbooks
             { path: 'templates', name: 'Templates', component: () => import('../pages/ComingSoonPage.vue') },

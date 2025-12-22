@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.domain import Workflow, RunExecution
-from app.schemas.all import WorkflowCreate, WorkflowOut, WorkflowUpdate, RunExecutionOut
+from app.schemas.all import WorkflowCreate, WorkflowOut, WorkflowUpdate, RunExecutionOut, RunExecutionCreate
 from app.services.workflow_engine import WorkflowEngine, get_workflow_engine
 
 router = APIRouter(prefix="/workflows", tags=["workflows"])
@@ -65,18 +65,20 @@ def delete_workflow(workflow_id: UUID, db: Session = Depends(get_db)):
     db.commit()
     return {"ok": True}
 
-from app.schemas.all import RunExecutionCreate 
+from app.api import deps
+from app.models.user import User
 
 @router.post("/{workflow_id}/run", response_model=RunExecutionOut)
 def run_workflow(
     workflow_id: UUID, 
     run_req: RunExecutionCreate, 
     db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)
 ):
     engine = WorkflowEngine(db)
     try:
         # Use run_req.input_payload instead of raw dict
-        result = engine.run_workflow(workflow_id, run_req.input_payload)
+        result = engine.run_workflow(workflow_id, run_req.input_payload, user_id=current_user.id)
         return result
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
