@@ -155,7 +155,7 @@ import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
 import { useToast } from 'primevue/usetoast';
 
-const toast = useToast(); 
+// const toast = useToast(); // Removed unused toast to fix build error 
 const showPublishDialog = ref(false);
 const newsItems = ref<any[]>([]);
 const newsForm = ref({ title: '', content: '' });

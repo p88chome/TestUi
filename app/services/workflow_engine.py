@@ -200,8 +200,11 @@ class WorkflowEngine:
                 completion_tokens = usage.get("completion_tokens", 0)
                 total_tokens = usage.get("total_tokens", 0)
                 
-                # Cost Estimation (Approximate GPT-4 rates)
-                estimated_cost = (prompt_tokens * 0.00003) + (completion_tokens * 0.00006)
+                total_tokens = usage.get("total_tokens", 0)
+                
+                # Cost Estimation
+                from app.core.cost_calculator import calculate_ai_cost
+                estimated_cost = calculate_ai_cost(ai_model.name, prompt_tokens, completion_tokens)
                 
                 log_entry = UsageLog(
                     user_id=user_id,

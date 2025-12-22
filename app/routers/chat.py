@@ -67,15 +67,17 @@ async def chat_message(
         completion_tokens = usage.get("completion_tokens", 0)
         total_tokens = usage.get("total_tokens", 0)
         
-        # Cost Estimation (Approximate GPT-4 rates)
-        # Input: $30 / 1M tokens ($0.00003)
-        # Output: $60 / 1M tokens ($0.00006)
-        estimated_cost = (prompt_tokens * 0.00003) + (completion_tokens * 0.00006)
+        total_tokens = usage.get("total_tokens", 0)
+        model_name = response.get("model", "gpt-4")
+        
+        # Cost Estimation
+        from app.core.cost_calculator import calculate_ai_cost
+        estimated_cost = calculate_ai_cost(model_name, prompt_tokens, completion_tokens)
         
         log_entry = UsageLog(
             user_id=current_user.id,
             app_name="Enterprise Chat",
-            model_name=response.get("model", "gpt-4"),
+            model_name=model_name,
             tokens_input=prompt_tokens,
             tokens_output=completion_tokens,
             total_tokens=total_tokens,
