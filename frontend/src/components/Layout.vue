@@ -32,6 +32,6 @@ import Topbar from './Topbar.vue';
 .page-content {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  /* padding: 24px; Removed to allow full-bleed pages */
 }
 </style>

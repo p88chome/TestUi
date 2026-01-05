@@ -38,7 +38,19 @@
                     'bg-transparent pl-0': msg.role === 'assistant'
                 }"
             >
-                {{ msg.content }}
+                <div 
+                    v-if="msg.role === 'assistant'"
+                    v-html="renderMarkdown(msg.content)"
+                    class="markdown-body"
+                ></div>
+                <div v-else>
+                    {{ msg.content }}
+                </div>
+                
+                <!-- Tool Usage Indicator -->
+                <div v-if="msg.tool_used" class="mt-2 text-xs text-500 font-italic">
+                    <i class="pi pi-cog mr-1"></i>Used skill: {{ msg.tool_used }}
+                </div>
             </div>
           </div>
         </div>
@@ -105,18 +117,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'; // Removed unused computed
+import { ref, nextTick } from 'vue';
+import { runAgent } from '../api/agent';
 import apiClient from '../api/client';
+import { marked } from 'marked';
 
 // PrimeVue Components
 import Avatar from 'primevue/avatar';
 import Button from 'primevue/button';
 import Textarea from 'primevue/textarea';
-// Removed unused FileUpload, Toast
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  tool_used?: string;
 }
 
 const messages = ref<Message[]>([]);
@@ -133,6 +147,10 @@ const scrollToBottom = async () => {
   if (messagesRef.value) {
     messagesRef.value.scrollTop = messagesRef.value.scrollHeight;
   }
+};
+
+const renderMarkdown = (text: string) => {
+    return marked.parse(text);
 };
 
 const triggerFileUpload = () => {
@@ -168,27 +186,32 @@ const sendMessage = async () => {
   await scrollToBottom();
 
   try {
-      // Build Form Data
-      const formData = new FormData();
-      formData.append('message', userMsg || "Please analyze this file.");
       if (currentFile) {
-          // Explicit check to satisfy TS: currentFile is File here
+          // Fallback to old Chat endpoint if file is present (Agent API MVP doesn't support file upload yet)
+          // Ideally Agent API should handle FormData too.
+          // For now, let's keep the file logic separate or simple.
+          const formData = new FormData();
+          formData.append('message', userMsg || "Please analyze this file.");
           formData.append('file', currentFile);
-      }
 
-      // Call API
-      const res = await apiClient.post('/chat/message', formData, {
-          headers: {
-              'Content-Type': 'multipart/form-data'
-          }
-      }) as any; // Cast to any to bypass AxiosResponse typing locally
-      
-      const reply = res.content;
-      messages.value.push({ role: 'assistant', content: reply });
+          const res = await apiClient.post('/chat/message', formData, {
+               headers: {'Content-Type': 'multipart/form-data'}
+          }) as any;
+          messages.value.push({ role: 'assistant', content: res.content });
+
+      } else {
+          // USE NEW AGENT API
+          const res = await runAgent(userMsg);
+          messages.value.push({ 
+              role: 'assistant', 
+              content: res.response,
+              tool_used: res.tool_used 
+          });
+      }
 
   } catch (e: any) {
       console.error(e);
-      messages.value.push({ role: 'assistant', content: "Sorry, I encountered an error processing your request." });
+      messages.value.push({ role: 'assistant', content: "Sorry, I encountered an error. Agent might be taking a break." });
   } finally {
       isLoading.value = false;
       await scrollToBottom();
@@ -196,10 +219,56 @@ const sendMessage = async () => {
 };
 </script>
 
+<style>
+/* Global Markdown Styles for Agent responses */
+.markdown-body {
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+.markdown-body ul, .markdown-body ol {
+    padding-left: 1.5rem;
+    margin: 0.5rem 0;
+}
+.markdown-body p {
+    margin-bottom: 0.5rem;
+}
+.markdown-body strong {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+.markdown-body table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+}
+.markdown-body th, .markdown-body td {
+    border: 1px solid #e0e0e0;
+    padding: 0.75rem;
+    text-align: left;
+}
+.markdown-body th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+.markdown-body blockquote {
+    border-left: 4px solid var(--primary-color);
+    margin: 0.5rem 0;
+    padding-left: 1rem;
+    color: #666;
+    background-color: #f9f9f9;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+</style>
+
 <style scoped>
 .chatbot-page {
   height: calc(100vh - 64px); 
 }
-
-/* Custom overrides for specific PrimeVue feels if needed, mainly relying on PrimeFlex utilities */
 </style>

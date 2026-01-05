@@ -78,7 +78,12 @@ def run_workflow(
     engine = WorkflowEngine(db)
     try:
         # Use run_req.input_payload instead of raw dict
-        result = engine.run_workflow(workflow_id, run_req.input_payload, user_id=current_user.id)
+        result = engine.run_workflow(
+            workflow_id, 
+            run_req.input_payload, 
+            user_id=current_user.id,
+            task_package_id=run_req.task_package_id
+        )
         return result
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))

@@ -11,3 +11,6 @@ bcrypt==3.2.2
 python-multipart
 pydantic-settings
 pydantic[email]
+pytest
+pytest-asyncio
+PyYAML

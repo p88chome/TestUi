@@ -5,6 +5,7 @@ from sqlalchemy import String, Boolean, ForeignKey, JSON, DateTime, Enum as SQLE
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
+from app.models.skill import Skill
 
 class EndpointType(str, Enum):
     CLOUD_LLM = "cloud_llm"
@@ -30,6 +31,10 @@ class Component(Base):
     endpoint_type: Mapped[EndpointType] = mapped_column(SQLEnum(EndpointType))
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     configuration: Mapped[dict] = mapped_column(JSON, default={})
+    
+    # New Link to Skill
+    skill_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("skills.id"), nullable=True)
+    skill = relationship("Skill")
 
 class Workflow(Base):
     __tablename__ = "workflows"

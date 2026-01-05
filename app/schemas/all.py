@@ -35,6 +35,9 @@ class WorkflowStepConfig(BaseModel):
     component_id: UUID
     config: dict
     input_mapping: dict
+    # New: Dynamic Logic
+    next_step_id: int | None = None # Explicit next step (overrides default sequence)
+    condition: dict | None = None # e.g. {"field": "status", "operator": "==", "value": "check"}
 
 class WorkflowBase(BaseModel):
     name: str
@@ -57,6 +60,7 @@ class WorkflowOut(WorkflowBase):
 class RunExecutionBase(BaseModel):
     workflow_id: UUID
     input_payload: dict
+    task_package_id: UUID | None = None # Optional context
 
 class RunExecutionCreate(RunExecutionBase):
     pass

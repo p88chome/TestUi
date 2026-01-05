@@ -120,6 +120,7 @@ const menuGroups = computed(() => {
         items: [
           { label: 'Dashboard', path: '/dashboard', icon: 'pi pi-home' },
           { label: 'Workflows', path: '/workflows', icon: 'pi pi-sitemap' },
+          { label: 'Skills', path: '/skills', icon: 'pi pi-compass' },
           { label: 'Components', path: '/components', icon: 'pi pi-box' },
         ]
       },

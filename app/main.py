@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.routers import components, workflows, runs, auth, users, models, ocr, chat, stats, news
+from app.routers import components, workflows, runs, auth, users, models, ocr, chat, stats, news, skills, agent
 from app.core.database import engine, Base
 from app.models.user import User 
 from app.models.stats import UsageLog 
-from app.models.news import PlatformNews # Ensure table creation
+from app.models.news import PlatformNews 
+from app.models.skill import Skill # Ensure table creation
 
 # Create tables on startup (for MVP simplicity, instead of Alembic)
 Base.metadata.create_all(bind=engine)
@@ -21,6 +22,7 @@ from app.migrate_db import migrate
 
 @app.on_event("startup")
 def on_startup():
+    print(">>> STARTING APP: Configuring Database & Skills...")
     # 1. Run migration to ensure schema is up to date (plan columns)
     try:
         migrate()
@@ -31,6 +33,9 @@ def on_startup():
     db = SessionLocal()
     try:
         init_db(db)
+        # 3. Load Skills from File System
+        from app.services.skill_loader import load_skills
+        load_skills(db)
     except Exception as e:
         print(f"Init DB failed: {e}")
     finally:
@@ -61,6 +66,8 @@ app.include_router(ocr.router, prefix="/api/v1")
 app.include_router(chat.router, prefix="/api/v1")
 app.include_router(stats.router, prefix="/api/v1")
 app.include_router(news.router, prefix="/api/v1")
+app.include_router(skills.router, prefix="/api/v1")
+app.include_router(agent.router, prefix="/api/v1")
 
 @app.get("/")
 def root():

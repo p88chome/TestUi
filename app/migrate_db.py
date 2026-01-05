@@ -6,6 +6,9 @@ sys.path.append(os.getcwd())
 
 from sqlalchemy import text
 from app.core.database import engine
+import logging
+
+logger = logging.getLogger(__name__)
 
 def migrate():
     print("Migrating database to add plan columns...")
@@ -56,6 +59,16 @@ def migrate():
                 
     # 3. Add configuration column to components if not exists
     # ... existing code ...
+    
+    # 4. Add skill_id to components
+    try:
+        with engine.connect() as connection:
+            with connection.begin():
+                connection.execute(text("ALTER TABLE components ADD COLUMN skill_id UUID"))
+                print("Added column skill_id to components")
+    except Exception as e:
+        print(f"Skipping skill_id: {e}")
+
     with engine.connect() as conn:
         # Check if ai_models table exists
         result = conn.execute(text("SELECT to_regclass('public.ai_models')"))

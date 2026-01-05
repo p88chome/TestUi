@@ -1,5 +1,5 @@
 <template>
-  <div class="models-page p-4">
+  <div class="models-page p-6">
     <div class="flex justify-content-between align-items-center mb-4">
       <h1 class="text-2xl font-bold m-0">AI Models Management</h1>
       <Button label="Add Model" icon="pi pi-plus" @click="openDialog()" />
