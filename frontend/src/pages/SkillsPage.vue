@@ -262,7 +262,7 @@ const openEditor = async (skill: Skill) => {
         if (skillFiles.value.includes('skill.md')) {
             await openFile('skill.md');
         } else if (skillFiles.value.length > 0) {
-            await openFile(skillFiles.value[0]);
+            await openFile(skillFiles.value[0]!);
         }
     } catch (e) {
         alert("Failed to load skill workspace");
@@ -287,12 +287,7 @@ const getFileIcon = (fileName: string) => {
     return 'pi-file text-500';
 }
 
-const closeEditor = () => {
-    showEditor.value = false;
-    editingSkill.value = null;
-    editorContent.value = '';
-    skillFiles.value = [];
-};
+
 
 const saveSkillFile = async () => {
     if (!editingSkill.value || !currentFile.value) return;
