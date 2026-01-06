@@ -10,6 +10,8 @@ class UsageLog(Base):
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
     
     # Meta
+    trace_id: Mapped[str] = mapped_column(String, index=True, nullable=True)
+    tenant_id: Mapped[str] = mapped_column(String, index=True, default="default")
     app_name: Mapped[str] = mapped_column(String, index=True) # e.g. "Chatbot", "Contract Helper"
     model_name: Mapped[str] = mapped_column(String) # e.g. "gpt-4"
     

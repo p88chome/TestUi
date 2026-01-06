@@ -14,3 +14,9 @@ pydantic[email]
 pytest
 pytest-asyncio
 PyYAML
+pypdf
+pdfplumber
+reportlab
+pandas
+openpyxl
+python-docx

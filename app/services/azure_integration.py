@@ -13,6 +13,7 @@ from app.core.config import settings
 async def call_azure_openai(
     db: Session,
     input_text: str,
+    messages: list[dict] | None = None,
     system_prompt: str = "You are a helpful AI assistant.",
     model_id: str | None = None,
     temperature: float = 0.7
@@ -20,6 +21,7 @@ async def call_azure_openai(
     """
     Calls Azure OpenAI Chat Completions API.
     Used by: Workflow Engine (Universal Azure LLM), Chat Router (Enterprise Chat).
+    Supports either manual 'messages' list OR simple 'input_text' + 'system_prompt'.
     """
 
     # 1. Determine Model
@@ -49,13 +51,19 @@ async def call_azure_openai(
     print(f"DEBUG: Full URL: {url}") # CAREFUL: Don't log API Key, but URL is okay-ish for local debug (contains deployment name)
 
     # 4. Prepare Payload
-    payload = {
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": input_text}
-        ],
-        "temperature": temperature
-    }
+    if messages:
+        payload = {
+            "messages": messages,
+            "temperature": temperature
+        }
+    else:
+        payload = {
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": input_text}
+            ],
+            "temperature": temperature
+        }
 
     headers = {
         "Content-Type": "application/json",

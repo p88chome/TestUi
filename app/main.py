@@ -1,12 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.routers import components, workflows, runs, auth, users, models, ocr, chat, stats, news, skills, agent
+from app.routers import components, workflows, runs, auth, users, models, ocr, chat, stats, news, skills, agent, feedback
 from app.core.database import engine, Base
 from app.models.user import User 
 from app.models.stats import UsageLog 
 from app.models.news import PlatformNews 
-from app.models.skill import Skill # Ensure table creation
+from app.models.skill import Skill
+from app.models.feedback import Feedback # Ensure table creation
 
 # Create tables on startup (for MVP simplicity, instead of Alembic)
 Base.metadata.create_all(bind=engine)
@@ -68,6 +69,8 @@ app.include_router(stats.router, prefix="/api/v1")
 app.include_router(news.router, prefix="/api/v1")
 app.include_router(skills.router, prefix="/api/v1")
 app.include_router(agent.router, prefix="/api/v1")
+app.include_router(feedback.router, prefix="/api/v1")
+
 
 @app.get("/")
 def root():

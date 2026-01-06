@@ -118,7 +118,7 @@ def load_skills(db: Session):
                     print(f"Failed to load skill {entry.name}: {e}")
                     db.rollback()
 
-def execute_skill(skill_name: str, input_data: dict, db: Session):
+def execute_skill(skill_name: str, input_data: dict, db: Session, trace_id: str = None):
     """
     Executes a skill by name.
     """
@@ -141,7 +141,8 @@ def execute_skill(skill_name: str, input_data: dict, db: Session):
     execution_record = SkillExecution(
         skill_name=skill_name,
         input_data=input_data,
-        status="RUNNING"
+        status="RUNNING",
+        trace_id=trace_id # Add Trace ID
     )
     db.add(execution_record)
     db.commit()
@@ -167,8 +168,20 @@ def execute_skill(skill_name: str, input_data: dict, db: Session):
     except Exception as e:
         status = "ERROR"
         error_detail = str(e)
-        logs = f"Error: {str(e)}"
-        raise e
+        import traceback
+        logs = f"Error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+        
+        # Guardrails: Standardized Error Return
+        result = {
+            "status": "error",
+            "error_code": "SKILL_EXECUTION_FAILED",
+            "message": f"Skill execution failed: {str(e)}",
+            "details": {
+                "skill": skill_name,
+                "trace_id": trace_id
+            }
+        }
+        # Do not raise e, return the structured error so Agent can handle it gracefully
     finally:
         end_time = time.time()
         duration_ms = int((end_time - start_time) * 1000)

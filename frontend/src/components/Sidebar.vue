@@ -42,6 +42,16 @@
       </div>
     </nav>
     
+    <!-- Feedback Button -->
+    <div 
+        class="feedback-btn mx-3 mb-2 p-2 border-round hover:surface-700 cursor-pointer transition-colors flex align-items-center text-gray-400 hover:text-white"
+        @click="showFeedbackDialog = true"
+        v-tooltip.right="isCollapsed ? 'Send Feedback' : null"
+    >
+        <i class="pi pi-comments text-lg" :class="{ 'mx-auto': isCollapsed, 'mr-3': !isCollapsed }"></i>
+        <span v-if="!isCollapsed" class="font-medium text-sm">Feedback</span>
+    </div>
+
     <!-- User Profile (Bottom) -->
     <!-- Clickable Container for Menu -->
     <div 
@@ -60,22 +70,59 @@
     
     <!-- Popup Menu -->
     <Menu ref="userMenu" id="user_menu" :model="userMenuItems" :popup="true" />
+    
+    <!-- Feedback Dialog -->
+    <Dialog v-model:visible="showFeedbackDialog" header="Send Feedback" :modal="true" class="p-fluid" style="width: 400px">
+        <div class="field">
+            <label for="feedback" class="font-bold">Your Message</label>
+            <Textarea id="feedback" v-model="feedbackContent" rows="5" placeholder="Tell us what you think or report a bug..." autofocus />
+        </div>
+        <template #footer>
+            <Button label="Cancel" icon="pi pi-times" class="p-button-text" @click="showFeedbackDialog = false" />
+            <Button label="Send" icon="pi pi-send" @click="submitFeedback" :loading="isSendingFeedback" :disabled="!feedbackContent.trim()" />
+        </template>
+    </Dialog>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import apiClient from '../api/client';
+import { getWorkflows } from '../api/workflows'; // Import workflow fetcher
 import Button from 'primevue/button';
 import Avatar from 'primevue/avatar';
 import Menu from 'primevue/menu';
+import Dialog from 'primevue/dialog';
+import Textarea from 'primevue/textarea';
+import { useToast } from 'primevue/usetoast';
 
 const auth = useAuthStore();
 const router = useRouter();
+const toast = useToast();
 const userMenu = ref();
 
 const isCollapsed = ref(false);
+const showFeedbackDialog = ref(false);
+const feedbackContent = ref('');
+const isSendingFeedback = ref(false);
+const customApps = ref<any[]>([]); // Store custom workflows
+
+onMounted(async () => {
+    if (auth.state.token) {
+        try {
+            const wfs = await getWorkflows();
+            customApps.value = wfs.map(w => ({
+                label: w.name,
+                path: `/workflows?load=${w.id}`, // Open in Builder/Runner
+                icon: 'pi pi-box'
+            }));
+        } catch (e) {
+            console.error("Failed to fetch custom apps", e);
+        }
+    }
+});
 
 const userName = computed(() => auth.state.user?.full_name || 'User');
 const userRole = computed(() => auth.state.isSuperuser ? 'Administrator' : 'User');
@@ -90,6 +137,26 @@ const toggleSidebar = () => {
 
 const toggleUserMenu = (event: Event) => {
     userMenu.value.toggle(event);
+};
+
+const submitFeedback = async () => {
+    if (!feedbackContent.value.trim()) return;
+    
+    isSendingFeedback.value = true;
+    console.log("Submitting feedback:", feedbackContent.value);
+    try {
+        const res = await apiClient.post('/feedback', { content: feedbackContent.value });
+        console.log("Feedback success:", res);
+        toast.add({ severity: 'success', summary: 'Sent', detail: 'Thank you for your feedback!', life: 3000 });
+        showFeedbackDialog.value = false;
+        feedbackContent.value = '';
+    } catch (e: any) {
+        console.error("Failed to send feedback", e);
+        const errorMsg = e.response?.data?.detail || e.message || 'Failed to send feedback';
+        toast.add({ severity: 'error', summary: 'Error', detail: errorMsg, life: 5000 });
+    } finally {
+        isSendingFeedback.value = false;
+    }
 };
 
 const userMenuItems = [
@@ -114,6 +181,12 @@ const userMenuItems = [
 ];
 
 const menuGroups = computed(() => {
+    const appsItems = [
+          { label: 'Contract Assistant', path: '/apps/contracts', icon: 'pi pi-file-pdf' },
+          { label: 'Expense Helper', path: '/apps/expenses', icon: 'pi pi-wallet' },
+          ...customApps.value // Add user custom apps here
+    ];
+
     const groups = [
       {
         title: 'Core',
@@ -122,15 +195,13 @@ const menuGroups = computed(() => {
           { label: 'Workflows', path: '/workflows', icon: 'pi pi-sitemap' },
           { label: 'Skills', path: '/skills', icon: 'pi pi-compass' },
           { label: 'Components', path: '/components', icon: 'pi pi-box' },
+          { label: 'Capability Map', path: '/capability-map', icon: 'pi pi-th-large' },
         ]
       },
       // Enterprise Apps - Only for Pro/Enterprise
       ...(auth.state.user?.plan_name && auth.state.user.plan_name !== 'Starter' ? [{
         title: 'Enterprise Apps', 
-        items: [
-          { label: 'Contract Assistant', path: '/apps/contracts', icon: 'pi pi-file-pdf' },
-          { label: 'Expense Helper', path: '/apps/expenses', icon: 'pi pi-wallet' },
-        ]
+        items: appsItems
       }] : []),
       {
         title: 'Operations',
@@ -150,9 +221,27 @@ const menuGroups = computed(() => {
     ];
 
     if (auth.state.isSuperuser) {
-        // Ensure groups[2] exists and has items
-        if (groups[2] && groups[2].items) {
-             groups[2].items.unshift({ label: 'User Management', path: '/users', icon: 'pi pi-users' });
+        // Ensure groups[2] exists and has items. However, if Plan is Starter, groups[1] might be Operations.
+        // Safer to find by title or just append. 
+        // For simplicity: Admin is likely Pro, so [2] is Operations.
+        // Let's protect it:
+        const opsGroup = groups.find(g => g.title === 'Operations');
+        if (opsGroup) {
+             // Actually Admin User Management usually goes nicely in Core or its own group.
+             // But existing code put it in specific index. Let's keep existing logic but robust.
+             // Original code put it in groups[2] which was Operations (0=Core, 1=Apps, 2=Ops).
+             // Let's find index of Operations
+             const opsIndex = groups.findIndex(g => g.title === 'Operations');
+             if (opsIndex !== -1) {
+                  // Check if already exists?
+                  const hasUserManagement = groups[opsIndex].items.some(i => i.label === 'User Management');
+                  if (!hasUserManagement) {
+                    groups[opsIndex].items.unshift(
+                        { label: 'User Management', path: '/users', icon: 'pi pi-users' },
+                        { label: 'User Feedback', path: '/feedback', icon: 'pi pi-inbox' }
+                    );
+                  }
+             }
         }
     }
 

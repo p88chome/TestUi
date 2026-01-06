@@ -38,7 +38,9 @@ class SkillExecution(Base):
     __tablename__ = "skill_executions"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    trace_id: Mapped[str] = mapped_column(String, index=True, nullable=True) # Full request trace ID
     skill_name: Mapped[str] = mapped_column(String, index=True)
+    tenant_id: Mapped[str] = mapped_column(String, index=True, default="default")
     input_data: Mapped[dict] = mapped_column(JSON)
     output_data: Mapped[dict] = mapped_column(JSON, nullable=True)
     status: Mapped[str] = mapped_column(String, default="PENDING") # PENDING, SUCCESS, ERROR

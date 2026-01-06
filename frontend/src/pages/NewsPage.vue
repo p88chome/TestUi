@@ -4,14 +4,20 @@
         <div class="surface-card shadow-2 border-round p-4 h-full">
             <div class="flex align-items-center justify-content-between mb-4">
                 <span class="text-xl font-bold text-900">Platform News & Announcements</span>
-                <Button v-if="isAdmin" label="Publish News" icon="pi pi-plus" class="p-button-primary" @click="showPublishDialog = true" />
+                <Button v-if="isAdmin" label="Publish News" icon="pi pi-plus" class="p-button-primary" @click="openPublishDialog" />
             </div>
 
              <div class="flex flex-column gap-3">
                  <div v-for="news in newsItems" :key="news.id" class="border-bottom-1 surface-border pb-3">
-                    <div class="flex justify-content-between">
-                        <div class="font-bold text-blue-900 mb-1 text-lg">{{ news.title }}</div>
-                        <Tag v-if="!news.is_published" severity="warning" value="Draft"></Tag>
+                    <div class="flex justify-content-between align-items-start">
+                        <div>
+                            <div class="font-bold text-blue-900 mb-1 text-lg">{{ news.title }}</div>
+                            <Tag v-if="!news.is_published" severity="warning" value="Draft" class="mr-2"></Tag>
+                        </div>
+                        <div v-if="isAdmin" class="flex gap-2">
+                             <Button icon="pi pi-pencil" text rounded severity="secondary" @click="editNews(news)" />
+                             <Button icon="pi pi-trash" text rounded severity="danger" @click="deleteNews(news)" />
+                        </div>
                     </div>
                     <div class="text-700 block mb-2" style="white-space: pre-wrap; line-height: 1.6;">{{ news.content }}</div>
                     <div class="flex align-items-center gap-2 text-sm text-500">
@@ -29,7 +35,7 @@
     </div>
     
     <!-- Admin Publish Dialog -->
-    <Dialog v-model:visible="showPublishDialog" header="Publish News" :modal="true" class="p-fluid" style="width: 50vw">
+    <Dialog v-model:visible="showPublishDialog" :header="isEditMode ? 'Edit News' : 'Publish News'" :modal="true" class="p-fluid" style="width: 50vw">
         <div class="field">
             <label for="title" class="font-bold">Title</label>
             <InputText id="title" v-model="newsForm.title" autofocus />
@@ -44,7 +50,7 @@
         </div>
         <template #footer>
             <Button label="Cancel" icon="pi pi-times" class="p-button-text" @click="showPublishDialog = false" />
-            <Button label="Publish" icon="pi pi-check" @click="publishNews" :loading="isPublishing" />
+            <Button :label="isEditMode ? 'Save Changes' : 'Publish'" icon="pi pi-check" @click="saveNews" :loading="isPublishing" />
         </template>
     </Dialog>
   </div>
@@ -70,6 +76,8 @@ const showPublishDialog = ref(false);
 const isPublishing = ref(false);
 const newsItems = ref<any[]>([]);
 const newsForm = ref({ title: '', content: '', is_published: true });
+const isEditMode = ref(false);
+const editingId = ref<number | null>(null);
 
 const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString() + ' ' + new Date(dateStr).toLocaleTimeString();
@@ -85,7 +93,37 @@ const loadNews = async () => {
     }
 };
 
-const publishNews = async () => {
+const openPublishDialog = () => {
+    isEditMode.value = false;
+    editingId.value = null;
+    newsForm.value = { title: '', content: '', is_published: true };
+    showPublishDialog.value = true;
+};
+
+const editNews = (item: any) => {
+    isEditMode.value = true;
+    editingId.value = item.id;
+    newsForm.value = { 
+        title: item.title, 
+        content: item.content, 
+        is_published: item.is_published 
+    };
+    showPublishDialog.value = true;
+};
+
+const deleteNews = async (item: any) => {
+    if (!confirm('Are you sure you want to delete this announcement?')) return;
+    try {
+        await apiClient.delete(`/news/${item.id}`);
+        toast.add({ severity: 'success', summary: 'Deleted', detail: 'News deleted', life: 3000 });
+        loadNews();
+    } catch (e) {
+        console.error("Failed to delete news", e);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete news', life: 3000 });
+    }
+};
+
+const saveNews = async () => {
     if (!newsForm.value.title || !newsForm.value.content) {
         toast.add({ severity: 'warn', summary: 'Missing Info', detail: 'Please fill in both title and content', life: 3000 });
         return;
@@ -93,14 +131,18 @@ const publishNews = async () => {
 
     isPublishing.value = true;
     try {
-        await apiClient.post('/news', newsForm.value);
-        toast.add({ severity: 'success', summary: 'Success', detail: 'News published successfully', life: 3000 });
+        if (isEditMode.value && editingId.value) {
+            await apiClient.put(`/news/${editingId.value}`, newsForm.value);
+            toast.add({ severity: 'success', summary: 'Updated', detail: 'News updated successfully', life: 3000 });
+        } else {
+            await apiClient.post('/news', newsForm.value);
+            toast.add({ severity: 'success', summary: 'Published', detail: 'News published successfully', life: 3000 });
+        }
         showPublishDialog.value = false;
-        newsForm.value = { title: '', content: '', is_published: true };
         loadNews(); 
     } catch (e) {
-        console.error("Failed to publish news", e);
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to publish news. Check permissions.', life: 3000 });
+        console.error("Failed to save news", e);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to save news. check permissions.', life: 3000 });
     } finally {
         isPublishing.value = false;
     }

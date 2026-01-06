@@ -9,14 +9,14 @@ def execute(input_data: dict) -> dict:
     """
     query = input_data.get("query", "")
     
-    system_prompt = """You are an expert Astropy Consultant.
-    Your task is to provide Python code solutions using the Astropy library.
+    system_prompt = """你是一位專業的 Astropy 天文計算顧問。
+    你的任務是使用 Python 的 Astropy 函式庫來為使用者的問題提供程式碼解決方案。
     
-    Output Format (JSON):
+    輸出格式 (JSON):
     {
-      "summary": "Brief summary",
-      "code": "Python code",
-      "explanation": "Explanation"
+      "summary": "簡短摘要 (中文)",
+      "code": "Python 程式碼",
+      "explanation": "詳細解釋 (中文)"
     }
     """
     

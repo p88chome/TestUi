@@ -40,3 +40,36 @@ def publish_news(
     db.commit()
     db.refresh(db_news)
     return db_news
+
+@router.delete("/{news_id}", status_code=204)
+def delete_news(
+    news_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_superuser)
+):
+    news = db.query(PlatformNews).filter(PlatformNews.id == news_id).first()
+    if not news:
+        raise HTTPException(status_code=404, detail="News not found")
+    
+    db.delete(news)
+    db.commit()
+    return None
+
+@router.put("/{news_id}", response_model=NewsOut)
+def update_news(
+    news_id: int,
+    news_in: NewsCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_superuser)
+):
+    news = db.query(PlatformNews).filter(PlatformNews.id == news_id).first()
+    if not news:
+        raise HTTPException(status_code=404, detail="News not found")
+        
+    news.title = news_in.title
+    news.content = news_in.content
+    news.is_published = news_in.is_published
+    
+    db.commit()
+    db.refresh(news)
+    return news

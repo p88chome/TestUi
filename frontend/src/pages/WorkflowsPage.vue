@@ -12,7 +12,9 @@
         <div 
           v-for="comp in filteredComponents" 
           :key="comp.id" 
-          class="component-item p-3 border-round cursor-pointer hover:surface-100 transition-colors border-1 surface-border"
+          class="component-item p-3 border-round cursor-move hover:surface-100 transition-colors border-1 surface-border"
+          draggable="true"
+          @dragstart="onDragStart($event, comp)"
           @click="addStep(comp)"
         >
           <div class="flex justify-content-between align-items-center mb-2">
@@ -25,13 +27,19 @@
     </div>
 
     <!-- Center Column: Workflow Steps -->
-    <div class="column center-col flex-1 flex flex-column gap-3 p-3 surface-ground border-round">
+    <div 
+        class="column center-col flex-1 flex flex-column gap-3 p-3 surface-ground border-round transition-colors"
+        :class="{ 'border-2 border-dashed border-primary surface-highlight origin-center': isDraggingOver }"
+        @dragover.prevent="onDragOver"
+        @dragleave="onDragLeave"
+        @drop="onDrop"
+    >
       <h3 class="m-0 text-lg text-900">Workflow Steps</h3>
       
-      <div v-if="steps.length === 0" class="empty-placeholder flex align-items-center justify-content-center flex-1 text-600">
+      <div v-if="steps.length === 0" class="empty-placeholder flex align-items-center justify-content-center flex-1 text-600 pointer-events-none">
         <div class="text-center">
-            <i class="pi pi-exclamation-circle text-4xl mb-3"></i>
-            <p>Select components from the library to build your workflow.</p>
+            <i class="pi pi-box text-4xl mb-3 opacity-50"></i>
+            <p>Drag components here to build your app.</p>
         </div>
       </div>
 
@@ -68,6 +76,19 @@
 
     <!-- Right Column: Properties & Test -->
     <div class="column right-col w-3 flex flex-column gap-3 p-3 bg-white border-round shadow-1 h-full overflow-y-auto">
+      <!-- Help / Guide Section -->
+      <div class="bg-blue-50 border-round p-3 mb-3 border-1 border-blue-200">
+        <div class="flex align-items-center gap-2 mb-2 text-blue-800">
+            <i class="pi pi-info-circle"></i>
+            <span class="font-bold">App Builder Guide</span>
+        </div>
+        <ul class="m-0 pl-3 text-sm text-blue-700 line-height-3">
+            <li><strong>Drag</strong> components from Library to Canvas.</li>
+            <li><strong>Configure</strong> steps if needed (e.g. thresholds).</li>
+            <li><strong>Test</strong> by clicking "Run App" with sample data.</li>
+        </ul>
+      </div>
+
       <h3 class="m-0 text-lg text-900 border-bottom-1 surface-border pb-3">Properties</h3>
       
       <div class="flex flex-column gap-2 border-bottom-1 surface-border pb-3 mb-3">
@@ -103,13 +124,16 @@
       </div>
       
       <div class="mt-4">
-          <h4 class="text-900 mb-3">Test Run</h4>
+          <h4 class="text-900 mb-2">Test Your App</h4>
+          <p class="text-sm text-600 mb-3">
+            Verify your logic immediately. Enter JSON input (e.g. <code>{"text": "machine error 505"}</code>) and see the results.
+          </p>
           <div class="flex flex-column gap-2 mb-3">
-            <label class="font-medium text-700">Input Payload (JSON)</label>
+            <label class="font-medium text-700">Test Input (JSON)</label>
             <Textarea v-model="runPayloadStr" rows="5" class="w-full font-mono text-sm" />
           </div>
           <Button 
-            label="Run Workflow"
+            label="Run App & Verify"
             icon="pi pi-play"
             :severity="savedId ? 'success' : 'secondary'" 
             :disabled="!savedId" 
@@ -145,12 +169,13 @@ const components = ref<ComponentOut[]>([]);
 const existingWorkflows = ref<WorkflowOut[]>([]);
 const selectedWorkflowId = ref<string | null>(null);
 const filterText = ref('');
+const isDraggingOver = ref(false);
 
 // Workflow State
-const workflowMeta = ref({ name: 'New Workflow', description: '' });
+const workflowMeta = ref({ name: 'New Custom App', description: '' });
 const savedId = ref<string | null>(null);
 
-// Local Step representation with stringified JSON for editing
+// Local Step representation
 interface UIMappedStep {
   step_id: number;
   component_id: string;
@@ -171,8 +196,40 @@ const fetchWorkflows = async () => {
 
 onMounted(async () => {
   components.value = await getComponents();
-  await fetchWorkflows(); // Load list on mount
+  await fetchWorkflows(); 
 });
+
+// Drag and Drop Handlers
+const onDragStart = (event: DragEvent, comp: ComponentOut) => {
+    if (event.dataTransfer) {
+        event.dataTransfer.setData('application/json', JSON.stringify(comp));
+        event.dataTransfer.effectAllowed = 'copy';
+    }
+};
+
+const onDragOver = (event: DragEvent) => {
+    isDraggingOver.value = true;
+    if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = 'copy';
+    }
+};
+
+const onDragLeave = () => {
+    isDraggingOver.value = false;
+};
+
+const onDrop = (event: DragEvent) => {
+    isDraggingOver.value = false;
+    if (event.dataTransfer) {
+        const data = event.dataTransfer.getData('application/json');
+        try {
+            const comp = JSON.parse(data);
+            addStep(comp);
+        } catch (e) {
+            console.error("Failed to parse drop data", e);
+        }
+    }
+};
 
 const loadWorkflow = async () => {
     if (!selectedWorkflowId.value) return;
@@ -181,7 +238,6 @@ const loadWorkflow = async () => {
         savedId.value = wf.id;
         workflowMeta.value = { name: wf.name, description: wf.description };
         
-        // Map steps
         steps.value = wf.steps.map(s => ({
             step_id: s.step_id,
             component_id: s.component_id,
@@ -189,13 +245,8 @@ const loadWorkflow = async () => {
             inputMapStr: JSON.stringify(s.input_mapping, null, 2)
         }));
         
-        // Load persist payload
         const savedPayload = localStorage.getItem(`wf_payload_${wf.id}`);
-        if (savedPayload) {
-            runPayloadStr.value = savedPayload;
-        } else {
-            runPayloadStr.value = '{}';
-        }
+        runPayloadStr.value = savedPayload || '{}';
 
     } catch (e) {
         console.error("Error loading workflow", e);
@@ -206,7 +257,7 @@ const loadWorkflow = async () => {
 const resetForm = () => {
     savedId.value = null;
     selectedWorkflowId.value = null;
-    workflowMeta.value = { name: 'New Workflow', description: '' };
+    workflowMeta.value = { name: 'New Custom App', description: '' };
     steps.value = [];
     runPayloadStr.value = '{}';
 };
@@ -234,7 +285,6 @@ const addStep = (comp: ComponentOut) => {
 
 const removeStep = (index: number) => {
   steps.value.splice(index, 1);
-  // Re-index
   steps.value.forEach((s, i) => s.step_id = i + 1);
 };
 

@@ -11,6 +11,8 @@ router = APIRouter(prefix="/agent", tags=["agent"])
 
 class AgentRunRequest(BaseModel):
     query: str
+    session_id: str | None = None
+    assistant_id: str | None = None
 
 @router.post("/run")
 async def run_agent(
@@ -22,5 +24,10 @@ async def run_agent(
     Main entry point for the Agent.
     """
     service = AgentService(db)
-    result = await service.run(req.query, user_id=current_user.id)
+    result = await service.run(
+        req.query, 
+        user_id=current_user.id, 
+        session_id=req.session_id,
+        assistant_id=req.assistant_id
+    )
     return result

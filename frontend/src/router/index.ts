@@ -31,6 +31,12 @@ const routes = [
                 name: 'RunDetail',
                 component: () => import('../pages/RunDetailPage.vue')
             },
+            {
+                path: 'capability-map',
+                name: 'CapabilityMap',
+                component: () => import('../pages/CapabilityMap.vue')
+            },
+
 
             // Enterprise Apps
             { path: 'apps/contracts', name: 'ContractAssistant', component: ChatbotPage, meta: { requiresPro: true } },
@@ -49,6 +55,12 @@ const routes = [
             { path: 'dashboard', name: 'Dashboard', component: () => import('../pages/DashboardPage.vue') },
 
             // Admin
+            {
+                path: 'feedback',
+                name: 'Feedback',
+                component: () => import('../pages/FeedbackPage.vue'),
+                meta: { adminOnly: true }
+            },
             {
                 path: 'users',
                 name: 'Users',

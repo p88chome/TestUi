@@ -1,6 +1,25 @@
 <template>
   <div class="chatbot-page flex justify-content-center bg-white h-full relative">
     <div class="chat-wrapper w-full max-w-50rem flex flex-column h-full">
+      <!-- Header / Mode Selector -->
+      <div class="p-3 border-bottom-1 border-200 flex align-items-center justify-content-between bg-white z-1 shadow-1">
+          <div class="flex align-items-center gap-2">
+              <span class="font-bold text-lg">Chat Mode:</span>
+              <Dropdown 
+                v-model="selectedAssistant" 
+                :options="assistants" 
+                optionLabel="name" 
+                placeholder="Select Assistant" 
+                class="w-14rem"
+                @change="onAssistantChange"
+              />
+          </div>
+          <div>
+            <!-- Future buttons like Clear Chat -->
+             <Button icon="pi pi-refresh" text rounded @click="resetSession" v-tooltip="'New Chat'" />
+          </div>
+      </div>
+
       <!-- Messages Area -->
       <div class="messages flex-1 overflow-y-auto p-4 flex flex-column gap-4" ref="messagesRef">
         
@@ -126,6 +145,7 @@ import { marked } from 'marked';
 import Avatar from 'primevue/avatar';
 import Button from 'primevue/button';
 import Textarea from 'primevue/textarea';
+import Dropdown from 'primevue/dropdown';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -137,6 +157,25 @@ const messages = ref<Message[]>([]);
 const inputDetails = ref('');
 const isLoading = ref(false);
 const messagesRef = ref<HTMLElement | null>(null);
+
+// Assistant State
+const assistants = ref([
+    { name: 'General Assistant', id: null }, // Default
+    { name: 'Legal Bot (Contracts)', id: 'legal_bot' },
+    { name: 'Finance Bot (Excel)', id: 'finance_bot' }
+]);
+const selectedAssistant = ref(assistants.value[0]);
+const currentSessionId = ref<string | undefined>(undefined);
+
+const onAssistantChange = () => {
+    // changing assistant implies starting fresh context usually
+    resetSession();
+};
+
+const resetSession = () => {
+    messages.value = [];
+    currentSessionId.value = undefined;
+};
 
 // File State
 const selectedFile = ref<File | null>(null);
@@ -201,7 +240,12 @@ const sendMessage = async () => {
 
       } else {
           // USE NEW AGENT API
-          const res = await runAgent(userMsg);
+          const res = await runAgent(userMsg, currentSessionId.value, selectedAssistant.value?.id || undefined);
+          
+          if (res.session_id) {
+              currentSessionId.value = res.session_id;
+          }
+          
           messages.value.push({ 
               role: 'assistant', 
               content: res.response,
