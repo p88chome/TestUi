@@ -227,20 +227,13 @@ const menuGroups = computed(() => {
         // Let's protect it:
         const opsGroup = groups.find(g => g.title === 'Operations');
         if (opsGroup) {
-             // Actually Admin User Management usually goes nicely in Core or its own group.
-             // But existing code put it in specific index. Let's keep existing logic but robust.
-             // Original code put it in groups[2] which was Operations (0=Core, 1=Apps, 2=Ops).
-             // Let's find index of Operations
-             const opsIndex = groups.findIndex(g => g.title === 'Operations');
-             if (opsIndex !== -1) {
-                  // Check if already exists?
-                  const hasUserManagement = groups[opsIndex].items.some(i => i.label === 'User Management');
-                  if (!hasUserManagement) {
-                    groups[opsIndex].items.unshift(
-                        { label: 'User Management', path: '/users', icon: 'pi pi-users' },
-                        { label: 'User Feedback', path: '/feedback', icon: 'pi pi-inbox' }
-                    );
-                  }
+             // Check if already exists?
+             const hasUserManagement = opsGroup.items.some(i => i.label === 'User Management');
+             if (!hasUserManagement) {
+               opsGroup.items.unshift(
+                   { label: 'User Management', path: '/users', icon: 'pi pi-users' },
+                   { label: 'User Feedback', path: '/feedback', icon: 'pi pi-inbox' }
+               );
              }
         }
     }

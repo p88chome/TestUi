@@ -12,21 +12,25 @@ export const flows = [
     {
         id: 'expense',
         label: '費用申報流程',
-        activeComponents: ['aiocr', 'aiexcel', 'aiintent']
+        activeComponents: ['aiocr', 'aiexcel', 'aiintent'],
+        routeName: 'ExpenseHelper'
     },
     {
         id: 'legal',
         label: '合約審閱流程',
-        activeComponents: ['aiocr', 'airead', 'aiintent']
+        activeComponents: ['aiocr', 'airead', 'aiintent'],
+        routeName: 'ContractAssistant'
     },
     {
         id: 'audit',
         label: '稽核抽樣分析',
-        activeComponents: ['aisql', 'aidraw', 'aiintent']
+        activeComponents: ['aisql', 'aidraw', 'aiintent'],
+        routeName: undefined
     },
     {
         id: 'compare',
         label: '公文版次比對',
-        activeComponents: ['aiocr', 'aicomp', 'aiintent']
+        activeComponents: ['aiocr', 'aicomp', 'aiintent'],
+        routeName: undefined
     }
 ];

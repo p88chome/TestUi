@@ -27,6 +27,9 @@
 | **AI Drawing** * | `matplotlib_skill` (Planned) | 根據資料產生趨勢圖、分佈圖。 |
 | **AI to SQL** * | `sql_generator` (Planned) | 自然語言轉 SQL，直接查詢資料庫。 |
 | **AI Doc Compare** * | `doc_comparator` (Planned) | 兩份文件版次比對 (如新舊合約差異)。 |
+| **AI Science** | `astropy`, `biopython`, `sympy` | 科學計算、天文數據分析、生物資訊處理。 |
+| **AI Writer** | `docx_writer` | 自動生成 Word 報告與文檔。 |
+| **Skill Discovery** | `skill_discovery` | 動態技能查找與載入。 |
 
 *(標示 `*` 為 Roadmap 開發中項目)*
 
@@ -44,6 +47,26 @@
 > **組合公式**：`AI to SQL` (撈資料) + `AI Drawing` (畫分佈)
 > 說明：「幫我挑出 Q3 金額 > 10萬的異常採購案，並畫出部門分佈圖。」
 
+#### 4. 科學研究流程 (Scientific Research Flow)
+> **組合公式**：`AI Science` (計算) + `AI Writer` (寫報告)
+> 說明：自動分析實驗數據，利用 Astropy 計算天文參數，並生成實驗報告。
+
+---
+
+## ⚙️ 核心引擎 (Workflow Engine)
+
+本平台具備強大的工作流引擎，支援動態定義與執行任務：
+
+- **Dynamic Workflows**: 透過 JSON 定義工作流步驟 (Steps)，支援條件判斷與迴圈。
+- **Task Packages**: 將輸入資料打包，在不同步驟間傳遞。
+- **Execution Tracking**: 完整記錄每一步驟的執行結果、日誌與狀態 (Running, Completed, Failed)。
+
+---
+
+## 🌐 社群與支持 (Community & Support)
+
+- **Platform News**: 管理員可發布平台公告與更新資訊。
+- **User Feedback**: 內建使用者回饋系統，收集 Bug 回報與功能建議。
 ---
 
 ## 🏗️ 系統架構 (System Architecture)
