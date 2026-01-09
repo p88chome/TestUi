@@ -39,7 +39,8 @@ const renderedContent = computed(() => {
 onMounted(async () => {
     try {
         const res = await apiClient.get('/system/readme');
-        content.value = res.data.content;
+        // apiClient interceptor returns response.data directly
+        content.value = (res as any).content;
     } catch (e: any) {
         console.error("Failed to load README", e);
         error.value = "Failed to load documentation. Please try again later.";

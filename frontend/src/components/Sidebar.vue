@@ -42,15 +42,7 @@
       </div>
     </nav>
     
-    <!-- Feedback Button -->
-    <div 
-        class="feedback-btn mx-3 mb-2 p-2 border-round hover:surface-700 cursor-pointer transition-colors flex align-items-center text-gray-400 hover:text-white"
-        @click="showFeedbackDialog = true"
-        v-tooltip.right="isCollapsed ? 'Send Feedback' : null"
-    >
-        <i class="pi pi-comments text-lg" :class="{ 'mx-auto': isCollapsed, 'mr-3': !isCollapsed }"></i>
-        <span v-if="!isCollapsed" class="font-medium text-sm">Feedback</span>
-    </div>
+    <!-- Feedback Button Removed -->
 
     <!-- User Profile (Bottom) -->
     <!-- Clickable Container for Menu -->
@@ -165,6 +157,13 @@ const userMenuItems = [
         icon: 'pi pi-user',
         command: () => {
             router.push('/profile');
+        }
+    },
+    {
+        label: 'Give Feedback',
+        icon: 'pi pi-comment',
+        command: () => {
+            showFeedbackDialog.value = true;
         }
     },
     {
