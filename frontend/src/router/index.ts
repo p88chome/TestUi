@@ -68,6 +68,13 @@ const routes = [
                 meta: { adminOnly: true }
             },
 
+            // System Info
+            {
+                path: 'about',
+                name: 'About',
+                component: () => import('../pages/AboutPage.vue')
+            },
+
             // Profile
             {
                 path: 'profile',

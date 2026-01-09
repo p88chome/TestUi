@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.routers import components, workflows, runs, auth, users, models, ocr, chat, stats, news, skills, agent, feedback
+from app.routers import components, workflows, runs, auth, users, models, ocr, chat, stats, news, skills, agent, feedback, system
 from app.core.database import engine, Base
 from app.models.user import User 
 from app.models.stats import UsageLog 
@@ -70,6 +70,7 @@ app.include_router(news.router, prefix="/api/v1")
 app.include_router(skills.router, prefix="/api/v1")
 app.include_router(agent.router, prefix="/api/v1")
 app.include_router(feedback.router, prefix="/api/v1")
+app.include_router(system.router, prefix="/api/v1")
 
 
 @app.get("/")

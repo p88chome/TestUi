@@ -209,6 +209,7 @@ const menuGroups = computed(() => {
           { label: 'Monitoring', path: '/monitoring', icon: 'pi pi-chart-line' },
           { label: 'Models', path: '/models', icon: 'pi pi-server' },
           { label: 'News / Posts', path: '/news', icon: 'pi pi-megaphone' },
+          { label: 'About System', path: '/about', icon: 'pi pi-info-circle' },
           { label: 'Settings', path: '/profile', icon: 'pi pi-cog' },
         ]
       },
