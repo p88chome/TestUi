@@ -41,6 +41,16 @@ def migrate():
     except Exception as e:
         print(f"Skipping plan_expiry: {e}")
 
+    # tenant_id (Critical for multi-tenancy)
+    try:
+        with engine.connect() as connection:
+            with connection.begin():
+                connection.execute(text("ALTER TABLE users ADD COLUMN tenant_id VARCHAR DEFAULT 'default'"))
+                connection.execute(text("CREATE INDEX ix_users_tenant_id ON users (tenant_id)"))
+                print("Added column tenant_id")
+    except Exception as e:
+        print(f"Skipping tenant_id: {e}")
+
     # components configuration
     try:
         with engine.connect() as connection:
