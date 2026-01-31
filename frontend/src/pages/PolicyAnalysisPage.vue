@@ -212,9 +212,31 @@ const policyFile = ref<File | null>(null);
 const interviewFiles = ref<File[]>([]);
 
 // Computed
-const renderedOutput = computed(() => {
+// Computed
+const fixedOutput = computed(() => {
   if (!output.value) return '';
-  return marked(output.value);
+  let text = output.value;
+  
+  // Fix: Check if we have 'flowchart TD' but missing the opening ```mermaid
+  const hasFlowchart = /flowchart\s+TD/.test(text);
+  const hasCodeBlock = /```mermaid/.test(text);
+
+  if (hasFlowchart && !hasCodeBlock) {
+    console.log('Detected detailed mermaid chart without code block, attempting fix...');
+    // Attempt to wrap the flowchart block
+    // We look for 'flowchart TD' and capture until we hit a double newline followed by text, horizontal rule, header, or specific keywords
+    text = text.replace(
+      /(flowchart\s+TD[\s\S]+?)(\n\n[^\n]|\n---|#|\n流程圖說明|$)/, 
+      '\n```mermaid\n$1\n```\n$2'
+    );
+  }
+  return text;
+});
+
+const renderedOutput = computed(() => {
+  if (!fixedOutput.value) return '';
+  // Configure marked if needed, though default usually works
+  return marked(fixedOutput.value);
 });
 
 // Watch for output changes and render Mermaid

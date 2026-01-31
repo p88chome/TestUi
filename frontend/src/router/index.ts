@@ -121,6 +121,8 @@ router.beforeEach(async (to, _from, next) => {
     }
 
     // 3. Check Plan requirement (Pro/Enterprise)
+    // TEMPORARY: Allow all users to access Pro features for demo/dev purposes
+    /*
     if (requiresPro && isAuthenticated) {
         try {
             const { useAuthStore } = await import('../stores/auth');
@@ -135,6 +137,7 @@ router.beforeEach(async (to, _from, next) => {
             console.error("Auth store access error in router", e);
         }
     }
+    */
 
     // 4. Proceed to route
     next();
