@@ -255,8 +255,11 @@ const renderMermaid = async () => {
     const element = mermaidElements[i];
     if (!element) continue;
     
-    const code = element.textContent || '';
+    let code = element.textContent || '';
     const container = element.parentElement;
+    
+    // Sanitize: Auto-quote node labels with special characters
+    code = sanitizeMermaidCode(code);
     
     if (container && code) {
       try {
@@ -265,9 +268,45 @@ const renderMermaid = async () => {
         container.outerHTML = `<div class="mermaid-container">${svg}</div>`;
       } catch (err) {
         console.error('Mermaid render error:', err);
+        // Show error with raw code for debugging
+        const escapedCode = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        container.outerHTML = `
+          <div class="mermaid-error surface-100 border-round p-3 my-3" style="border-left: 4px solid #ef4444;">
+            <div class="text-red-500 font-semibold mb-2">
+              <i class="pi pi-exclamation-triangle mr-2"></i>流程圖繪製失敗
+            </div>
+            <details class="text-sm">
+              <summary class="cursor-pointer text-600 mb-2">查看原始代碼</summary>
+              <pre class="bg-gray-900 text-gray-100 p-3 border-round overflow-auto mt-2" style="white-space: pre-wrap; font-size: 0.8rem;">${escapedCode}</pre>
+            </details>
+          </div>
+        `;
       }
     }
   }
+};
+
+/**
+ * Sanitize Mermaid code by quoting node labels that contain special characters
+ */
+const sanitizeMermaidCode = (code: string): string => {
+  // Pattern to match node definitions like A[label], B{label}, C(label), D[/label/]
+  // We need to quote labels that contain special chars but aren't already quoted
+  
+  // Match: NodeId + bracket type + label content + closing bracket
+  // Examples: A[開始]  B{決策}  C(結束)  D[/文件/]
+  const nodePattern = /([A-Za-z0-9_]+)(\[|\{|\()([^\]}\)"']+?)(\]|\}|\))/g;
+  
+  return code.replace(nodePattern, (match, nodeId, openBracket, label, closeBracket) => {
+    // Check if label contains special characters that need quoting
+    const needsQuotes = /[、，,/\\()（）【】<>：:；;！!？?\-\s]/.test(label);
+    
+    if (needsQuotes && !label.startsWith('"') && !label.endsWith('"')) {
+      // Add quotes around the label
+      return `${nodeId}${openBracket}"${label}"${closeBracket}`;
+    }
+    return match;
+  });
 };
 
 // Methods
