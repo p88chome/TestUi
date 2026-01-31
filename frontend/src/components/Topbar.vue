@@ -28,7 +28,7 @@
                             class="p-2 border-round hover:surface-100 cursor-pointer flex align-items-center gap-3 transition-colors"
                             @click="selectResult(item)"
                         >
-                            <i :class="getIconForType(type)" class="text-primary text-xl"></i>
+                            <i :class="getIconForType(String(type))" class="text-primary text-xl"></i>
                             <div>
                                 <div class="font-medium text-900">{{ item.title }}</div>
                                 <div class="text-xs text-500">{{ item.desc }}</div>
