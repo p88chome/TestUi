@@ -20,3 +20,10 @@ reportlab
 pandas
 openpyxl
 python-docx
+python-pptx
+
+# Video/Audio Transcription
+openai-whisper
+moviepy
+SpeechRecognition
+pydub

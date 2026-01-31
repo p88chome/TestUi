@@ -1,9 +1,10 @@
+from typing import Optional, Dict, Any
 from sqlalchemy.orm import Session
 from app.models.skill import Skill
 from app.models.chat import ChatSession, ChatMessage
-from app.models.assistant import Assistant # NEW
+from app.models.assistant import Assistant
 from app.services.skill_loader import execute_skill
-from app.services.gateway import LLMGateway # Use Gateway
+from app.services.gateway import LLMGateway
 from app.core.config import settings
 from app.models.stats import UsageLog
 from app.core.cost_calculator import calculate_ai_cost
@@ -14,7 +15,13 @@ class AgentService:
     def __init__(self, db: Session):
         self.db = db
 
-    async def run(self, user_query: str, user_id: int, session_id: str = None, assistant_id: str = None) -> dict:
+    async def run(
+        self, 
+        user_query: str, 
+        user_id: int, 
+        session_id: Optional[str] = None, 
+        assistant_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Agent 調度流程 (含記憶與角色)：
         1. 處理 Session (取得或新建，綁定 Assistant)
@@ -88,11 +95,25 @@ class AgentService:
             
         tools_desc = []
         for s in skills:
-            # 格式： - name: description (Args: {schema})
-            schema_str = json.dumps(s.input_schema) if s.input_schema else "{}"
-            tools_desc.append(f"- {s.name}: {s.description} (Args: {schema_str})")
+            # Enhanced format with keywords and triggers for better matching
+            schema_str = json.dumps(s.input_schema, ensure_ascii=False) if s.input_schema else "{}"
+            
+            # Extract keywords and triggers from configuration
+            config = s.configuration or {}
+            keywords = config.get("keywords", [])
+            triggers = config.get("triggers", [])
+            
+            # Build enhanced description
+            desc_parts = [f"- **{s.name}**: {s.description}"]
+            if keywords:
+                desc_parts.append(f"  關鍵字: {', '.join(keywords[:5])}")
+            if triggers:
+                desc_parts.append(f"  觸發語: {', '.join(triggers[:3])}")
+            desc_parts.append(f"  參數: {schema_str}")
+            
+            tools_desc.append("\n".join(desc_parts))
         
-        tools_str = "\n".join(tools_desc)
+        tools_str = "\n\n".join(tools_desc)
         
         # 2. 規劃提示詞 (Prompt Engineering)
         base_system_prompt = f"""你是中央代理大腦 (Central Agent Brain)。

@@ -8,9 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.core.database import Base
-from app.models.skill import Skill
-from app.models.skill import SkillType
-import os
+from app.models.skill import Skill, SkillType
 
 # Use a test database or SQLite in-memory
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"

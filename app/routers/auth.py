@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import Any
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -11,6 +12,9 @@ from app.core.database import get_db
 from app.models.user import User
 from app.schemas.user import Token, User as UserSchema
 
+# Configure logger - in production, use structured logging
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 
 @router.post("/login/access-token", response_model=Token)
@@ -21,14 +25,21 @@ def login_access_token(
     OAuth2 compatible token login, get an access token for future requests
     """
     user = db.query(User).filter(User.email == form_data.username).first()
+    
+    # Use generic error message to prevent user enumeration attacks
+    credentials_exception = HTTPException(
+        status_code=400, 
+        detail="Incorrect email or password"
+    )
+    
     if not user:
-         print(f"Login failed: User {form_data.username} not found")
-         raise HTTPException(status_code=400, detail="Incorrect email or password")
+        # Log failed attempt without exposing which field was wrong
+        logger.warning("Login failed: invalid credentials attempt")
+        raise credentials_exception
     
     if not security.verify_password(form_data.password, user.hashed_password):
-        print(f"Login failed: Password mismatch for {form_data.username}")
-        # print(f"  Attempted: {form_data.password}, Stored: {user.hashed_password}") # SECURITY RISK, ONLY FOR DEBUG IF NEEDED
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
+        logger.warning("Login failed: invalid credentials attempt")
+        raise credentials_exception
         
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")

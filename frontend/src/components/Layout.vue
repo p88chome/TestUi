@@ -11,8 +11,19 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
+import { useThemeStore } from '../stores/theme';
 import Sidebar from './Sidebar.vue';
 import Topbar from './Topbar.vue';
+
+const themeStore = useThemeStore();
+
+onMounted(() => {
+  // Initialize theme (injects CSS variables)
+  // In a real multi-tenant app, we would fetch the tenant config here
+  // and call themeStore.setTheme(tenantTheme)
+  console.log(`Theme initialized: ${themeStore.currentTheme.name}`);
+});
 </script>
 
 <style scoped>
@@ -20,6 +31,7 @@ import Topbar from './Topbar.vue';
   display: flex;
   height: 100vh;
   overflow: hidden;
+  background-color: var(--color-bg); /* Use theme bg */
 }
 
 .main-content {
@@ -32,6 +44,6 @@ import Topbar from './Topbar.vue';
 .page-content {
   flex: 1;
   overflow-y: auto;
-  /* padding: 24px; Removed to allow full-bleed pages */
+  /* padding: 24px; Handled by individual pages for full control */
 }
 </style>

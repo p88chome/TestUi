@@ -4,6 +4,7 @@ import Aura from '@primevue/themes/aura'
 import 'primeicons/primeicons.css'
 import 'primeflex/primeflex.css'
 import './style.css'
+import './deloitte-theme.css'
 import App from './App.vue'
 import router from './router'
 

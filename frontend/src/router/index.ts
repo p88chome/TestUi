@@ -39,8 +39,18 @@ const routes = [
 
 
             // Enterprise Apps
+            { path: 'apps/meeting-ai', name: 'MeetingMinutes', component: () => import('../pages/MeetingMinutesPage.vue'), meta: { requiresPro: true } },
+            { path: 'apps/policy-analysis', name: 'PolicyAnalysis', component: () => import('../pages/PolicyAnalysisPage.vue'), meta: { requiresPro: true } },
+            { path: 'apps/ppt-generator', name: 'PPTGenerator', component: () => import('../pages/PPTGeneratorPage.vue'), meta: { requiresPro: true } },
             { path: 'apps/contracts', name: 'ContractAssistant', component: ChatbotPage, meta: { requiresPro: true } },
             { path: 'apps/expenses', name: 'ExpenseHelper', component: ChatbotPage, meta: { requiresPro: true } },
+
+            // Legacy routes (redirect to new paths)
+            { path: 'meeting-minutes', redirect: '/apps/meeting-ai' },
+            { path: 'policy-analysis', redirect: '/apps/policy-analysis' },
+
+            // Dashboard
+            { path: 'dashboard', name: 'Dashboard', component: () => import('../pages/DashboardPage.vue') },
 
             // Operations
             { path: 'monitoring', name: 'Monitoring', component: () => import('../pages/ComingSoonPage.vue') },
@@ -48,11 +58,11 @@ const routes = [
             { path: 'skills', name: 'Skills', component: () => import('../pages/SkillsPage.vue') },
             { path: 'news', name: 'News', component: () => import('../pages/NewsPage.vue') },
             { path: 'settings', name: 'Settings', component: () => import('../pages/ComingSoonPage.vue') },
+
             // Playbooks
             { path: 'templates', name: 'Templates', component: () => import('../pages/ComingSoonPage.vue') },
             { path: 'domains', name: 'Domains', component: () => import('../pages/ComingSoonPage.vue') },
-            // Dashboard
-            { path: 'dashboard', name: 'Dashboard', component: () => import('../pages/DashboardPage.vue') },
+
 
             // Admin
             {
@@ -94,35 +104,30 @@ router.beforeEach(async (to, _from, next) => {
     const token = localStorage.getItem('token');
     const isAuthenticated = !!token;
 
-    // Basic check. ideally decode token or check store state if persisted/restored before guard.
-    // For MVP, if route requires auth and no token -> login.
-
-    if (to.matched.some(record => record.meta.requiresAuth)) {
-        if (!isAuthenticated) {
-            next('/login');
-            return;
-        }
+    // 1. If going to login while authenticated, redirect to dashboard
+    if (isAuthenticated && to.name === 'Login') {
+        next('/dashboard');
+        return;
     }
 
-    // Check admin
-    if (to.matched.some(record => record.meta.adminOnly)) {
-        if (!isAuthenticated) { // Should ideally check isSuperuser here too, but rely on backend 403 for now or store
-            next('/login');
-            return;
-        }
+    // 2. Check authentication requirement
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+    const adminOnly = to.matched.some(record => record.meta.adminOnly);
+    const requiresPro = to.matched.some(record => record.meta.requiresPro);
+
+    if ((requiresAuth || adminOnly) && !isAuthenticated) {
+        next('/login');
+        return;
     }
 
-    // Check Plan (Pro/Enterprise)
-    // Check Plan (Pro/Enterprise)
-    if (to.matched.some(record => record.meta.requiresPro)) {
+    // 3. Check Plan requirement (Pro/Enterprise)
+    if (requiresPro && isAuthenticated) {
         try {
-            // Dynamic import to ensure Pinia is active
             const { useAuthStore } = await import('../stores/auth');
             const auth = useAuthStore();
 
-            // If user is loaded and is Starter, block access
+            // If user is loaded and is on Starter plan, block access
             if (auth.state.user && auth.state.user.plan_name === 'Starter') {
-                // alert('Upgrade to Professional to access this feature.'); // Optional: simple alert before redirect
                 next('/profile');
                 return;
             }
@@ -131,16 +136,8 @@ router.beforeEach(async (to, _from, next) => {
         }
     }
 
-    if (!isAuthenticated && to.matched.some(record => record.meta.requiresAuth)) {
-        next('/login');
-    } else {
-        // If logged in and trying to go to login, redirect to dashboard
-        if (isAuthenticated && to.name === 'Login') {
-            next('/dashboard');
-        } else {
-            next();
-        }
-    }
+    // 4. Proceed to route
+    next();
 });
 
 export default router;

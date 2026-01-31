@@ -1,4 +1,5 @@
 import { reactive } from 'vue';
+import { useThemeStore } from './theme';
 
 interface AuthState {
     token: string | null;
@@ -26,6 +27,28 @@ export const useAuthStore = () => {
     const setUser = (user: any) => {
         state.user = user;
         state.isSuperuser = user?.is_superuser || false;
+
+        // Auto-switch theme based on organization/tenant
+        const themeStore = useThemeStore();
+        if (user?.organization) {
+            // Map organization to theme name (e.g. "Deloitte" -> "Deloitte")
+            // Ensure schema returns organization suitable for this, or mapping logic here.
+            // Schema currently returns "Deloitte" for "deloitte" tenant.
+            // Theme names in theme.ts are "Deloitte", "Customer A", "Customer B".
+
+            // Allow exact match or lowercase match
+            if (user.organization === "Deloitte") {
+                themeStore.switchThemeByName("Deloitte");
+            } else if (user.tenant_id === "default") {
+                // Keep default or explicitly set
+                themeStore.switchThemeByName("Deloitte");
+            }
+            // For now, simple mapping logic or just rely on the store strict match if robust enough.
+            // Let's rely on the store's find logic, but we might need to exact match.
+            // Since backend returns "Deloitte", and theme name is "Deloitte", it fits.
+            themeStore.switchThemeByName(user.organization);
+        }
+
         // Restore avatar
         if (user?.email) {
             const savedAvatar = localStorage.getItem(`user_avatar_${user.email}`);

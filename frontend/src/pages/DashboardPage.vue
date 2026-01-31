@@ -1,80 +1,96 @@
 <template>
   <div class="grid p-6">
-    <!-- Stats Cards -->
+    <!-- Page Header -->
+    <div class="col-12 mb-4">
+        <h1 class="text-heading-xl m-0 deloitte-green-dot">Dashboard</h1>
+        <p class="text-body-lg mt-2 mb-0">Overview of your AI platform consumption and activities.</p>
+    </div>
+
+    <!-- Stats Cards - Deloitte Style -->
     <div class="col-12 md:col-6 lg:col-3">
-        <div class="surface-card shadow-2 p-3 border-round">
-            <div class="flex justify-content-between mb-3">
-                <div>
-                    <span class="block text-500 font-medium mb-3">Total Tokens</span>
-                    <div class="text-900 font-medium text-xl">{{ totalTokens.toLocaleString() }}</div>
+        <div class="deloitte-card p-4">
+            <div class="flex align-items-center gap-3 mb-3">
+                <div class="deloitte-icon-circle">
+                    <i class="pi pi-database text-xl"></i>
                 </div>
-                <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width:2.5rem;height:2.5rem">
-                    <i class="pi pi-database text-blue-500 text-xl"></i>
+                <div class="flex-1">
+                    <span class="block text-body-md mb-1">Total Tokens</span>
+                    <div class="text-heading-md">{{ totalTokens.toLocaleString() }}</div>
                 </div>
             </div>
-            <span class="text-green-500 font-medium">24 new </span>
-            <span class="text-500">since last visit</span>
+            <div class="flex align-items-center justify-content-between">
+                <span class="text-body-sm">
+                    <span class="status-success font-semibold">+24</span> since last visit
+                </span>
+            </div>
+            <div class="deloitte-accent-bar mt-3"></div>
         </div>
     </div>
     <div class="col-12 md:col-6 lg:col-3">
-        <div class="surface-card shadow-2 p-3 border-round">
-            <div class="flex justify-content-between mb-3">
-                <div>
-                    <span class="block text-500 font-medium mb-3">Current Cost</span>
-                    <div class="text-900 font-medium text-xl">${{ currentCost }}</div>
+        <div class="deloitte-card p-4">
+            <div class="flex align-items-center gap-3 mb-3">
+                <div class="deloitte-icon-circle deloitte-icon-circle--green">
+                    <i class="pi pi-dollar text-xl"></i>
                 </div>
-                <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width:2.5rem;height:2.5rem">
-                    <i class="pi pi-dollar text-orange-500 text-xl"></i>
+                <div class="flex-1">
+                    <span class="block text-body-md mb-1">Current Cost</span>
+                    <div class="text-heading-md">${{ currentCost }}</div>
                 </div>
             </div>
-             <span class="text-500">Billing cycle ends </span>
-             <span class="text-green-500 font-medium">Dec 31</span>
+            <div class="flex align-items-center justify-content-between">
+                <span class="text-body-sm">Billing cycle ends <span class="font-semibold">Dec 31</span></span>
+            </div>
+            <div class="deloitte-accent-bar mt-3"></div>
         </div>
     </div>
     <div class="col-12 md:col-6 lg:col-3">
-        <div class="surface-card shadow-2 p-3 border-round">
-            <div class="flex justify-content-between mb-3">
-                <div>
-                    <span class="block text-500 font-medium mb-3">Active Models</span>
-                    <div class="text-900 font-medium text-xl">{{ activeModelName }}</div>
+        <div class="deloitte-card p-4">
+            <div class="flex align-items-center gap-3 mb-3">
+                <div class="deloitte-icon-circle">
+                    <i class="pi pi-server text-xl"></i>
                 </div>
-                <div class="flex align-items-center justify-content-center bg-cyan-100 border-round" style="width:2.5rem;height:2.5rem">
-                    <i class="pi pi-server text-cyan-500 text-xl"></i>
+                <div class="flex-1">
+                    <span class="block text-body-md mb-1">Active Models</span>
+                    <div class="text-heading-md">{{ activeModelName }}</div>
                 </div>
             </div>
-            <span class="text-500">Status: </span>
-            <span class="text-green-500 font-medium">Operational</span>
+            <div class="flex align-items-center justify-content-between">
+                <span class="text-body-sm">Status: <span class="status-success font-semibold">Operational</span></span>
+            </div>
+            <div class="deloitte-accent-bar mt-3"></div>
         </div>
     </div>
     <div class="col-12 md:col-6 lg:col-3">
-        <div class="surface-card shadow-2 p-3 border-round">
-            <div class="flex justify-content-between mb-3">
-                <div>
-                    <span class="block text-500 font-medium mb-3">Plan</span>
-                    <div class="text-900 font-medium text-xl">{{ userPlan }}</div>
+        <div class="deloitte-card p-4">
+            <div class="flex align-items-center gap-3 mb-3">
+                <div class="deloitte-icon-circle">
+                    <i class="pi pi-crown text-xl"></i>
                 </div>
-                <div class="flex align-items-center justify-content-center bg-purple-100 border-round" style="width:2.5rem;height:2.5rem">
-                    <i class="pi pi-crown text-purple-500 text-xl"></i>
+                <div class="flex-1">
+                    <span class="block text-body-md mb-1">Plan</span>
+                    <div class="text-heading-md">{{ userPlan }}</div>
                 </div>
             </div>
-             <span class="text-500">Upgrade for </span>
-             <span class="text-blue-500 font-medium">More Features</span>
+            <div class="flex align-items-center justify-content-between">
+                <span class="text-body-sm">Upgrade for <span class="status-info font-semibold">More Features</span></span>
+            </div>
+            <div class="deloitte-accent-bar mt-3"></div>
         </div>
     </div>
 
     <!-- Usage Chart -->
     <div class="col-12 lg:col-8">
-        <div class="surface-card shadow-2 border-round p-4 h-full">
-            <div class="text-xl font-bold text-900 mb-4">Azure Data Usage (Last 7 Days)</div>
+        <div class="deloitte-card p-4 h-full">
+            <div class="text-heading-lg mb-4 deloitte-green-dot">Azure Data Usage (Last 7 Days)</div>
             <Chart type="bar" :data="chartData" :options="chartOptions" class="h-30rem" />
         </div>
     </div>
 
     <!-- News & Updates -->
     <div class="col-12 lg:col-4">
-        <div class="surface-card shadow-2 border-round p-4 h-full">
+        <div class="deloitte-card p-4 h-full">
             <div class="flex align-items-center justify-content-between mb-4">
-                <span class="text-xl font-bold text-900">Platform News</span>
+                <span class="text-heading-lg deloitte-green-dot">Platform News</span>
                 <Button v-if="isAdmin" icon="pi pi-plus" class="p-button-rounded p-button-text" @click="showPublishDialog = true" tooltip="Publish News" />
             </div>
 
@@ -110,8 +126,8 @@
     
      <!-- Recent Activity -->
     <div class="col-12">
-        <div class="surface-card shadow-2 border-round p-4">
-            <div class="text-xl font-bold text-900 mb-4">Recent Activity</div>
+        <div class="deloitte-card p-4">
+            <div class="text-heading-lg mb-4 deloitte-green-dot">Recent Activity</div>
             <DataTable :value="recentActivity" responsiveLayout="scroll">
                 <Column field="action" header="Action"></Column>
                 <Column field="app" header="Application">

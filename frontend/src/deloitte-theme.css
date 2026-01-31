@@ -1,0 +1,154 @@
+/**
+ * SaaS Platform Base Theme
+ * 
+ * 使用動態 CSS 變數 (由 Theme Store 注入)
+ * 實現白標與多租戶主題支援
+ */
+
+@layer deloitte-theme {
+    /* ========================================
+       Component Classes
+    ======================================== */
+
+    /* Standard Card (Flat, Bordered) */
+    .deloitte-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 4px;
+        /* Theme config could control this too, but 4px is safe standard */
+        box-shadow: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .deloitte-card:hover {
+        border-color: var(--color-brand-primary);
+    }
+
+    /* Accent Bar */
+    .deloitte-accent-bar {
+        height: 3px;
+        background: var(--color-brand-primary);
+        border-radius: 2px;
+        margin-top: 1rem;
+    }
+
+    /* Icon Circle */
+    .deloitte-icon-circle {
+        width: 40px;
+        height: 40px;
+        background: var(--color-surface-muted);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-charcoal);
+    }
+
+    .deloitte-icon-circle--green {
+        background: rgba(134, 188, 37, 0.1);
+        /* Fallback or calculate from var if possible, for now keep simple */
+        /* Ideally use color-mix if browser supports, or theme store handles rgba */
+        /* For MVP: use brand primary with opacity hack if supported or JS injection */
+        background: color-mix(in srgb, var(--color-brand-primary), transparent 90%);
+        color: var(--color-brand-primary);
+    }
+
+    /* Green Dot */
+    .deloitte-green-dot::after {
+        content: '.';
+        color: var(--color-brand-primary);
+        font-weight: 700;
+    }
+
+    /* ========================================
+       Typography Utilities
+    ======================================== */
+    .text-heading-xl {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--color-black);
+    }
+
+    .text-heading-lg {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--color-black);
+    }
+
+    .text-heading-md {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--color-charcoal);
+    }
+
+    .text-body-lg {
+        font-size: 1rem;
+        color: var(--color-gray);
+    }
+
+    .text-body-md {
+        font-size: 0.875rem;
+        color: var(--color-gray);
+    }
+
+    /* ========================================
+       PrimeVue Overrides
+    ======================================== */
+
+    /* Buttons */
+    .p-button {
+        border-radius: 2px !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.02em;
+    }
+
+    .p-button.p-button-primary,
+    .p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-secondary) {
+        background: var(--color-brand-primary) !important;
+        border-color: var(--color-brand-primary) !important;
+        color: #FFFFFF !important;
+    }
+
+    .p-button.p-button-primary:hover,
+    .p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-secondary):hover {
+        background: var(--color-brand-primary-dark) !important;
+        border-color: var(--color-brand-primary-dark) !important;
+    }
+
+    /* Input Fields */
+    .p-inputtext,
+    .p-dropdown,
+    .p-inputtextarea {
+        border-radius: 4px !important;
+        border: 1px solid var(--color-border) !important;
+    }
+
+    .p-inputtext:focus,
+    .p-dropdown:focus,
+    .p-inputtextarea:focus {
+        border-color: var(--color-brand-primary) !important;
+        box-shadow: 0 0 0 1px var(--color-brand-primary) !important;
+    }
+
+    /* Tags */
+    .p-tag.p-tag-success {
+        background: var(--status-success) !important;
+    }
+
+    /* Status Text */
+    .status-success {
+        color: var(--status-success);
+    }
+
+    .status-info {
+        color: var(--status-info);
+    }
+
+    .status-warning {
+        color: var(--status-warning);
+    }
+
+    .status-error {
+        color: var(--status-error);
+    }
+}

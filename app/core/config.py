@@ -1,11 +1,17 @@
 import os
+import warnings
 from enum import Enum
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import model_validator
 
 class ExecutionMode(str, Enum):
     MOCK = "mock"
     AZURE = "azure"
     ON_PREM = "on_prem"
+
+# Default key for development only
+_DEFAULT_SECRET_KEY = "your-super-secret-key-change-it"
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
@@ -14,9 +20,23 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "ai_platform")
     
     # Auth
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-super-secret-key-change-it")
+    SECRET_KEY: str = os.getenv("SECRET_KEY", _DEFAULT_SECRET_KEY)
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 1 week
+    
+    @model_validator(mode='after')
+    def validate_secret_key(self) -> 'Settings':
+        """Warn if using default SECRET_KEY (insecure for production)"""
+        if self.SECRET_KEY == _DEFAULT_SECRET_KEY:
+            warnings.warn(
+                "\n⚠️  WARNING: Using default SECRET_KEY! "
+                "This is insecure for production.\n"
+                "Generate a secure key: python -c \"import secrets; print(secrets.token_urlsafe(64))\"\n"
+                "Then set it in your .env file: SECRET_KEY=<your-secure-key>",
+                UserWarning,
+                stacklevel=2
+            )
+        return self
 
     CLIENT_ORIGIN: str = os.getenv("CLIENT_ORIGIN", "http://localhost:5173")
     

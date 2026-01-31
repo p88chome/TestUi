@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, model_validator, ConfigDict
 
 # Shared properties
 class UserBase(BaseModel):
@@ -12,6 +12,7 @@ class UserBase(BaseModel):
     plan_name: Optional[str] = "Starter"
     plan_price: Optional[str] = "Free"
     plan_expiry: Optional[str] = None
+    tenant_id: Optional[str] = "default"
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
@@ -28,16 +29,28 @@ class UserUpdate(UserBase):
     plan_name: Optional[str] = None
     plan_price: Optional[str] = None
     plan_expiry: Optional[str] = None
+    tenant_id: Optional[str] = None
 
 class UserInDBBase(UserBase):
     id: Optional[int] = None
-
-    class Config:
-        orm_mode = True
+    
+    model_config = ConfigDict(from_attributes=True)
 
 # Additional properties to return via API
 class User(UserInDBBase):
-    pass
+    organization: Optional[str] = None
+
+    @model_validator(mode='after')
+    def compute_organization(self):
+        mapping = {
+            "deloitte": "Deloitte",
+            "default": "Default Org"
+        }
+        self.organization = mapping.get(self.tenant_id, self.tenant_id)
+        return self
+    
+    model_config = ConfigDict(from_attributes=True)
+
 
 # Additional properties stored in DB
 class UserInDB(UserInDBBase):
@@ -50,3 +63,4 @@ class Token(BaseModel):
 
 class TokenPayload(BaseModel):
     sub: Optional[int] = None
+

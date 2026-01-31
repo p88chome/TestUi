@@ -1,0 +1,60 @@
+name: transcription
+description: 將影片或音訊檔案轉換為逐字稿文字
+category: media
+version: 1.0.0
+
+inputs:
+  file_path:
+    type: string
+    description: 音訊或影片檔案的路徑
+    required: true
+  
+  method:
+    type: string
+    description: 語音識別方法 (whisper 或 google)
+    default: whisper
+    enum: [whisper, google]
+  
+  model_size:
+    type: string
+    description: Whisper 模型大小 (僅 whisper 方法適用)
+    default: base
+    enum: [tiny, base, small, medium, large]
+  
+  language:
+    type: string
+    description: 語言代碼
+    default: zh
+    examples: [zh, en, zh-TW, zh-CN]
+  
+  include_timestamps:
+    type: boolean
+    description: 是否包含時間戳資訊
+    default: true
+
+outputs:
+  success:
+    type: boolean
+    description: 轉錄是否成功
+  
+  text:
+    type: string
+    description: 完整逐字稿文字
+  
+  segments:
+    type: array
+    description: 帶時間戳的文字段落 (若支援)
+  
+  language:
+    type: string
+    description: 檢測到的語言
+  
+  error:
+    type: string
+    description: 錯誤訊息 (若失敗)
+
+dependencies:
+  - openai-whisper
+  - moviepy
+  - SpeechRecognition
+  - pydub

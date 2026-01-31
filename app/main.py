@@ -1,36 +1,37 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.routers import components, workflows, runs, auth, users, models, ocr, chat, stats, news, skills, agent, feedback, system
-from app.core.database import engine, Base
+from app.routers import components, workflows, runs, auth, users, models, ocr, chat, stats, news, skills, agent, feedback, system, meeting, policy, ppt
+from app.core.database import engine, Base, SessionLocal
 from app.models.user import User 
 from app.models.stats import UsageLog 
 from app.models.news import PlatformNews 
 from app.models.skill import Skill
 from app.models.feedback import Feedback # Ensure table creation
+from app.initial_data import init_db
+from app.migrate_db import migrate
 
 # Create tables on startup (for MVP simplicity, instead of Alembic)
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
-)
 
-from app.core.database import SessionLocal
-from app.initial_data import init_db
-from app.migrate_db import migrate
-
-@app.on_event("startup")
-def on_startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Application lifespan handler.
+    Replaces deprecated @app.on_event("startup") and @app.on_event("shutdown")
+    """
+    # === STARTUP ===
     print(">>> STARTING APP: Configuring Database & Skills...")
-    # 1. Run migration to ensure schema is up to date (plan columns)
+    
+    # 1. Run migration to ensure schema is up to date
     try:
         migrate()
     except Exception as e:
         print(f"Migration failed (might be fine if fresh DB): {e}")
 
-    # 2. Init DB data
+    # 2. Init DB data and load skills
     db = SessionLocal()
     try:
         init_db(db)
@@ -41,6 +42,20 @@ def on_startup():
         print(f"Init DB failed: {e}")
     finally:
         db.close()
+    
+    print(">>> APP READY")
+    
+    yield  # Application runs here
+    
+    # === SHUTDOWN ===
+    print(">>> SHUTTING DOWN APP...")
+
+
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan
+)
 
 # CORS
 # In production, set CLIENT_ORIGIN to your frontend domain (e.g. https://mypage.vercel.app)
@@ -71,6 +86,9 @@ app.include_router(skills.router, prefix="/api/v1")
 app.include_router(agent.router, prefix="/api/v1")
 app.include_router(feedback.router, prefix="/api/v1")
 app.include_router(system.router, prefix="/api/v1")
+app.include_router(meeting.router, prefix="/api/v1")
+app.include_router(policy.router, prefix="/api/v1")
+app.include_router(ppt.router, prefix="/api/v1")
 
 
 @app.get("/")

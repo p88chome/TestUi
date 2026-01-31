@@ -63,6 +63,7 @@ def parse_skill_md(file_path: str) -> dict:
 def load_skills(db: Session):
     """
     Scans the skills directory and updates the database.
+    Enhanced to parse keywords and triggers for better skill discovery.
     """
     if not os.path.exists(SKILLS_DIR):
         os.makedirs(SKILLS_DIR)
@@ -84,32 +85,38 @@ def load_skills(db: Session):
                     skill_name = meta.get("name", entry.name) 
                     category = meta.get("category", "uncategorized")
                     
+                    # Extract enhanced metadata
+                    keywords = meta.get("keywords", [])
+                    triggers = meta.get("triggers", [])
+                    
+                    # Build enhanced configuration
+                    config = {
+                        "folder_path": skill_dir,
+                        "instructions": meta.get("instructions", ""),
+                        "keywords": keywords,
+                        "triggers": triggers
+                    }
+                    
                     # Upsert Skill
                     existing = db.query(Skill).filter(Skill.name == skill_name).first()
                     if not existing:
-                        print(f"Registering new skill: {skill_name}")
+                        print(f"Registering new skill: {skill_name} (keywords: {len(keywords)}, triggers: {len(triggers)})")
                         new_skill = Skill(
                             name=skill_name,
                             description=meta.get("description", ""),
                             category=category,
                             skill_type=SkillType.PYTHON_FUNC,
-                            input_schema=meta.get("input_schema", {}), # ADDED
-                            configuration={
-                                "folder_path": skill_dir,
-                                "instructions": meta.get("instructions", "")
-                            },
+                            input_schema=meta.get("input_schema", {}),
+                            configuration=config,
                             is_active=True
                         )
                         db.add(new_skill)
                     else:
-                        print(f"Updating skill: {skill_name}")
+                        print(f"Updating skill: {skill_name} (keywords: {len(keywords)}, triggers: {len(triggers)})")
                         existing.description = meta.get("description", "")
                         existing.category = category
-                        existing.input_schema = meta.get("input_schema", {}) # ADDED
-                        existing.configuration = {
-                            "folder_path": skill_dir,
-                            "instructions": meta.get("instructions", "")
-                        }
+                        existing.input_schema = meta.get("input_schema", {})
+                        existing.configuration = config
                         existing.is_active = True
                         db.add(existing)
                         

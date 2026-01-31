@@ -1,31 +1,31 @@
 <template>
-  <aside class="sidebar transition-all duration-300 flex flex-column" :class="{ 'collapsed': isCollapsed }">
-    <!-- Header -->
-    <div class="logo flex align-items-center justify-content-between px-3 py-3 mb-2">
-      <div v-if="!isCollapsed" class="font-bold text-xl text-white white-space-nowrap overflow-hidden">
-        Ɐ Platform <span class="text-green-500 text-2xl line-height-1">.</span>
+  <aside 
+    class="sidebar transition-all duration-300 flex flex-column" 
+    :class="{ 'collapsed': isCollapsed }"
+    @mouseenter="expandSidebar"
+    @mouseleave="collapseSidebar"
+  >
+    <!-- Header: Logo & Identity -->
+    <div class="logo flex align-items-center justify-content-between px-3 py-3 mb-2 border-bottom-1 border-gray-800">
+      <div v-if="!isCollapsed" class="font-bold text-xl text-white white-space-nowrap overflow-hidden cursor-pointer fadein animation-duration-300" @click="goHome">
+        {{ themeStore.currentTheme.logo.text }} 
+        <span :style="{ color: themeStore.currentTheme.logo.dotColor || 'var(--color-brand-primary)' }">.</span>
       </div>
-      <div v-else class="font-bold text-xl text-white mx-auto cursor-pointer" @click="toggleSidebar">
-        Ɐ<span class="text-green-500">.</span>
+      <div v-else class="font-bold text-xl text-white mx-auto cursor-pointer fadein animation-duration-300" @click="goHome">
+        {{ themeStore.currentTheme.logo.text.charAt(0) }}<span :style="{ color: themeStore.currentTheme.logo.dotColor || 'var(--color-brand-primary)' }">.</span>
       </div>
-      <Button 
-        v-if="!isCollapsed"
-        icon="pi pi-angle-left" 
-        text 
-        rounded 
-        class="text-gray-400 hover:text-white w-2rem h-2rem"
-        @click="toggleSidebar"
-      />
     </div>
 
     <!-- Navigation Groups -->
-    <nav class="flex-1 overflow-y-auto custom-scrollbar flex flex-column gap-4 px-2">
+    <nav class="flex-1 overflow-y-auto custom-scrollbar flex flex-column gap-4 px-2 py-3">
       <div v-for="group in menuGroups" :key="group.title" class="nav-group">
-        <div v-if="!isCollapsed" class="group-title text-xs font-bold text-500 px-3 mb-2 uppercase tracking-wide">
+        <!-- Group Title -->
+        <div v-if="!isCollapsed" class="group-title text-xs font-bold text-gray-500 px-3 mb-2 uppercase tracking-wide fadein animation-duration-200">
           {{ group.title }}
         </div>
-        <div v-if="isCollapsed" class="divider my-2 border-top-1 surface-border opacity-20"></div>
+        <div v-if="isCollapsed" class="divider my-2 border-top-1 border-gray-800 opacity-20"></div>
         
+        <!-- Group Items -->
         <div class="flex flex-column gap-1">
           <router-link 
             v-for="item in group.items" 
@@ -36,44 +36,57 @@
             v-tooltip.right="isCollapsed ? item.label : null"
           >
             <i :class="['pi text-lg', item.icon, isCollapsed ? 'mx-auto' : 'mr-3']"></i>
-            <span v-if="!isCollapsed" class="white-space-nowrap font-medium">{{ item.label }}</span>
+            <span v-if="!isCollapsed" class="white-space-nowrap font-medium fadein animation-duration-200">{{ item.label }}</span>
           </router-link>
         </div>
       </div>
     </nav>
     
-    <!-- Feedback Button Removed -->
-
-    <!-- User Profile (Bottom) -->
-    <!-- Clickable Container for Menu -->
-    <div 
-        class="user-profile border-top-1 border-gray-800 p-3 flex align-items-center gap-3 mt-auto cursor-pointer hover:surface-800 transition-colors"
-        @click="toggleUserMenu"
-        aria-haspopup="true" 
-        aria-controls="user_menu"
-    >
-      <Avatar :image="auth.state.avatarUrl || undefined" :label="!auth.state.avatarUrl ? userInitials : undefined" class="bg-green-500 text-white flex-shrink-0" shape="circle" style="background-color: transparent !important;" />
-      <div v-if="!isCollapsed" class="user-info overflow-hidden">
-        <div class="text-white font-semibold text-sm white-space-nowrap">{{ userName }}</div>
-        <div class="text-gray-500 text-xs white-space-nowrap">{{ userRole }}</div>
-      </div>
-      <i v-if="!isCollapsed" class="pi pi-angle-up text-gray-500 ml-auto"></i>
+    <!-- Bottom: All Apps Trigger -->
+    <div class="mt-auto px-2 pb-3">
+        <div 
+            class="nav-item flex align-items-center p-2 text-gray-400 border-round hover:surface-hover transition-colors cursor-pointer"
+            @click="openAppLauncher"
+            v-tooltip.right="isCollapsed ? 'All Apps' : null"
+        >
+            <i class="pi pi-th-large text-lg" :class="[isCollapsed ? 'mx-auto' : 'mr-3']"></i>
+            <span v-if="!isCollapsed" class="white-space-nowrap font-medium fadein animation-duration-200">All Apps</span>
+        </div>
     </div>
     
-    <!-- Popup Menu -->
-    <Menu ref="userMenu" id="user_menu" :model="userMenuItems" :popup="true" />
-    
-    <!-- Feedback Dialog -->
-    <Dialog v-model:visible="showFeedbackDialog" header="Send Feedback" :modal="true" class="p-fluid" style="width: 400px">
-        <div class="field">
-            <label for="feedback" class="font-bold">Your Message</label>
-            <Textarea id="feedback" v-model="feedbackContent" rows="5" placeholder="Tell us what you think or report a bug..." autofocus />
+    <!-- App Launcher Drawer -->
+    <Sidebar 
+        v-model:visible="showAppLauncher" 
+        position="left" 
+        class="app-launcher-drawer"
+        :style="{ width: '350px' }"
+    >
+        <div class="flex flex-column h-full">
+            <h2 class="text-xl font-bold mb-4">All Applications</h2>
+            <div class="p-input-icon-left w-full mb-4">
+                <i class="pi pi-search" />
+                <InputText v-model="appSearch" placeholder="Find an app..." class="w-full" />
+            </div>
+            
+            <div class="apps-grid flex flex-column gap-2 overflow-y-auto">
+                 <div 
+                    v-for="app in filteredApps" 
+                    :key="app.label"
+                    class="app-item p-3 border-round surface-card hover:surface-100 cursor-pointer flex align-items-center gap-3 transition-colors border-1 border-transparent hover:border-300"
+                    @click="navigateToApp(app.path)"
+                 >
+                    <div class="app-icon w-2rem h-2rem flex align-items-center justify-content-center bg-green-100 text-green-600 border-round">
+                        <i :class="app.icon"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium text-900">{{ app.label }}</div>
+                        <div class="text-xs text-500">Launch application</div>
+                    </div>
+                 </div>
+            </div>
         </div>
-        <template #footer>
-            <Button label="Cancel" icon="pi pi-times" class="p-button-text" @click="showFeedbackDialog = false" />
-            <Button label="Send" icon="pi pi-send" @click="submitFeedback" :loading="isSendingFeedback" :disabled="!feedbackContent.trim()" />
-        </template>
-    </Dialog>
+    </Sidebar>
+
   </aside>
 </template>
 
@@ -81,25 +94,19 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
-import apiClient from '../api/client';
-import { getWorkflows } from '../api/workflows'; // Import workflow fetcher
-import Button from 'primevue/button';
-import Avatar from 'primevue/avatar';
-import Menu from 'primevue/menu';
-import Dialog from 'primevue/dialog';
-import Textarea from 'primevue/textarea';
-import { useToast } from 'primevue/usetoast';
+import { useThemeStore } from '../stores/theme';
+import { getWorkflows } from '../api/workflows';
+import InputText from 'primevue/inputtext';
+import Sidebar from 'primevue/sidebar';
 
 const auth = useAuthStore();
+const themeStore = useThemeStore();
 const router = useRouter();
-const toast = useToast();
-const userMenu = ref();
 
-const isCollapsed = ref(false);
-const showFeedbackDialog = ref(false);
-const feedbackContent = ref('');
-const isSendingFeedback = ref(false);
-const customApps = ref<any[]>([]); // Store custom workflows
+const isCollapsed = ref(true); // Default collapsed on load (expanded on hover)
+const showAppLauncher = ref(false);
+const appSearch = ref('');
+const customApps = ref<any[]>([]);
 
 onMounted(async () => {
     if (auth.state.token) {
@@ -107,7 +114,7 @@ onMounted(async () => {
             const wfs = await getWorkflows();
             customApps.value = wfs.map(w => ({
                 label: w.name,
-                path: `/workflows?load=${w.id}`, // Open in Builder/Runner
+                path: `/workflows?load=${w.id}`,
                 icon: 'pi pi-box'
             }));
         } catch (e) {
@@ -116,76 +123,30 @@ onMounted(async () => {
     }
 });
 
-const userName = computed(() => auth.state.user?.full_name || 'User');
-const userRole = computed(() => auth.state.isSuperuser ? 'Administrator' : 'User');
-const userInitials = computed(() => {
-    const name = auth.state.user?.full_name || 'User';
-    return name.charAt(0).toUpperCase();
-});
-
-const toggleSidebar = () => {
-  isCollapsed.value = !isCollapsed.value;
+/* Hover Expand Logic */
+const expandSidebar = () => {
+    isCollapsed.value = false;
 };
 
-const toggleUserMenu = (event: Event) => {
-    userMenu.value.toggle(event);
+const collapseSidebar = () => {
+    isCollapsed.value = true;
 };
 
-const submitFeedback = async () => {
-    if (!feedbackContent.value.trim()) return;
-    
-    isSendingFeedback.value = true;
-    console.log("Submitting feedback:", feedbackContent.value);
-    try {
-        const res = await apiClient.post('/feedback', { content: feedbackContent.value });
-        console.log("Feedback success:", res);
-        toast.add({ severity: 'success', summary: 'Sent', detail: 'Thank you for your feedback!', life: 3000 });
-        showFeedbackDialog.value = false;
-        feedbackContent.value = '';
-    } catch (e: any) {
-        console.error("Failed to send feedback", e);
-        const errorMsg = e.response?.data?.detail || e.message || 'Failed to send feedback';
-        toast.add({ severity: 'error', summary: 'Error', detail: errorMsg, life: 5000 });
-    } finally {
-        isSendingFeedback.value = false;
-    }
+const goHome = () => {
+    router.push('/dashboard');
 };
 
-const userMenuItems = [
-    {
-        label: 'Profile',
-        icon: 'pi pi-user',
-        command: () => {
-            router.push('/profile');
-        }
-    },
-    {
-        label: 'Give Feedback',
-        icon: 'pi pi-comment',
-        command: () => {
-            showFeedbackDialog.value = true;
-        }
-    },
-    {
-        separator: true
-    },
-    {
-        label: 'Sign Out',
-        icon: 'pi pi-sign-out',
-        command: () => {
-            auth.logout();
-            router.push('/login');
-        }
-    }
-];
+const openAppLauncher = () => {
+    showAppLauncher.value = true;
+};
 
+const navigateToApp = (path: string) => {
+    router.push(path);
+    showAppLauncher.value = false;
+};
+
+/* Menu Groups */
 const menuGroups = computed(() => {
-    const appsItems = [
-          { label: 'Contract Assistant', path: '/apps/contracts', icon: 'pi pi-file-pdf' },
-          { label: 'Expense Helper', path: '/apps/expenses', icon: 'pi pi-wallet' },
-          ...customApps.value // Add user custom apps here
-    ];
-
     const groups = [
       {
         title: 'Core',
@@ -193,61 +154,73 @@ const menuGroups = computed(() => {
           { label: 'Dashboard', path: '/dashboard', icon: 'pi pi-home' },
           { label: 'Workflows', path: '/workflows', icon: 'pi pi-sitemap' },
           { label: 'Skills', path: '/skills', icon: 'pi pi-compass' },
-          { label: 'Components', path: '/components', icon: 'pi pi-box' },
-          { label: 'Capability Map', path: '/capability-map', icon: 'pi pi-th-large' },
         ]
       },
-      // Enterprise Apps - Only for Pro/Enterprise
-      ...(auth.state.user?.plan_name && auth.state.user.plan_name !== 'Starter' ? [{
-        title: 'Enterprise Apps', 
-        items: appsItems
-      }] : []),
+      {
+        title: 'Enterprise Apps',
+        items: [
+          { label: 'Meeting AI', path: '/apps/meeting-ai', icon: 'pi pi-microphone' },
+          { label: 'Policy Analysis', path: '/apps/policy-analysis', icon: 'pi pi-check-square' },
+          { label: 'PPT Generator', path: '/apps/ppt-generator', icon: 'pi pi-desktop' },
+          { label: 'Contract Assistant', path: '/apps/contracts', icon: 'pi pi-file-pdf' },
+          { label: 'Expense Helper', path: '/apps/expenses', icon: 'pi pi-wallet' },
+          ...customApps.value 
+        ]
+      },
       {
         title: 'Operations',
         items: [
-          { label: 'Monitoring', path: '/monitoring', icon: 'pi pi-chart-line' },
-          { label: 'Models', path: '/models', icon: 'pi pi-server' },
-          { label: 'News / Posts', path: '/news', icon: 'pi pi-megaphone' },
-          { label: 'About System', path: '/about', icon: 'pi pi-info-circle' },
-          { label: 'Settings', path: '/profile', icon: 'pi pi-cog' },
-        ]
-      },
-      {
-        title: 'Playbooks',
-        items: [
-          { label: 'Templates', path: '/templates', icon: 'pi pi-clone' },
+           { label: 'Models', path: '/models', icon: 'pi pi-server' },
+           { label: 'Settings', path: '/profile', icon: 'pi pi-cog' },
         ]
       }
     ];
 
+    // Admin Group
     if (auth.state.isSuperuser) {
-        // Ensure groups[2] exists and has items. However, if Plan is Starter, groups[1] might be Operations.
-        // Safer to find by title or just append. 
-        // For simplicity: Admin is likely Pro, so [2] is Operations.
-        // Let's protect it:
-        const opsGroup = groups.find(g => g.title === 'Operations');
-        if (opsGroup) {
-             // Check if already exists?
-             const hasUserManagement = opsGroup.items.some(i => i.label === 'User Management');
-             if (!hasUserManagement) {
-               opsGroup.items.unshift(
-                   { label: 'User Management', path: '/users', icon: 'pi pi-users' },
-                   { label: 'User Feedback', path: '/feedback', icon: 'pi pi-inbox' }
-               );
-             }
-        }
+        groups.push({
+            title: 'Admin',
+            items: [
+                { label: 'User Management', path: '/users', icon: 'pi pi-users' },
+                { label: 'Feedback', path: '/feedback', icon: 'pi pi-comments' }
+            ]
+        });
     }
 
     return groups;
+});
+
+/* App Launcher Data */
+const filteredApps = computed(() => {
+    const all = [
+        { label: 'Dashboard', path: '/dashboard', icon: 'pi pi-home' },
+        { label: 'Contract Assistant', path: '/apps/contracts', icon: 'pi pi-file-pdf' },
+        { label: 'Expense Helper', path: '/apps/expenses', icon: 'pi pi-wallet' },
+        { label: 'Meeting AI', path: '/apps/meeting-ai', icon: 'pi pi-microphone' },
+        { label: 'Policy Analysis', path: '/apps/policy-analysis', icon: 'pi pi-check-square' },
+        { label: 'PPT Generator', path: '/apps/ppt-generator', icon: 'pi pi-desktop' },
+        { label: 'Workflows', path: '/workflows', icon: 'pi pi-sitemap' },
+        { label: 'Skills', path: '/skills', icon: 'pi pi-compass' },
+        { label: 'Components', path: '/components', icon: 'pi pi-box' },
+        { label: 'Capability Map', path: '/capability-map', icon: 'pi pi-th-large' },
+        { label: 'Monitoring', path: '/monitoring', icon: 'pi pi-chart-line' },
+        { label: 'Models', path: '/models', icon: 'pi pi-server' },
+        { label: 'News / Posts', path: '/news', icon: 'pi pi-megaphone' },
+        ...customApps.value
+    ];
+    
+    if (!appSearch.value) return all;
+    return all.filter(a => a.label.toLowerCase().includes(appSearch.value.toLowerCase()));
 });
 </script>
 
 <style scoped>
 .sidebar {
-  width: 260px;
-  background-color: var(--brand-black);
+  width: var(--sidebar-width-expanded, 260px);
+  background-color: var(--color-black); /* Use theme vars via store if injected, or mapped var */
   height: 100vh;
   border-right: 1px solid #1f1f1f;
+  z-index: 100;
 }
 
 .sidebar.collapsed {
@@ -255,16 +228,14 @@ const menuGroups = computed(() => {
 }
 
 .nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.05); /* Slight hover effect */
-  color: var(--brand-white);
+  background-color: rgba(255, 255, 255, 0.1); 
+  color: #FFF;
 }
 
 .nav-item.active-route {
   background-color: #1a1a1a;
-  color: var(--brand-white);
-  border-left: 3px solid var(--brand-green);
-  padding-left: calc(0.5rem - 3px); /* Compensate for border to keep icon aligned, or just accept the shift */
+  color: #FFF;
+  border-left: 3px solid var(--color-brand-primary);
+  padding-left: calc(0.5rem - 3px);
 }
-
-/* Tooltip handling usually done via PrimeVue Directive, ensuring it's installed in main.ts */
 </style>
