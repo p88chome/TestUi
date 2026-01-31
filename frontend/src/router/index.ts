@@ -113,7 +113,7 @@ router.beforeEach(async (to, _from, next) => {
     // 2. Check authentication requirement
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     const adminOnly = to.matched.some(record => record.meta.adminOnly);
-    const requiresPro = to.matched.some(record => record.meta.requiresPro);
+    // const requiresPro = to.matched.some(record => record.meta.requiresPro); // Temporarily disabled
 
     if ((requiresAuth || adminOnly) && !isAuthenticated) {
         next('/login');
