@@ -6,10 +6,13 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useAuthStore } from './stores/auth';
+import { useThemeStore } from './stores/theme';
 import axios from 'axios';
 import Toast from 'primevue/toast';
 
 const auth = useAuthStore();
+// Initialize theme store globally so CSS variables are available on ALL pages (including login)
+useThemeStore();
 
 onMounted(async () => {
   // Restore user session if token exists but user is null (e.g. refresh)

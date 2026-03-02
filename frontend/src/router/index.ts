@@ -102,7 +102,21 @@ const router = createRouter({
 
 router.beforeEach(async (to, _from, next) => {
     const token = localStorage.getItem('token');
-    const isAuthenticated = !!token;
+    let isAuthenticated = !!token;
+
+    // Validate token with backend if token exists
+    if (token) {
+        try {
+            const { default: apiClient } = await import('../api/client');
+            await apiClient.get('/users/me');
+            // Token is valid, proceed
+        } catch (error: any) {
+            // Token invalid or expired - clear it
+            console.warn('Token validation failed:', error?.response?.status || error.message);
+            localStorage.removeItem('token');
+            isAuthenticated = false;
+        }
+    }
 
     // 1. If going to login while authenticated, redirect to dashboard
     if (isAuthenticated && to.name === 'Login') {
