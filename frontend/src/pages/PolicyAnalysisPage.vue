@@ -31,14 +31,14 @@
               mode="basic"
               name="policy"
               :auto="false"
-              accept=".docx"
+              accept=".docx,.pdf"
               :maxFileSize="10000000"
               @select="onPolicySelect"
               chooseLabel="選擇檔案"
               class="w-full"
             />
             <small class="text-500 block mt-2">
-              支援格式: DOCX (最大 10MB)
+              支援格式: DOCX、PDF（最大 10MB）
             </small>
             
             <div v-if="policyFile" class="surface-100 border-round p-3 mt-2">
@@ -73,7 +73,7 @@
               mode="basic"
               name="interviews"
               :auto="false"
-              accept=".docx"
+              accept=".docx,.pdf"
               :maxFileSize="10000000"
               :multiple="true"
               @select="onInterviewSelect"
@@ -81,7 +81,7 @@
               class="w-full"
             />
             <small class="text-500 block mt-2">
-              可一次選擇多個 DOCX 檔案
+              可一次選擇多個 DOCX 或 PDF 檔案
             </small>
             
             <div v-for="(file, index) in interviewFiles" :key="index" class="surface-100 border-round p-3 mt-2">
@@ -138,6 +138,14 @@
                 class="p-button-outlined p-button-sm"
                 v-tooltip.top="'複製'"
                 @click="copyToClipboard"
+              />
+              <Button 
+                label="匯出 Word" 
+                icon="pi pi-file-word"
+                class="p-button-sm"
+                severity="secondary"
+                :loading="isExportingWord"
+                @click="downloadWord"
               />
               <Button 
                 label="匯出 Markdown" 
@@ -206,6 +214,7 @@ mermaid.initialize({
 
 // State
 const isAnalyzing = ref(false);
+const isExportingWord = ref(false);
 const output = ref('');
 const errorMsg = ref('');
 const policyFile = ref<File | null>(null);
@@ -429,6 +438,35 @@ const exportMarkdown = () => {
     detail: 'Markdown 檔案已下載',
     life: 2000
   });
+};
+
+const downloadWord = async () => {
+  if (!output.value) return;
+  isExportingWord.value = true;
+  try {
+    const response = await apiClient.post(
+      '/policy/export-docx',
+      {
+        report: output.value,
+        policy_name: policyFile.value?.name?.replace(/\.[^.]+$/, '') ?? '制度差異分析報告',
+      },
+      { responseType: 'blob', timeout: 60000 }
+    );
+    const blob = new Blob([response as any], {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `制度差異分析報告_${formatDate()}.docx`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.add({ severity: 'success', summary: '匯出成功', detail: 'Word 檔案已下載', life: 2000 });
+  } catch (err: any) {
+    toast.add({ severity: 'error', summary: '匯出失敗', detail: err.message || '請重試', life: 3000 });
+  } finally {
+    isExportingWord.value = false;
+  }
 };
 </script>
 

@@ -3,18 +3,57 @@ Policy Gap Analysis API Router
 提供制度差異分析的專屬 API
 """
 
+import io
 import os
+import re
 import uuid
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from fastapi.responses import JSONResponse
-from typing import List
+from fastapi.responses import JSONResponse, StreamingResponse
+from typing import List, Optional
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db, get_current_user
 from app.models.user import User
 
 router = APIRouter(prefix="/policy", tags=["policy"])
+
+ACCEPTED_EXTS = ('.docx', '.pdf')
+
+
+def _validate_file(file: UploadFile) -> None:
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="檔案名稱無效")
+    if not file.filename.lower().endswith(ACCEPTED_EXTS):
+        raise HTTPException(
+            status_code=400,
+            detail=f"不支援的檔案格式：{file.filename}。支援 .docx 和 .pdf"
+        )
+
+
+def _extract_text_from_bytes(filename: str, content: bytes) -> str:
+    """從 DOCX 或 PDF 位元組中擷取純文字。"""
+    name_lower = filename.lower()
+    if name_lower.endswith('.docx'):
+        try:
+            from docx import Document
+            doc = Document(io.BytesIO(content))
+            return "\n".join(p.text for p in doc.paragraphs if p.text.strip())
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=f"無法解析 DOCX：{e}")
+    if name_lower.endswith('.pdf'):
+        try:
+            import pdfplumber
+            parts = []
+            with pdfplumber.open(io.BytesIO(content)) as pdf:
+                for page in pdf.pages:
+                    t = page.extract_text()
+                    if t:
+                        parts.append(t)
+            return "\n".join(parts)
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=f"無法解析 PDF：{e}")
+    return content.decode('utf-8', errors='ignore')
 
 
 @router.post("/analyze")
@@ -36,19 +75,10 @@ async def analyze_policy_gap(
         Markdown 格式的差異分析報告
     """
     
-    # 驗證檔案類型
-    def validate_docx(file: UploadFile) -> None:
-        if not file.filename:
-            raise HTTPException(status_code=400, detail="檔案名稱無效")
-        if not file.filename.lower().endswith('.docx'):
-            raise HTTPException(
-                status_code=400, 
-                detail=f"不支援的檔案格式: {file.filename}。僅支援 .docx 格式"
-            )
-    
-    validate_docx(policy_file)
+    # 驗證檔案類型（DOCX / PDF）
+    _validate_file(policy_file)
     for f in interview_files:
-        validate_docx(f)
+        _validate_file(f)
     
     # 建立暫存目錄
     temp_dir = os.path.join(os.getcwd(), "temp", "policy_analysis")
@@ -269,3 +299,124 @@ async def analyze_policy_gap_text(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"分析時發生錯誤: {str(e)}")
+
+
+# ─── Word Export ─────────────────────────────────────────────────────────────
+
+from pydantic import BaseModel
+
+class ExportDocxRequest(BaseModel):
+    report: str               # The full Markdown report text
+    policy_name: str = "制度差異分析報告"
+
+
+@router.post("/export-docx")
+async def export_policy_docx(
+    request: ExportDocxRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    將 Markdown 格式的差異分析報告轉換為可下載的 Word (.docx) 文件。
+    使用 python-docx 產生帶有標題、表格、段落的完整 Word 文件。
+    """
+    from docx import Document as DocxDocument
+    from docx.shared import Pt, RGBColor, Inches
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+    doc = DocxDocument()
+
+    # ── Page setup ──
+    section = doc.sections[0]
+    section.page_width  = Inches(8.27)   # A4
+    section.page_height = Inches(11.69)
+    section.left_margin = section.right_margin = Inches(1.0)
+    section.top_margin  = section.bottom_margin = Inches(1.0)
+
+    # ── Map Markdown to Word ──
+    lines = request.report.split('\n')
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+
+        # H1
+        if line.startswith('# ') and not line.startswith('## '):
+            h = doc.add_heading(line[2:].strip(), level=1)
+            h.runs[0].font.color.rgb = RGBColor(0x00, 0x5B, 0x2D)
+
+        # H2
+        elif line.startswith('## ') and not line.startswith('### '):
+            h = doc.add_heading(line[3:].strip(), level=2)
+            h.runs[0].font.color.rgb = RGBColor(0x00, 0x5B, 0x2D)
+
+        # H3
+        elif line.startswith('### '):
+            h = doc.add_heading(line[4:].strip(), level=3)
+
+        # Horizontal rule
+        elif line.strip() == '---':
+            doc.add_paragraph('─' * 40)
+
+        # Table  (| col | col | …)
+        elif line.strip().startswith('|') and '|' in line[1:]:
+            # Collect all consecutive table lines
+            table_lines = []
+            while i < len(lines) and lines[i].strip().startswith('|'):
+                row_raw = lines[i].strip()
+                # Skip separator rows like |---|---|
+                if not re.match(r'^\|[\s\-|:]+\|$', row_raw):
+                    cells = [c.strip() for c in row_raw.strip('|').split('|')]
+                    table_lines.append(cells)
+                i += 1
+
+            if table_lines:
+                ncols = max(len(r) for r in table_lines)
+                tbl = doc.add_table(rows=len(table_lines), cols=ncols)
+                tbl.style = 'Table Grid'
+                for ri, row_cells in enumerate(table_lines):
+                    for ci, cell_text in enumerate(row_cells):
+                        cell = tbl.cell(ri, ci)
+                        cell.text = cell_text
+                        if ri == 0:  # Header row bold
+                            for run in cell.paragraphs[0].runs:
+                                run.bold = True
+                doc.add_paragraph('')  # spacing after table
+            continue  # i already advanced inside table loop
+
+        # Bullet list
+        elif line.strip().startswith('- ') or line.strip().startswith('* '):
+            doc.add_paragraph(line.strip()[2:], style='List Bullet')
+
+        # Numbered list
+        elif re.match(r'^\d+\.\s', line.strip()):
+            doc.add_paragraph(re.sub(r'^\d+\.\s', '', line.strip()), style='List Number')
+
+        # Bold inline **text**
+        elif line.strip():
+            p = doc.add_paragraph()
+            # Parse inline bold
+            parts = re.split(r'\*\*(.+?)\*\*', line.strip())
+            for pi, part in enumerate(parts):
+                run = p.add_run(part)
+                if pi % 2 == 1:   # odd index = bold content
+                    run.bold = True
+            p.runs[0].font.size = Pt(10.5) if p.runs else None
+        else:
+            doc.add_paragraph('')  # blank line → spacing
+
+        i += 1
+
+    # ── Stream response ──
+    output = io.BytesIO()
+    doc.save(output)
+    output.seek(0)
+
+    safe_name = request.policy_name.replace('/', '_').replace('\\', '_')
+    date_str = datetime.now().strftime('%Y%m%d')
+    filename = f"{safe_name}_{date_str}.docx"
+
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{filename}"}
+    )
+
