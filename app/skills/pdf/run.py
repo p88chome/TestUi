@@ -6,9 +6,6 @@ import os
 import logging
 from typing import Dict, List, Any, Union
 
-import pypdf
-import pdfplumber
-
 logger = logging.getLogger(__name__)
 
 
@@ -66,6 +63,7 @@ def _extract_text(files: List[str]) -> Dict[str, Any]:
     for file_path in files:
         text_content = ""
         try:
+            import pdfplumber
             with pdfplumber.open(file_path) as pdf:
                 for i, page in enumerate(pdf.pages, 1):
                     page_text = page.extract_text()
@@ -90,6 +88,7 @@ def _extract_tables(files: List[str]) -> Dict[str, Any]:
     results = {}
     for file_path in files:
         try:
+            import pdfplumber
             all_tables = []
             with pdfplumber.open(file_path) as pdf:
                 for i, page in enumerate(pdf.pages, 1):
@@ -126,6 +125,7 @@ def _get_metadata(files: List[str]) -> Dict[str, Any]:
     results = {}
     for file_path in files:
         try:
+            import pypdf
             reader = pypdf.PdfReader(file_path)
             meta = reader.metadata
             info = {
@@ -150,6 +150,7 @@ def _get_metadata(files: List[str]) -> Dict[str, Any]:
 
 def _merge_pdfs(files: List[str], output_path: str) -> Dict[str, Any]:
     """Merge multiple PDF files into one."""
+    import pypdf
     merger = pypdf.PdfWriter()
     
     for file_path in files:
@@ -173,6 +174,7 @@ def _merge_pdfs(files: List[str], output_path: str) -> Dict[str, Any]:
 
 def _split_pdf(file_path: str, output_path: str, pages: Union[str, List[int], None]) -> Dict[str, Any]:
     """Split PDF into separate pages or specified page ranges."""
+    import pypdf
     reader = pypdf.PdfReader(file_path)
     total_pages = len(reader.pages)
     

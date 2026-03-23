@@ -1,4 +1,3 @@
-from docx import Document
 import os
 
 def execute(input_data: dict) -> dict:
@@ -27,6 +26,7 @@ def execute(input_data: dict) -> dict:
         return {"error": str(e)}
 
 def _create_report(output_path, content):
+    from docx import Document
     doc = Document()
     
     for paragraph_text in content:
@@ -44,6 +44,7 @@ def _create_report(output_path, content):
     return {"status": "success", "message": f"Created report at {output_path}"}
 
 def _append_table(output_path, headers, rows):
+    from docx import Document
     if os.path.exists(output_path):
         doc = Document(output_path)
     else:

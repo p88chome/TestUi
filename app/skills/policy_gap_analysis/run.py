@@ -7,7 +7,6 @@ Policy Gap Analysis Skill
 import os
 import json
 from datetime import datetime
-from docx import Document
 
 
 def read_docx(file_path: str) -> str:
@@ -15,6 +14,7 @@ def read_docx(file_path: str) -> str:
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"找不到文件: {file_path}")
     
+    from docx import Document
     doc = Document(file_path)
     content = []
     for para in doc.paragraphs:

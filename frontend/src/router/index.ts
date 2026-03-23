@@ -42,6 +42,7 @@ const routes = [
             { path: 'apps/meeting-ai', name: 'MeetingMinutes', component: () => import('../pages/MeetingMinutesPage.vue'), meta: { requiresPro: true } },
             { path: 'apps/policy-analysis', name: 'PolicyAnalysis', component: () => import('../pages/PolicyAnalysisPage.vue'), meta: { requiresPro: true } },
             { path: 'apps/ppt-generator', name: 'PPTGenerator', component: () => import('../pages/PPTGeneratorPage.vue'), meta: { requiresPro: true } },
+            { path: 'apps/flowchart-generator', name: 'FlowchartGenerator', component: () => import('../pages/FlowchartGeneratorPage.vue'), meta: { requiresPro: true } },
             { path: 'apps/contracts', name: 'ContractAssistant', component: ChatbotPage, meta: { requiresPro: true } },
             { path: 'apps/expenses', name: 'ExpenseHelper', component: ChatbotPage, meta: { requiresPro: true } },
 

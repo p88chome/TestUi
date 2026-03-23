@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.routers import components, workflows, runs, auth, users, models, ocr, chat, stats, news, skills, agent, feedback, system, meeting, policy, ppt
+from app.routers import components, workflows, runs, auth, users, models, ocr, chat, stats, news, skills, agent, feedback, system, meeting, policy, ppt, flowchart
 from app.core.database import engine, Base, SessionLocal
 from app.models.user import User 
 from app.models.stats import UsageLog 
@@ -89,6 +89,7 @@ app.include_router(system.router, prefix="/api/v1")
 app.include_router(meeting.router, prefix="/api/v1")
 app.include_router(policy.router, prefix="/api/v1")
 app.include_router(ppt.router, prefix="/api/v1")
+app.include_router(flowchart.router, prefix="/api/v1")
 
 
 @app.get("/")

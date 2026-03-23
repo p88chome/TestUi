@@ -162,6 +162,7 @@ const menuGroups = computed(() => {
           { label: 'Meeting AI', path: '/apps/meeting-ai', icon: 'pi pi-microphone' },
           { label: 'Policy Analysis', path: '/apps/policy-analysis', icon: 'pi pi-check-square' },
           { label: 'PPT Generator', path: '/apps/ppt-generator', icon: 'pi pi-desktop' },
+          { label: 'Flowchart Generator', path: '/apps/flowchart-generator', icon: 'pi pi-share-alt' },
           { label: 'Contract Assistant', path: '/apps/contracts', icon: 'pi pi-file-pdf' },
           { label: 'Expense Helper', path: '/apps/expenses', icon: 'pi pi-wallet' },
           ...customApps.value 
@@ -199,6 +200,7 @@ const filteredApps = computed(() => {
         { label: 'Meeting AI', path: '/apps/meeting-ai', icon: 'pi pi-microphone' },
         { label: 'Policy Analysis', path: '/apps/policy-analysis', icon: 'pi pi-check-square' },
         { label: 'PPT Generator', path: '/apps/ppt-generator', icon: 'pi pi-desktop' },
+        { label: 'Flowchart Generator', path: '/apps/flowchart-generator', icon: 'pi pi-share-alt' },
         { label: 'Workflows', path: '/workflows', icon: 'pi pi-sitemap' },
         { label: 'Skills', path: '/skills', icon: 'pi pi-compass' },
         { label: 'Components', path: '/components', icon: 'pi pi-box' },

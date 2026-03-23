@@ -2,7 +2,6 @@
 Excel Handler Skill
 Enhanced Excel processing with read, write, analyze, and multi-sheet support.
 """
-import pandas as pd
 import os
 import logging
 from typing import Dict, List, Any, Optional, Union
@@ -57,6 +56,7 @@ def _read_sheet(file_path: str, sheet_name: Union[str, int], columns: Optional[L
         return {"status": "error", "error": f"File not found: {file_path}"}
     
     try:
+        import pandas as pd
         # Read Excel
         df = pd.read_excel(file_path, sheet_name=sheet_name)
         
@@ -95,6 +95,7 @@ def _write_sheet(file_path: str, data: Union[List[Dict], List[List]], sheet_name
         if out_dir and not os.path.exists(out_dir):
             os.makedirs(out_dir)
 
+        import pandas as pd
         df = pd.DataFrame(data)
         
         # Convert sheet_name to string if it's 0 (default)
@@ -121,6 +122,7 @@ def _analyze_data(file_path: str, sheet_name: Union[str, int]) -> Dict[str, Any]
         return {"status": "error", "error": f"File not found: {file_path}"}
     
     try:
+        import pandas as pd
         df = pd.read_excel(file_path, sheet_name=sheet_name)
         
         # Basic statistics
@@ -169,6 +171,7 @@ def _list_sheets(file_path: str) -> Dict[str, Any]:
         return {"status": "error", "error": f"File not found: {file_path}"}
     
     try:
+        import pandas as pd
         xl = pd.ExcelFile(file_path)
         sheets_info = []
         
