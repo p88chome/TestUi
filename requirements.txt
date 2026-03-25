@@ -23,8 +23,8 @@ openpyxl
 python-docx
 python-pptx
 
-# Video/Audio Transcription
-openai-whisper
-moviepy
-SpeechRecognition
-pydub
+# Video/Audio Transcription (disabled on Azure - too heavy for App Service cold start)
+# openai-whisper
+# moviepy
+# SpeechRecognition
+# pydub
