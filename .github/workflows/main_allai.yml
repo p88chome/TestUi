@@ -63,9 +63,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_9026257853B24B7A80CFD90E21E3AA10 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0A45D7F7D881498E865F73359FC12493 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_5136721E1EFB4727AB1669CDE366D45E }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_96A0BBBF2F614A3EAEE862C8E9A932FD }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_90B8CD1F7299405CB96F3C60A63D5197 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D35393A26A1046AD9614A0F17A8BA228 }}
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
@@ -73,5 +73,4 @@ jobs:
         with:
           app-name: 'Allai'
           slot-name: 'Production'
-          package: .
           
