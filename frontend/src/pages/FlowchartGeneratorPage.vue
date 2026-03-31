@@ -203,7 +203,7 @@
               class="vue-flow-theme"
               @nodeDoubleClick="onNodeDoubleClick"
             >
-              <Background variant="dots" gap="20" size="1" color="#334155" />
+              <Background variant="dots" :gap="20" :size="1" color="#334155" />
               <Controls />
               <MiniMap node-color="#1e293b" mask-color="rgba(0,0,0,0.5)" class="border-round border-1 border-gray-700" />
             </VueFlow>
@@ -224,7 +224,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
+import { ref, nextTick, markRaw } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import apiClient from '../api/client';
 import dagre from 'dagre';
@@ -253,12 +253,12 @@ import ProcessNode from '../components/flowchart/nodes/ProcessNode.vue';
 import ControlNode from '../components/flowchart/nodes/ControlNode.vue';
 import DocumentNode from '../components/flowchart/nodes/DocumentNode.vue';
 
-const nodeTypes = {
-  start: StartEndNode,
-  end: StartEndNode,
-  process: ProcessNode,
-  control: ControlNode,
-  document: DocumentNode,
+const nodeTypes: any = {
+  start: markRaw(StartEndNode),
+  end: markRaw(StartEndNode),
+  process: markRaw(ProcessNode),
+  control: markRaw(ControlNode),
+  document: markRaw(DocumentNode),
 };
 
 const toast = useToast();
