@@ -379,9 +379,6 @@ const analyzeGap = async () => {
     }
     
     const response: any = await apiClient.post('/policy/analyze', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
       timeout: 180000 // 3 minutes timeout
     });
     
