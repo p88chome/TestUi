@@ -104,8 +104,76 @@ async def analyze_policy_gap(
             import httpx
             
             # --- Prompt Logic ---
-            system_prompt = """你是一位資深的內控顧問與稽核專家。比對「管理辦法」與「訪談紀錄」之間的差異。用繁體中文輸出 Markdown 報告。"""
-            user_prompt = f"請比對以下資料：\n\n管理辦法：\n{policy_content}\n\n訪談紀錄：\n{combined_interviews}"
+            system_prompt = """你是一位資深的內控顧問與稽核專家。
+
+你的任務是比對「管理辦法」與「訪談紀錄」之間的差異，找出：
+1. 制度有規定但實務未落實的地方
+2. 實務有執行但制度未明文規定的地方
+3. 制度與實務不一致之處
+4. 建議新增或修改的條款
+
+## 分析原則
+- 精確對應：每個差異必須指出管理辦法的具體條款位置
+- 客觀中立：如實呈現差異，不做主觀臆測
+- 具體可行：建議修改必須具體，可直接採用
+
+## 輸出格式 (Markdown)
+
+# 制度差異分析報告
+
+**分析日期**: [今天日期]
+**管理辦法**: [文件名稱]
+
+---
+
+## 一、管理辦法摘要
+
+(列出管理辦法的主要條款結構，每條簡要說明)
+
+---
+
+## 二、差異分析
+
+| 條款位置 | 管理辦法規定 | 訪談實務發現 | 差異類型 | 建議修改 |
+|---------|-------------|-------------|---------|---------|
+
+### 詳細說明
+
+(對每個重要差異進行詳細說明)
+
+---
+
+## 三、建議新增條款
+
+(訪談中提到但管理辦法沒有的控制點，建議新增)
+
+---
+
+## 四、總結與優先順序
+
+| 優先級 | 修改項目 | 理由 |
+|-------|---------|------|
+
+---
+
+請用繁體中文輸出，保持專業客觀的語氣。"""
+
+            user_prompt = f"""請根據以下資料進行制度差異分析：
+
+## 管理辦法
+**文件名稱**: {policy_file.filename}
+
+{policy_content}
+
+---
+
+## 訪談紀錄
+
+{combined_interviews}
+
+---
+
+請產出完整的差異分析報告。"""
 
             api_key = settings.AZURE_OPENAI_API_KEY
             endpoint = settings.AZURE_OPENAI_ENDPOINT
@@ -169,8 +237,23 @@ async def analyze_policy_gap_text(
             from app.core.config import settings
             import httpx
             
-            system_prompt = """你是一位資深的內控顧問與稽核專家。比對「管理辦法」與「訪談紀錄」之間的差異。用繁體中文輸出 Markdown 報告。"""
-            user_prompt = f"文件名稱: {policy_name}\n\n管理辦法：\n{policy_content}\n\n訪談紀錄：\n{interview_content}"
+            system_prompt = """你是一位資深的內控顧問與稽核專家。比對「管理辦法」與「訪談紀錄」之間的差異，找出制度落差並給予修改建議。請產出包含摘要、差異表格、詳細說明與總結的專業 Markdown 報告。請用繁體中文輸出。"""
+            user_prompt = f"""請根據以下資料進行制度差異分析：
+
+## 管理辦法
+**文件名稱**: {policy_name}
+
+{policy_content}
+
+---
+
+## 訪談紀錄
+
+{interview_content}
+
+---
+
+請產出完整的差異分析報告。"""
 
             api_key = settings.AZURE_OPENAI_API_KEY
             endpoint = settings.AZURE_OPENAI_ENDPOINT

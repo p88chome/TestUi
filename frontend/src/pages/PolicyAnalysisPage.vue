@@ -383,11 +383,20 @@ const analyzeGap = async () => {
       ? (import.meta.env.VITE_API_URL.endsWith('/') ? import.meta.env.VITE_API_URL + 'api/v1' : import.meta.env.VITE_API_URL + '/api/v1')
       : '/api/v1';
     
+    const token = localStorage.getItem('token');
     const response = await fetch(`${baseUrl}/policy/analyze`, {
       method: 'POST',
       body: formData,
-      // Note: Don't set Content-Type header, let browser set it with boundary
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
     });
+
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+      throw new Error('登入已過期，請重新登入');
+    }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ detail: 'API 伺服器傳回錯誤' }));
