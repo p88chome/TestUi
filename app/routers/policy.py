@@ -80,80 +80,146 @@ async def analyze_policy_gap(
     for f in interview_files:
         _validate_file(f)
     
-    # 建立暫存目錄
-    temp_dir = os.path.join(os.getcwd(), "temp", "policy_analysis")
-    os.makedirs(temp_dir, exist_ok=True)
-    
-    # 儲存上傳的檔案
-    session_id = str(uuid.uuid4())
-    saved_files = []
-    
     try:
-        # 儲存管理辦法
-        policy_filename = f"{session_id}_policy_{policy_file.filename}"
-        policy_path = os.path.join(temp_dir, policy_filename)
-        with open(policy_path, "wb") as f:
-            content = await policy_file.read()
-            f.write(content)
-        saved_files.append(policy_path)
+        # 在記憶體中解析管理辦法
+        policy_raw = await policy_file.read()
+        policy_content = _extract_text_from_bytes(policy_file.filename, policy_raw)
         
-        # 儲存訪談紀錄
-        interview_paths = []
-        for i, interview_file in enumerate(interview_files):
-            interview_filename = f"{session_id}_interview_{i}_{interview_file.filename}"
-            interview_path = os.path.join(temp_dir, interview_filename)
-            with open(interview_path, "wb") as f:
-                content = await interview_file.read()
-                f.write(content)
-            interview_paths.append(interview_path)
-            saved_files.append(interview_path)
+        # 在記憶體中解析所有訪談紀錄
+        interview_contents = []
+        for i_f in interview_files:
+            i_raw = await i_f.read()
+            text = _extract_text_from_bytes(i_f.filename, i_raw)
+            interview_contents.append(f"【訪談紀錄: {i_f.filename}】\n{text}")
+            
+        combined_interviews = "\n\n---\n\n".join(interview_contents)
         
-        # 呼叫 skill 執行分析
-        from app.skills.policy_gap_analysis.run import execute
+        # 直接呼叫與 analyze_policy_gap_text 相同的 LLM 邏輯 (不經過磁碟存檔)
+        from app.core.config import settings
+        import httpx
         
-        result = execute({
-            "policy_file_path": policy_path,
-            "interview_file_paths": interview_paths
-        })
+        # 使用與 text route 相同的 Prompt (或從 run.py 複製過來)
+        system_prompt = """你是一位資深的內控顧問與稽核專家。
+
+你的任務是比對「管理辦法」與「訪談紀錄」之間的差異，找出：
+1. 制度有規定但實務未落實的地方
+2. 實務有執行但制度未明文規定的地方
+3. 制度與實務不一致之處
+4. 建議新增或修改的條款
+
+## 分析原則
+- 精確對應：每個差異必須指出管理辦法的具體條款位置
+- 客觀中立：如實呈現差異，不做主觀臆測
+- 具體可行：建議修改必須具體，可直接採用
+
+## 輸出格式 (Markdown)
+
+# 制度差異分析報告
+
+**分析日期**: [今天日期]
+**管理辦法**: [文件名稱]
+
+---
+
+## 一、管理辦法摘要
+
+(列出管理辦法的主要條款結構，每條簡要說明)
+
+---
+
+## 二、差異分析
+
+| 條款位置 | 管理辦法規定 | 訪談實務發現 | 差異類型 | 建議修改 |
+|---------|-------------|-------------|---------|---------|
+
+### 詳細說明
+
+(對每個重要差異進行詳細說明)
+
+---
+
+## 三、建議新增條款
+
+(訪談中提到但管理辦法沒有的控制點，建議新增)
+
+---
+
+## 四、總結與優先順序
+
+| 優先級 | 修改項目 | 理由 |
+|-------|---------|------|
+
+---
+
+請用繁體中文輸出，保持專業客觀的語氣。"""
+
+        user_prompt = f"""請根據以下資料進行制度差異分析：
+
+## 管理辦法
+**文件名稱**: {policy_file.filename}
+
+{policy_content}
+
+---
+
+## 訪談紀錄
+
+{combined_interviews}
+
+---
+
+請產出完整的差異分析報告。"""
+
+        api_key = settings.AZURE_OPENAI_API_KEY
+        endpoint = settings.AZURE_OPENAI_ENDPOINT
+        deployment = getattr(settings, "AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4.1")
+        api_version = getattr(settings, "AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
         
-        # 清理暫存檔案
-        for file_path in saved_files:
-            if os.path.exists(file_path):
-                try:
-                    os.remove(file_path)
-                except:
-                    pass
+        if not api_key:
+            return {"status": "error", "error": "未設定 Azure OpenAI API Key"}
+            
+        url = f"{endpoint}openai/deployments/{deployment}/chat/completions?api-version={api_version}"
         
-        if result.get("status") == "success":
-            return {
-                "status": "success",
-                "report": result.get("report", ""),
-                "format": "markdown",
-                "policy_file": policy_file.filename,
-                "interview_files": [f.filename for f in interview_files],
-                "generated_at": result.get("generated_at", datetime.now().isoformat())
-            }
-        else:
-            raise HTTPException(
-                status_code=500,
-                detail=f"分析失敗: {result.get('message', '未知錯誤')}"
-            )
-    
-    except HTTPException:
-        raise
+        headers = {
+            "Content-Type": "application/json",
+            "api-key": api_key
+        }
+        
+        payload = {
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            "temperature": 0.2,
+            "max_tokens": 4000
+        }
+        
+        try:
+            with httpx.Client(timeout=180.0) as client:
+                resp = client.post(url, headers=headers, json=payload)
+                if resp.status_code != 200:
+                    return {"status": "error", "error": f"LLM API Error: {resp.text}"}
+                
+                result = resp.json()
+                report_content = result['choices'][0]['message']['content']
+                
+                return {
+                    "status": "success",
+                    "report": report_content,
+                    "format": "markdown",
+                    "policy_file": policy_file.filename,
+                    "interview_files": [f.filename for f in interview_files],
+                    "generated_at": datetime.now().isoformat()
+                }
+        except Exception as httpx_err:
+             return {"status": "error", "error": f"呼叫 AI 服務發生錯誤 (可能是超時): {str(httpx_err)}"}
+             
     except Exception as e:
-        # 清理暫存檔案
-        for file_path in saved_files:
-            if os.path.exists(file_path):
-                try:
-                    os.remove(file_path)
-                except:
-                    pass
-        
-        raise HTTPException(
-            status_code=500,
-            detail=f"處理檔案時發生錯誤: {str(e)}"
-        )
+        # 回傳 200 OK 附帶 error 訊息，避免 Azure 攔截 500 並消除 CORS 標頭
+        return {
+            "status": "error", 
+            "error": f"處理檔案時發生內部錯誤：{str(e)}"
+        }
 
 
 @router.post("/analyze-text")
