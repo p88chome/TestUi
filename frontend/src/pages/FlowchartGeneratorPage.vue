@@ -5,11 +5,11 @@
       <div>
         <h1 class="text-heading-xl m-0 mb-1 deloitte-green-dot">
           <i class="pi pi-share-alt mr-2 text-green-500"></i>
-          流程圖產生器
+          互動流程圖產生器
         </h1>
-        <p class="text-body-lg m-0 text-500">上傳文件，AI 分析流程後產出互動式流程圖，可即時討論修改</p>
+        <p class="text-body-lg m-0 text-500">上傳文件，AI 分析後產出 Vue Flow 互動畫布，可即時拖曳與編輯</p>
       </div>
-      <Tag value="AI Powered" severity="success" class="font-bold" />
+      <Tag value="Vue Flow + AI Powered" severity="success" class="font-bold" />
     </div>
 
     <div class="grid" style="height: calc(100vh - 130px);">
@@ -24,9 +24,9 @@
           </div>
 
           <!-- ── Upload area (Step 0) ── -->
-          <div v-if="step === 0">
+          <div v-if="step === 0" class="flex-1 overflow-auto pr-2">
             <h2 class="text-heading-md m-0 mb-3 deloitte-green-dot">
-              <i class="pi pi-upload mr-2 text-green-500"></i>上傳文件
+              <i class="pi pi-upload mr-2 text-green-500"></i>上傳對應文件
             </h2>
             <div class="field mb-3">
               <label class="font-semibold mb-2 block">選擇文件 <span class="text-red-500">*</span></label>
@@ -40,7 +40,7 @@
                 chooseLabel="選擇文件"
                 class="w-full"
               />
-              <small class="text-500 block mt-1">支援：DOCX、PDF、TXT（最大 15MB）</small>
+              <small class="text-500 block mt-1">支援：DOCX、PDF、TXT（大於 15MB 將遭拒絕）</small>
             </div>
 
             <div v-if="selectedFile" class="surface-100 border-round p-3 mb-3">
@@ -62,7 +62,7 @@
                 v-model="additionalContext"
                 rows="3"
                 class="w-full"
-                placeholder="例如：此流程是採購申請流程，重點在審批步驟..."
+                placeholder="例如：這是一份內控制度 CA-100 的不動產循環，請注意泳道與表單..."
               />
             </div>
 
@@ -92,6 +92,12 @@
               />
             </div>
 
+            <div class="mb-2">
+               <Message severity="info" :closable="false" class="m-0 py-2">
+                 💡 提示：雙擊右側節點可直接修改文字，AI 修改後會自動重新排版。
+               </Message>
+            </div>
+
             <!-- Chat messages -->
             <div class="chat-messages flex-1 overflow-y-auto mb-3" ref="chatContainer">
               <div
@@ -117,7 +123,7 @@
                   <div class="text-xs font-semibold mb-1 opacity-70">🤖 AI 分析師</div>
                   <div class="flex align-items-center gap-2 text-sm text-500">
                     <ProgressSpinner style="width:18px;height:18px;" strokeWidth="6" />
-                    正在更新流程圖...
+                    正在更新流程圖結構...
                   </div>
                 </div>
               </div>
@@ -128,7 +134,7 @@
               <InputText
                 v-model="userInput"
                 class="flex-1"
-                placeholder="例如：幫我把審核步驟拆成兩個..."
+                placeholder="例如：請將審核拆成初核與覆核..."
                 @keyup.enter="sendMessage"
                 :disabled="isLoading"
               />
@@ -145,100 +151,72 @@
 
       <!-- ───────────────────── Right Panel ───────────────────── -->
       <div class="col-12 lg:col-8 flex flex-column h-full">
-        <div class="deloitte-card p-4 flex flex-column h-full" style="overflow: hidden;">
+        <div class="deloitte-card p-4 flex flex-column h-full" style="overflow: hidden; background: #0f172a;">
 
           <!-- Toolbar -->
-          <div class="flex align-items-center justify-content-between mb-3">
-            <h2 class="text-heading-md m-0 deloitte-green-dot">
-              <i class="pi pi-image mr-2 text-green-500"></i>流程圖預覽
+          <div class="flex align-items-center justify-content-between mb-3 z-5">
+            <h2 class="text-heading-md m-0 text-white">
+              <i class="pi pi-sitemap mr-2 text-green-400"></i>互動流程畫布
             </h2>
-            <div v-if="mermaidCode" class="flex gap-2 flex-wrap">
+            <div v-if="chartNodes.length" class="flex gap-2 flex-wrap">
               <Button
-                label="複製 Code"
-                icon="pi pi-code"
+                label="重新排版 (Auto Layout)"
+                icon="pi pi-align-center"
                 size="small"
                 outlined
-                @click="copyMermaidCode"
-              />
-              <Button
-                label="下載 SVG"
-                icon="pi pi-download"
-                size="small"
-                outlined
-                severity="secondary"
-                @click="downloadSvg"
-              />
-              <Button
-                label="下載 PNG"
-                icon="pi pi-image"
-                size="small"
-                outlined
-                severity="secondary"
-                @click="downloadPng"
+                severity="success"
+                @click="applyAutoLayout"
               />
               <Button
                 label="下載 PPTX（可編輯）"
                 icon="pi pi-desktop"
                 size="small"
                 :loading="isExportingPptx"
-                :disabled="!chartNodes.length"
                 @click="downloadPptx"
               />
             </div>
           </div>
 
-          <!-- Chart area -->
-          <div class="chart-area flex-1 surface-100 border-round p-4 overflow-auto" ref="chartContainer">
+          <!-- Flow Area -->
+          <div class="chart-area flex-1 relative border-round overflow-hidden bg-white" style="background: #0f172a;">
+            
             <!-- Loading -->
-            <div v-if="isLoading && !mermaidCode" class="flex flex-column align-items-center justify-content-center h-full">
+            <div v-if="isLoading && !chartNodes.length" class="absolute inset-0 z-5 flex flex-column align-items-center justify-content-center bg-black-alpha-40 text-white">
               <ProgressSpinner style="width:50px;height:50px;" />
-              <p class="text-500 mt-3">AI 正在分析文件並產生流程圖...</p>
-              <small class="text-500">這可能需要 10-30 秒</small>
+              <p class="text-300 mt-3 font-medium">✨ AI 正在解析內控制度文件，建構知識圖譜...</p>
             </div>
 
             <!-- Empty state -->
-            <div v-else-if="!mermaidCode" class="flex flex-column align-items-center justify-content-center h-full text-500">
-              <i class="pi pi-share-alt text-6xl mb-4 opacity-20"></i>
-              <p class="m-0 text-lg font-medium">上傳文件後，流程圖將顯示在這裡</p>
-              <p class="text-sm m-0 mt-2">AI 會自動識別流程步驟並視覺化呈現</p>
+            <div v-else-if="!chartNodes.length" class="absolute inset-0 flex flex-column align-items-center justify-content-center text-500">
+              <i class="pi pi-share-alt text-6xl mb-4 opacity-20 text-white"></i>
+              <p class="m-0 text-lg font-medium text-400">請在左側上傳文件，開始 AI 視覺化流程</p>
             </div>
 
-            <!-- Mermaid chart -->
-            <div v-else>
-              <!-- Explanation -->
-              <div v-if="explanation" class="mb-4 surface-0 border-round p-3 border-left-4 border-green-500">
-                <div class="text-xs font-bold text-green-600 mb-2 uppercase tracking-wide">
-                  <i class="pi pi-info-circle mr-1"></i>AI 分析說明
-                </div>
-                <div class="text-sm text-700" style="white-space: pre-wrap; line-height: 1.6;">{{ explanation }}</div>
-              </div>
-
-              <!-- Chart render target -->
-              <div id="mermaid-render-area" ref="mermaidTarget" class="mermaid-wrapper"></div>
-            </div>
-          </div>
-
-          <!-- Mermaid code editor (collapsible) -->
-          <div v-if="mermaidCode" class="mt-3">
-            <div
-              class="flex align-items-center gap-2 cursor-pointer text-500 hover:text-700 transition-colors select-none"
-              @click="showCodeEditor = !showCodeEditor"
+            <!-- Vue Flow Canvas -->
+            <VueFlow
+              v-else
+              v-model:nodes="chartNodes"
+              v-model:edges="chartEdges"
+              :node-types="nodeTypes"
+              :default-edge-options="{ type: 'smoothstep', animated: true }"
+              fit-view-on-init
+              class="vue-flow-theme"
+              @nodeDoubleClick="onNodeDoubleClick"
             >
-              <i :class="['pi text-xs', showCodeEditor ? 'pi-chevron-down' : 'pi-chevron-right']"></i>
-              <span class="text-xs font-medium">檢視 / 編輯 Mermaid 原始碼</span>
-            </div>
-            <div v-if="showCodeEditor" class="mt-2">
-              <Textarea
-                v-model="mermaidCode"
-                rows="6"
-                class="w-full font-mono text-sm"
-                @input="renderMermaid"
-              />
-            </div>
-          </div>
+              <Background variant="dots" gap="20" size="1" color="#334155" />
+              <Controls />
+              <MiniMap node-color="#1e293b" mask-color="rgba(0,0,0,0.5)" class="border-round border-1 border-gray-700" />
+            </VueFlow>
+            
+            <!-- Editing Dialog (Invisible input via PrimeVue Dialog overlay) -->
+            <Dialog v-model:visible="isEditingNode" header="編輯節點文字" :style="{ width: '300px' }" modal>
+              <div class="flex flex-column gap-3 mt-3">
+                <InputText v-model="editNodeLabel" autofocus @keyup.enter="saveNodeEdit" />
+                <Button label="儲存" icon="pi pi-check" @click="saveNodeEdit" size="small" />
+              </div>
+            </Dialog>
 
-          <!-- Error -->
-          <Message v-if="errorMsg" severity="error" class="mt-3">{{ errorMsg }}</Message>
+          </div>
         </div>
       </div>
     </div>
@@ -248,9 +226,10 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import mermaid from 'mermaid';
 import apiClient from '../api/client';
+import dagre from 'dagre';
 
+// PrimeVue
 import Button from 'primevue/button';
 import FileUpload from 'primevue/fileupload';
 import InputText from 'primevue/inputtext';
@@ -258,18 +237,35 @@ import Textarea from 'primevue/textarea';
 import Tag from 'primevue/tag';
 import Message from 'primevue/message';
 import ProgressSpinner from 'primevue/progressspinner';
+import Dialog from 'primevue/dialog';
 
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'default',
-  securityLevel: 'loose',
-  flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
-});
+// Vue Flow
+import { VueFlow, useVueFlow } from '@vue-flow/core';
+import '@vue-flow/core/dist/style.css';
+import '@vue-flow/core/dist/theme-default.css';
+import { Background } from '@vue-flow/background';
+import { Controls } from '@vue-flow/controls';
+import { MiniMap } from '@vue-flow/minimap';
+
+// Custom Nodes
+import StartEndNode from '../components/flowchart/nodes/StartEndNode.vue';
+import ProcessNode from '../components/flowchart/nodes/ProcessNode.vue';
+import ControlNode from '../components/flowchart/nodes/ControlNode.vue';
+import DocumentNode from '../components/flowchart/nodes/DocumentNode.vue';
+
+const nodeTypes = {
+  start: StartEndNode,
+  end: StartEndNode,
+  process: ProcessNode,
+  control: ControlNode,
+  document: DocumentNode,
+};
 
 const toast = useToast();
+const { fitView } = useVueFlow();
 
 // ─── State ──────────────────────────────────────────────────────────────────
-const step = ref(0);               // 0 = upload, 1 = chat
+const step = ref(0);
 const isLoading = ref(false);
 const isExportingPptx = ref(false);
 const errorMsg = ref('');
@@ -277,18 +273,100 @@ const errorMsg = ref('');
 const selectedFile = ref<File | null>(null);
 const additionalContext = ref('');
 
-const messages = ref<{ role: string; content: string }[]>([]);   // Full LLM messages (system + history)
-const displayMessages = ref<{ role: string; content: string }[]>([]);  // Only user / assistant
+const messages = ref<{ role: string; content: string }[]>([]);
+const displayMessages = ref<{ role: string; content: string }[]>([]);
 
 const userInput = ref('');
-const mermaidCode = ref('');
 const explanation = ref('');
+
+// Vue Flow Data
 const chartNodes = ref<any[]>([]);
 const chartEdges = ref<any[]>([]);
-const showCodeEditor = ref(false);
+
+// Node Editing
+const isEditingNode = ref(false);
+const editNodeId = ref('');
+const editNodeLabel = ref('');
 
 const chatContainer = ref<HTMLElement | null>(null);
-const mermaidTarget = ref<HTMLElement | null>(null);
+
+// ─── Dagre Layout Engine ────────────────────────────────────────────────────
+const applyAutoLayout = () => {
+  if (!chartNodes.value.length) return;
+  
+  const g = new dagre.graphlib.Graph();
+  g.setGraph({ rankdir: 'TB', nodesep: 100, ranksep: 120, edgesep: 40 });
+  g.setDefaultEdgeLabel(() => ({}));
+
+  const nodeDimensions = {
+    start: { w: 120, h: 48 },
+    end: { w: 120, h: 48 },
+    process: { w: 160, h: 60 },
+    control: { w: 160, h: 80 },
+    document: { w: 120, h: 60 }
+  };
+
+  chartNodes.value.forEach((n) => {
+    const dim = nodeDimensions[n.type as keyof typeof nodeDimensions] || { w: 150, h: 50 };
+    g.setNode(n.id, { width: dim.w, height: dim.h });
+  });
+
+  chartEdges.value.forEach((e) => {
+    g.setEdge(e.source, e.target);
+  });
+
+  dagre.layout(g);
+
+  // Apply layout to ref
+  chartNodes.value = chartNodes.value.map((n) => {
+    const nodeWithPosition = g.node(n.id);
+    return {
+      ...n,
+      position: {
+        x: nodeWithPosition.x - (nodeDimensions[n.type as keyof typeof nodeDimensions]?.w || 150) / 2,
+        y: nodeWithPosition.y - (nodeDimensions[n.type as keyof typeof nodeDimensions]?.h || 50) / 2,
+      },
+      targetPosition: 'top',
+      sourcePosition: 'bottom',
+    };
+  });
+
+  // Re-fit view after tick
+  setTimeout(() => {
+    fitView({ duration: 800, padding: 0.2 });
+  }, 50);
+};
+
+// ─── Data Mapping ───────────────────────────────────────────────────────────
+const parseApiPayloadToVueFlow = (apiNodes: any[], apiEdges: any[]) => {
+  const vNodes = apiNodes.map((n: any) => ({
+    id: n.id,
+    type: n.type,
+    data: { label: n.label, lane: n.lane, isStart: n.type === 'start', isEnd: n.type === 'end' },
+    position: { x: 0, y: 0 } // temporary
+  }));
+
+  const vEdges = apiEdges.map((e: any, idx: number) => ({
+    id: `e-${e.from}-${e.to}-${idx}`,
+    source: e.from,
+    target: e.to,
+    label: e.label || '',
+    type: 'smoothstep',
+    animated: true,
+    style: { stroke: '#94a3b8', strokeWidth: 2 },
+    labelBgPadding: [6, 4],
+    labelBgBorderRadius: 4,
+    labelBgStyle: { fill: '#1e293b', fillOpacity: 0.9 },
+    labelStyle: { fill: '#cbd5e1', fontWeight: 600, fontSize: 12 }
+  }));
+
+  chartNodes.value = vNodes;
+  chartEdges.value = vEdges;
+
+  // Run layout
+  applyAutoLayout();
+};
+
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const formatFileSize = (bytes: number) => {
@@ -308,44 +386,19 @@ const onFileSelect = (event: any) => {
   selectedFile.value = event.files[0] ?? null;
 };
 
-// ─── Mermaid ─────────────────────────────────────────────────────────────────
-let renderCounter = 0;
+const onNodeDoubleClick = (event: any) => {
+  editNodeId.value = event.node.id;
+  editNodeLabel.value = event.node.data.label;
+  isEditingNode.value = true;
+};
 
-const renderMermaid = async () => {
-  if (!mermaidCode.value || !mermaidTarget.value) return;
-  await nextTick();
-  const id = `mermaid-chart-${++renderCounter}`;
-  try {
-    const code = sanitizeMermaidCode(mermaidCode.value.trim());
-    const { svg } = await mermaid.render(id, code);
-    mermaidTarget.value.innerHTML = svg;
-  } catch (err) {
-    console.warn('Mermaid render error:', err);
-    if (mermaidTarget.value) {
-      mermaidTarget.value.innerHTML = `
-        <div style="border-left: 4px solid #ef4444; padding:1rem; background: #fef2f2; border-radius:6px;">
-          <div style="color:#dc2626; font-weight:600; margin-bottom:0.5rem;">⚠️ 流程圖語法有誤</div>
-          <pre style="font-size:12px; overflow:auto;">${mermaidCode.value}</pre>
-        </div>`;
-    }
+const saveNodeEdit = () => {
+  const idx = chartNodes.value.findIndex(n => n.id === editNodeId.value);
+  if (idx !== -1) {
+    chartNodes.value[idx].data.label = editNodeLabel.value;
   }
+  isEditingNode.value = false;
 };
-
-const sanitizeMermaidCode = (code: string): string => {
-  const nodePattern = /([A-Za-z0-9_]+)(\[|\{|\()([^\]})\"']+?)(\]|\}|\))/g;
-  return code.replace(nodePattern, (match, nodeId, open, label, close) => {
-    const needsQuotes = /[、，,/\\()（）【】<>：:；;！!？?\-\s]/.test(label);
-    if (needsQuotes && !label.startsWith('"') && !label.endsWith('"')) {
-      return `${nodeId}${open}"${label}"${close}`;
-    }
-    return match;
-  });
-};
-
-// Watch mermaidCode changes (from AI or manual edit)
-watch(mermaidCode, async (val) => {
-  if (val) await renderMermaid();
-});
 
 // ─── API calls ────────────────────────────────────────────────────────────────
 const analyzeDocument = async () => {
@@ -367,29 +420,27 @@ const analyzeDocument = async () => {
 
     if (res.status === 'success') {
       messages.value = res.messages;
-      mermaidCode.value = res.mermaid_code;
       explanation.value = res.explanation;
-      chartNodes.value = res.nodes ?? [];
-      chartEdges.value = res.edges ?? [];
+      
+      // Parse to Vue Flow Format
+      parseApiPayloadToVueFlow(res.nodes || [], res.edges || []);
 
-      // Show first AI reply in display messages
       const firstAiMsg = messages.value.find(m => m.role === 'assistant');
-
       displayMessages.value = [];
       if (firstAiMsg) {
         displayMessages.value.push({
           role: 'assistant',
-          content: `✅ 我已分析完文件「${selectedFile.value?.name}」並產生初始流程圖！\n\n${res.explanation}\n\n請問你想修改哪個部分？`,
+          content: `✅ 我已分析完文件「${selectedFile.value?.name}」並產生互動式畫布！\n\n${res.explanation}\n\n你可以直接在右側拖拉節點與連線，雙擊可以修改文字。如果需要大幅結構修改，也可以繼續跟我說！`,
         });
       }
 
       step.value = 1;
       await scrollChat();
-
-      toast.add({ severity: 'success', summary: '分析完成', detail: '流程圖已生成', life: 3000 });
+      toast.add({ severity: 'success', summary: '分析完成', detail: '已產出 Vue Flow 畫布', life: 3000 });
     }
   } catch (err: any) {
     errorMsg.value = err.response?.data?.detail || err.message || '分析失敗，請重試';
+    toast.add({ severity: 'error', summary: '發生錯誤', detail: errorMsg.value, life: 5000 });
   } finally {
     isLoading.value = false;
   }
@@ -415,14 +466,13 @@ const sendMessage = async () => {
 
     if (res.status === 'success') {
       messages.value = res.messages;
-      mermaidCode.value = res.mermaid_code;
       explanation.value = res.explanation;
-      chartNodes.value = res.nodes ?? [];
-      chartEdges.value = res.edges ?? [];
+      
+      parseApiPayloadToVueFlow(res.nodes || [], res.edges || []);
 
       displayMessages.value.push({
         role: 'assistant',
-        content: `✅ 流程圖已更新！\n\n${res.explanation}`,
+        content: `✅ 畫布結構已更新並重新排版！\n\n${res.explanation}`,
       });
       await scrollChat();
     }
@@ -438,72 +488,31 @@ const sendMessage = async () => {
 };
 
 // ─── Download ─────────────────────────────────────────────────────────────────
-const getSvgElement = (): SVGElement | null => {
-  return mermaidTarget.value?.querySelector('svg') ?? null;
-};
-
-const downloadSvg = () => {
-  const svg = getSvgElement();
-  if (!svg) return;
-  const svgStr = new XMLSerializer().serializeToString(svg);
-  const blob = new Blob([svgStr], { type: 'image/svg+xml' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `flowchart_${new Date().toISOString().slice(0, 10)}.svg`;
-  a.click();
-  URL.revokeObjectURL(url);
-  toast.add({ severity: 'success', summary: '下載成功', detail: 'SVG 已儲存', life: 2000 });
-};
-
-const downloadPng = async () => {
-  const svg = getSvgElement();
-  if (!svg) return;
-  const svgStr = new XMLSerializer().serializeToString(svg);
-  const canvas = document.createElement('canvas');
-  const scale = 3; // High-DPI
-  const w = svg.getBoundingClientRect().width || 800;
-  const h = svg.getBoundingClientRect().height || 600;
-  canvas.width = w * scale;
-  canvas.height = h * scale;
-
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return;
-  ctx.scale(scale, scale);
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, w, h);
-
-  const img = new Image();
-  img.onload = () => {
-    ctx.drawImage(img, 0, 0, w, h);
-    const pngUrl = canvas.toDataURL('image/png');
-    const a = document.createElement('a');
-    a.href = pngUrl;
-    a.download = `flowchart_${new Date().toISOString().slice(0, 10)}.png`;
-    a.click();
-    toast.add({ severity: 'success', summary: '下載成功', detail: 'PNG 已儲存', life: 2000 });
-  };
-  img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
-};
-
-const copyMermaidCode = async () => {
-  try {
-    await navigator.clipboard.writeText(mermaidCode.value);
-    toast.add({ severity: 'success', summary: '已複製', detail: 'Mermaid Code 已複製', life: 2000 });
-  } catch {
-    toast.add({ severity: 'error', summary: '複製失敗', detail: '請手動選取', life: 2000 });
-  }
-};
-
 const downloadPptx = async () => {
   if (!chartNodes.value.length) return;
   isExportingPptx.value = true;
+  
+  // Transform Vue Flow nodes back to API format, preserving the layout positions!
+  const apiNodes = chartNodes.value.map(n => ({
+    id: n.id,
+    type: n.type,
+    label: n.data.label,
+    lane: n.data.lane,
+    position: n.position // Send the latest coordinates back to server!
+  }));
+
+  const apiEdges = chartEdges.value.map(e => ({
+    from: e.source,
+    to: e.target,
+    label: e.label || ''
+  }));
+
   try {
     const response = await apiClient.post(
       '/flowchart/export-pptx',
       {
-        nodes: chartNodes.value,
-        edges: chartEdges.value,
+        nodes: apiNodes,
+        edges: apiEdges,
         title: selectedFile.value?.name?.replace(/\.[^.]+$/, '') ?? '內控流程圖',
       },
       { responseType: 'blob', timeout: 60000 }
@@ -514,7 +523,7 @@ const downloadPptx = async () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `flowchart_${new Date().toISOString().slice(0, 10)}.pptx`;
+    a.download = `vueflow_${new Date().toISOString().slice(0, 10)}.pptx`;
     a.click();
     URL.revokeObjectURL(url);
     toast.add({ severity: 'success', summary: '下載成功', detail: 'PPTX 可編輯檔案已儲存', life: 3000 });
@@ -529,15 +538,12 @@ const restart = () => {
   step.value = 0;
   messages.value = [];
   displayMessages.value = [];
-  mermaidCode.value = '';
-  explanation.value = '';
   chartNodes.value = [];
   chartEdges.value = [];
-  errorMsg.value = '';
+  explanation.value = '';
   selectedFile.value = null;
   additionalContext.value = '';
   userInput.value = '';
-  showCodeEditor.value = false;
 };
 </script>
 
@@ -567,19 +573,32 @@ const restart = () => {
   border: 1px solid var(--surface-border);
 }
 
-.mermaid-wrapper {
-  display: flex;
-  justify-content: center;
-  min-height: 200px;
+.vue-flow-theme {
+  /* Vue Flow Custom Theme Configuration */
+  --vf-node-bg: #1e293b;
+  --vf-node-text: #fff;
+  --vf-connection-path: #94a3b8;
+  --vf-handle: #475569;
 }
 
-.mermaid-wrapper :deep(svg) {
-  max-width: 100%;
-  height: auto;
+/* Ensure controls have visible icons in dark theme */
+:deep(.vue-flow__controls) {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid #334155;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
   border-radius: 8px;
+  overflow: hidden;
 }
 
-.chart-area {
-  min-height: 0;
+:deep(.vue-flow__controls-button) {
+  background: transparent;
+  border-bottom: 1px solid #334155;
+  color: #cbd5e1;
+}
+:deep(.vue-flow__controls-button:hover) {
+  background: rgba(255, 255, 255, 0.1);
+}
+:deep(.vue-flow__controls-button svg) {
+  fill: currentColor;
 }
 </style>

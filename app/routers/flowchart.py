@@ -71,53 +71,50 @@ def _extract_text(filename: str, content: bytes) -> str:
 
 SYSTEM_PROMPT = """你是一位資深的內部控制顧問，專精於協助企業繪製符合內控標準的流程圖。
 
-你的任務是根據使用者提供的內控二階文件（作業程序說明書），分析業務流程並產生流程圖。
+你的任務是根據使用者提供的內控二階文件（作業程序說明書），分析業務流程並產生高度結構化的 JSON 資料。
 
 ## 流程圖圖示規則（嚴格遵守，不得違反）
 
-使用 Mermaid flowchart TDflowchart，並依以下規則對應圖示：
+你的 JSON 必須精確區分以下節點類型（type）：
 
-| 節點類型 | Mermaid 語法 | 用途 |
-|---------|-------------|------|
-| 開始/結束 | `A([開始])` 或 `Z([結束])` | 流程的起點與終點 |
-| 作業流程步驟 | `B[送出申請]` | 一般作業節點 |
-| 控制點/決策 | `C{主管審核?}` | 內控控制點、審核判斷 |
-| 表單/文件 | `D[/申請表/]` | 需要填寫或產出的文件 |
-| 連線 | `-->` | 一律使用實線，禁止虛線 |
-| 泳道 | `subgraph 申請人` ... `end` | 區分不同權責單位 |
+| 節點類型 | 用途 |
+|---------|------|
+| `start` / `end` | 流程的起點與終點 |
+| `process` | 一般作業節點、執行步驟 |
+| `control` | 內控控制點、主管審核、決策判斷 |
+| `document` | 需要填寫、夾帶或產出的表單文件 |
 
 ## 控制點識別原則
-- 每個重要的審核、核准、驗證動作 → 使用菱形 `{...}`
-- 菱形的 Yes/No 分支代表通過或退回
-- 風險（Risk）不畫在流程圖內，僅在說明中提及
+- 每個重要的審核、核准、驗證動作 → 必須標記為 `control` 類型。
+- 這些決策節點拉出來的連線（edges），通常要帶有 label（例如："通過" 或 "退回"）。
+- 風險（Risk）不畫在流程圖內，僅在 explanation 說明中提及。
 
 ## 泳道（Swimlane）原則
-- 從文件中識別出參與的角色/部門，用 subgraph 分組
-- 每個 subgraph 代表一個權責單位
+- 從文件中識別出參與的角色、部門或權責單位，填入節點的 `lane` 屬性。
 
-## 輸出格式（必須嚴格遵守，只輸出 JSON，不加任何其他文字）
+## 輸出格式（必須嚴格遵守，只輸出 JSON，不加任何 Markdown 語法或說明）
 
 ```json
 {
-  "explanation": "流程說明（繁體中文）：識別到的主要流程步驟、控制點、泳道分組",
-  "mermaid_code": "flowchart TD\\n  subgraph 申請人\\n    A([開始]) --> B[填寫申請表]\\n  end\\n  ...",
+  "explanation": "流程說明（繁體中文）：識別到的主要流程步驟、控制點、角色泳道分組",
   "nodes": [
-    {"id": "A", "type": "start", "label": "開始", "lane": "申請人"},
-    {"id": "B", "type": "process", "label": "填寫申請表", "lane": "申請人"},
-    {"id": "C", "type": "control", "label": "主管審核?", "lane": "主管"},
-    {"id": "D", "type": "document", "label": "申請表", "lane": "申請人"},
-    {"id": "Z", "type": "end", "label": "結束", "lane": ""}
+    {"id": "node_1", "type": "start", "label": "開始", "lane": "申請人"},
+    {"id": "node_2", "type": "process", "label": "填寫採購申請單", "lane": "申請人"},
+    {"id": "node_3", "type": "control", "label": "主管審核?", "lane": "主管"},
+    {"id": "node_4", "type": "document", "label": "採購申請單", "lane": "申請人"},
+    {"id": "node_5", "type": "end", "label": "結束", "lane": ""}
   ],
   "edges": [
-    {"from": "A", "to": "B", "label": ""},
-    {"from": "B", "to": "C", "label": ""},
-    {"from": "C", "to": "Z", "label": "通過"},
-    {"from": "C", "to": "B", "label": "退回"}
+    {"from": "node_1", "to": "node_2", "label": ""},
+    {"from": "node_2", "to": "node_3", "label": ""},
+    {"from": "node_3", "to": "node_5", "label": "核准"},
+    {"from": "node_3", "to": "node_2", "label": "退回"}
   ]
 }
 ```
 
-節點 type 只能是：start / end / process / control / document
+節點 type 只能是：`start` / `end` / `process` / `control` / `document`。
+每個節點的 id 必須唯一（例如：node_1, step_2 都可以）。
 """
 
 
@@ -143,8 +140,7 @@ def _parse_llm_json(raw: str) -> dict:
             except:
                 pass
         return {
-            "explanation": raw,
-            "mermaid_code": "flowchart TD\n  A([開始]) --> Z([無法解析，請重試])",
+            "explanation": "無法解析 AI 回應的 JSON 格式，請重試。",
             "nodes": [],
             "edges": []
         }
@@ -197,7 +193,6 @@ async def analyze_document(
     return {
         "status": "success",
         "explanation": parsed.get("explanation", ""),
-        "mermaid_code": parsed.get("mermaid_code", ""),
         "nodes": parsed.get("nodes", []),
         "edges": parsed.get("edges", []),
         "messages": messages,
@@ -239,7 +234,6 @@ async def flowchart_chat(
     return {
         "status": "success",
         "explanation": parsed.get("explanation", ""),
-        "mermaid_code": parsed.get("mermaid_code", ""),
         "nodes": parsed.get("nodes", []),
         "edges": parsed.get("edges", []),
         "messages": messages,
