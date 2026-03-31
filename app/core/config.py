@@ -46,7 +46,6 @@ class Settings(BaseSettings):
     # Environment: "development" or "production"
     ENV: str = os.getenv("ENV", "development")
     CLIENT_ORIGIN: str = os.getenv("CLIENT_ORIGIN", "http://localhost:5173")
-    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
     
     DATABASE_URL: str
     EXECUTION_MODE: ExecutionMode = ExecutionMode.MOCK

@@ -120,7 +120,7 @@ async def register(
     db.refresh(user)
 
     # 寄驗證信
-    verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
+    verification_url = f"{settings.CLIENT_ORIGIN}/verify-email?token={token}"
     email_svc = get_email_service()
     await email_svc.send_verification_email(
         to_email=user.email,
@@ -226,7 +226,7 @@ def _refresh_and_send_verification(user: User, db: Session):
     user.verification_token_expires = expires
     db.commit()
 
-    verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
+    verification_url = f"{settings.CLIENT_ORIGIN}/verify-email?token={token}"
     email_svc = get_email_service()
 
     # 如果在非 async 環境呼叫，用 asyncio.run；否則建立 task
