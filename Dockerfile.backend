@@ -2,19 +2,30 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies (ffmpeg is required for audio processing)
-RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
+# Install Python dependencies (cached layer - only rebuilds when requirements change)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-download Whisper model to cache it in the image
-# This prevents downloading 140MB model on every container start
-RUN python -c "import whisper; whisper.load_model('base')"
-
+# Copy application code
 COPY . .
 
 # Create temp directory for uploads
 RUN mkdir -p /app/temp/uploads
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Health check — Azure/Docker can use this to monitor container health
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Use gunicorn with uvicorn workers for production
+CMD ["gunicorn", "app.main:app", \
+     "--worker-class", "uvicorn.workers.UvicornWorker", \
+     "--workers", "2", \
+     "--bind", "0.0.0.0:8000", \
+     "--timeout", "300", \
+     "--access-logfile", "-"]

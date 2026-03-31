@@ -1,5 +1,6 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr, model_validator, ConfigDict
+from pydantic import BaseModel, EmailStr, model_validator, ConfigDict, field_validator
+import re
 
 # Shared properties
 class UserBase(BaseModel):
@@ -14,10 +15,27 @@ class UserBase(BaseModel):
     plan_expiry: Optional[str] = None
     tenant_id: Optional[str] = "default"
 
-# Properties to receive via API on creation
+# Properties to receive via API on creation (admin only)
 class UserCreate(UserBase):
     email: EmailStr
     password: str
+
+# Public registration schema (no admin fields)
+class UserRegister(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: str
+
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("密碼需至少 8 個字元")
+        if not re.search(r"[A-Za-z]", v):
+            raise ValueError("密碼需包含至少一個英文字母")
+        if not re.search(r"\d", v):
+            raise ValueError("密碼需包含至少一個數字")
+        return v
 
 # Properties to receive via API on update
 class UserUpdate(UserBase):
@@ -39,6 +57,7 @@ class UserInDBBase(UserBase):
 # Additional properties to return via API
 class User(UserInDBBase):
     organization: Optional[str] = None
+    is_verified: Optional[bool] = False
 
     @model_validator(mode='after')
     def compute_organization(self):
@@ -63,4 +82,3 @@ class Token(BaseModel):
 
 class TokenPayload(BaseModel):
     sub: Optional[int] = None
-

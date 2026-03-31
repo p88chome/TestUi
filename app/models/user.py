@@ -23,3 +23,8 @@ class User(Base):
     # New relationships
     feedbacks = relationship("Feedback", back_populates="user")
     plan_expiry = Column(String, nullable=True) # ISO Date String
+
+    # Email Verification
+    is_verified = Column(Boolean(), default=False)
+    verification_token = Column(String, nullable=True, index=True)
+    verification_token_expires = Column(DateTime(timezone=True), nullable=True)

@@ -156,7 +156,10 @@ async def transcribe_audio(
     current_user: User = Depends(get_current_user)
 ):
     """
-    音訊/影片轉文字
+    音訊/影片轉文字（非同步版本）
+    
+    上傳後立即回傳 task_id，轉錄在背景執行。
+    使用 GET /meeting/task/{task_id} 查詢進度。
     
     - **file**: 音訊或影片檔案 (mp3, wav, m4a, mp4, webm)
     - **method**: 識別方法 (whisper 或 google)
@@ -164,6 +167,10 @@ async def transcribe_audio(
     - **language**: 語言代碼 (zh, en, zh-TW, zh-CN)
     """
     import tempfile
+    import logging
+    from app.services.task_manager import task_manager
+
+    logger = logging.getLogger(__name__)
     
     # 驗證檔案類型
     allowed_types = [".mp3", ".wav", ".m4a", ".webm", ".ogg", ".mp4", ".avi", ".mov", ".mkv"]
@@ -175,56 +182,84 @@ async def transcribe_audio(
             detail=f"不支援的檔案格式。支援格式: {', '.join(allowed_types)}"
         )
     
-    # 使用 tempfile 確保暫存檔案被正確清理
-    temp_filepath = None
-    
+    # 先將檔案存到暫存路徑
     try:
-        # 建立暫存檔案
         with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as tmp:
             content = await file.read()
             tmp.write(content)
             temp_filepath = tmp.name
-        
-        # 調用 transcription skill
-        from app.skills.transcription import run as transcribe_run
-        
-        result = transcribe_run(
-            file_path=temp_filepath,
-            method=method,
-            model_size=model_size,
-            language=language,
-            include_timestamps=True
-        )
-        
-        if result['success']:
-            return {
-                "status": "success",
-                "transcript": result['text'],
-                "language": result.get('language', language),
-                "segments": result.get('segments', []),
-                "filename": file.filename,
-                "method": method
-            }
-        else:
-            raise HTTPException(
-                status_code=500,
-                detail=f"轉錄失敗: {result.get('error', '未知錯誤')}"
-            )
-    
-    except HTTPException:
-        raise
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"處理檔案時發生錯誤: {str(e)}"
-        )
-    finally:
-        # 確保暫存檔案被清理
-        if temp_filepath and os.path.exists(temp_filepath):
-            try:
-                os.unlink(temp_filepath)
-            except OSError:
-                pass
+        raise HTTPException(status_code=500, detail=f"檔案儲存失敗: {str(e)}")
+
+    # 定義背景轉錄 coroutine
+    async def _do_transcribe():
+        import asyncio
+        try:
+            from app.skills.transcription import run as transcribe_run
+            # 在 executor 中執行同步的 transcribe（避免阻塞 event loop）
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(
+                None,
+                lambda: transcribe_run(
+                    file_path=temp_filepath,
+                    method=method,
+                    model_size=model_size,
+                    language=language,
+                    include_timestamps=True
+                )
+            )
+            if result['success']:
+                return {
+                    "status": "success",
+                    "transcript": result['text'],
+                    "language": result.get('language', language),
+                    "segments": result.get('segments', []),
+                    "filename": file.filename,
+                    "method": method
+                }
+            else:
+                raise Exception(f"轉錄失敗: {result.get('error', '未知錯誤')}")
+        finally:
+            # 確保暫存檔案被清理
+            if os.path.exists(temp_filepath):
+                try:
+                    os.unlink(temp_filepath)
+                except OSError:
+                    pass
+
+    # 提交背景任務
+    task_id = await task_manager.submit(_do_transcribe())
+    logger.info(f"Transcription task submitted: {task_id}, file: {file.filename}")
+
+    return {
+        "status": "processing",
+        "task_id": task_id,
+        "message": "音檔已收到，正在背景轉錄中。請使用 task_id 查詢進度。"
+    }
+
+
+@router.get("/task/{task_id}")
+async def get_task_status(
+    task_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    查詢背景任務狀態（如 Whisper 轉錄）
+    
+    - **task_id**: 由 /transcribe 回傳的任務 ID
+    
+    回傳:
+    - status: pending / running / completed / failed
+    - result: 完成時的轉錄結果
+    - error: 失敗時的錯誤訊息
+    """
+    from app.services.task_manager import task_manager
+
+    status = task_manager.get_status(task_id)
+    if status is None:
+        raise HTTPException(status_code=404, detail="找不到該任務，可能已過期或不存在")
+    
+    return status
 
 
 @router.post("/export")

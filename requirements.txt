@@ -22,6 +22,8 @@ pandas
 openpyxl
 python-docx
 python-pptx
+alembic
+azure-communication-email  # Azure ACS Email Service
 
 # Video/Audio Transcription (disabled on Azure - too heavy for App Service cold start)
 # openai-whisper

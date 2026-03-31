@@ -1,19 +1,18 @@
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from alembic.config import Config as AlembicConfig
+from alembic import command as alembic_command
 from app.core.config import settings
+from app.core.logging_config import setup_logging, RequestLoggingMiddleware
 from app.routers import components, workflows, runs, auth, users, models, ocr, chat, stats, news, skills, agent, feedback, system, meeting, policy, ppt, flowchart
-from app.core.database import engine, Base, SessionLocal
-from app.models.user import User 
-from app.models.stats import UsageLog 
-from app.models.news import PlatformNews 
-from app.models.skill import Skill
-from app.models.feedback import Feedback # Ensure table creation
+from app.core.database import SessionLocal
 from app.initial_data import init_db
-from app.migrate_db import migrate
 
-# Create tables on startup (for MVP simplicity, instead of Alembic)
-Base.metadata.create_all(bind=engine)
+# 初始化結構化日誌（在 import 階段就生效）
+setup_logging()
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -23,13 +22,33 @@ async def lifespan(app: FastAPI):
     Replaces deprecated @app.on_event("startup") and @app.on_event("shutdown")
     """
     # === STARTUP ===
-    print(">>> STARTING APP: Configuring Database & Skills...")
+    logger.info(">>> STARTING APP: Configuring Database & Skills...")
     
-    # 1. Run migration to ensure schema is up to date
+    # 1. Run Alembic migration to ensure schema is up to date
     try:
-        migrate()
+        from sqlalchemy import inspect
+        from app.core.database import engine
+        
+        alembic_cfg = AlembicConfig("alembic.ini")
+        
+        # 檢查是否為「舊版資料庫」（有 users 表但沒有 alembic_version 表）
+        # 這代表 DB 是由舊版 Base.metadata.create_all() 建立的
+        inspector = inspect(engine)
+        tables = inspector.get_table_names()
+        has_alembic = "alembic_version" in tables
+        has_existing_tables = "users" in tables
+        
+        if has_existing_tables and not has_alembic:
+            # 舊資料庫 → stamp baseline，不執行任何 ALTER
+            logger.info("Detected existing database without Alembic. Stamping baseline...")
+            alembic_command.stamp(alembic_cfg, "head")
+            logger.info("Database stamped at baseline revision.")
+        else:
+            # 新資料庫或已有 Alembic → 正常 upgrade
+            alembic_command.upgrade(alembic_cfg, "head")
+            logger.info("Database migration completed successfully.")
     except Exception as e:
-        print(f"Migration failed (might be fine if fresh DB): {e}")
+        logger.error(f"Alembic migration failed: {e}")
 
     # 2. Init DB data and load skills
     db = SessionLocal()
@@ -39,16 +58,16 @@ async def lifespan(app: FastAPI):
         from app.services.skill_loader import load_skills
         load_skills(db)
     except Exception as e:
-        print(f"Init DB failed: {e}")
+        logger.error(f"Init DB failed: {e}")
     finally:
         db.close()
     
-    print(">>> APP READY")
+    logger.info(">>> APP READY")
     
     yield  # Application runs here
     
     # === SHUTDOWN ===
-    print(">>> SHUTTING DOWN APP...")
+    logger.info(">>> SHUTTING DOWN APP...")
 
 
 app = FastAPI(
@@ -57,12 +76,12 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS
-# In production, set CLIENT_ORIGIN to your frontend domain (e.g. https://mypage.vercel.app)
-origins = [
-    settings.CLIENT_ORIGIN,
-    "http://localhost:5173", # Keep local dev working
-]
+# CORS — 根據環境自動決定允許的來源
+origins = [settings.CLIENT_ORIGIN]
+if settings.ENV == "development":
+    # 開發環境才允許 localhost
+    origins.append("http://localhost:5173")
+    origins.append("http://localhost:3000")
 
 app.add_middleware(
     CORSMiddleware,
@@ -71,6 +90,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Request Logging Middleware — 自動記錄每個 API 的回應時間
+app.add_middleware(RequestLoggingMiddleware)
 
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users")
@@ -95,3 +117,13 @@ app.include_router(flowchart.router, prefix="/api/v1")
 @app.get("/")
 def root():
     return {"message": "AI Platform API is running"}
+
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint for Docker/Azure monitoring"""
+    return {
+        "status": "healthy",
+        "version": "1.0.0",
+        "environment": settings.ENV,
+    }

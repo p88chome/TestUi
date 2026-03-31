@@ -10,6 +10,11 @@ class ExecutionMode(str, Enum):
     AZURE = "azure"
     ON_PREM = "on_prem"
 
+class EmailProvider(str, Enum):
+    SMTP = "smtp"
+    AZURE_ACS = "azure_acs"
+    NONE = "none"  # Disable email (dev/test mode)
+
 # Default key for development only
 _DEFAULT_SECRET_KEY = "your-super-secret-key-change-it"
 
@@ -38,7 +43,10 @@ class Settings(BaseSettings):
             )
         return self
 
+    # Environment: "development" or "production"
+    ENV: str = os.getenv("ENV", "development")
     CLIENT_ORIGIN: str = os.getenv("CLIENT_ORIGIN", "http://localhost:5173")
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
     
     DATABASE_URL: str
     EXECUTION_MODE: ExecutionMode = ExecutionMode.MOCK
@@ -53,6 +61,23 @@ class Settings(BaseSettings):
     # Azure Computer Vision
     AZURE_VISION_ENDPOINT: str | None = None
     AZURE_VISION_KEY: str | None = None
+
+    # ── Email Service ──────────────────────────────────────────────────────
+    # Set EMAIL_PROVIDER to "smtp", "azure_acs", or "none" (disable)
+    EMAIL_PROVIDER: EmailProvider = EmailProvider.NONE
+
+    # SMTP (Gmail / Outlook / company SMTP)
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    EMAIL_FROM: str = "no-reply@example.com"
+    EMAIL_FROM_NAME: str = "AI Platform"
+
+    # Azure Communication Services Email
+    ACS_CONNECTION_STRING: Optional[str] = None
+    ACS_SENDER_ADDRESS: Optional[str] = None
+    # ───────────────────────────────────────────────────────────────────────
 
     model_config = SettingsConfigDict(case_sensitive=True, env_file=".env", extra="ignore")
 

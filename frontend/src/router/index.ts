@@ -2,12 +2,18 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Layout from '../components/Layout.vue';
 import ChatbotPage from '../pages/ChatbotPage.vue';
 import LoginPage from '../pages/LoginPage.vue';
+import VerifyEmailPage from '../pages/VerifyEmailPage.vue';
 
 const routes = [
     {
         path: '/login',
         name: 'Login',
         component: LoginPage
+    },
+    {
+        path: '/verify-email',
+        name: 'VerifyEmail',
+        component: VerifyEmailPage
     },
     {
         path: '/',
