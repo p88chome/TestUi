@@ -18,6 +18,7 @@
     "chart.js": "^4.4.4",
     "dagre": "^0.8.5",
     "marked": "^17.0.1",
+    "mermaid": "^11.12.2",
     "pinia": "^2.1.7",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
