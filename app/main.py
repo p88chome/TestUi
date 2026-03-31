@@ -39,14 +39,22 @@ async def lifespan(app: FastAPI):
         has_existing_tables = "users" in tables
         
         if has_existing_tables and not has_alembic:
-            # 舊資料庫 → stamp baseline，不執行任何 ALTER
+            # 舊資料庫 → 標記為基準點 (baseline)，然後執行接下來的升級
             logger.info("Detected existing database without Alembic. Stamping baseline...")
-            alembic_command.stamp(alembic_cfg, "head")
-            logger.info("Database stamped at baseline revision.")
-        else:
-            # 新資料庫或已有 Alembic → 正常 upgrade
+            alembic_command.stamp(alembic_cfg, "1c9bea9a0fd1")
             alembic_command.upgrade(alembic_cfg, "head")
-            logger.info("Database migration completed successfully.")
+            logger.info("Database migrated from baseline to head.")
+        else:
+            # 檢查是否發生了「被誤標記為 head 但其實沒有升級」的慘案
+            columns = [c["name"] for c in inspector.get_columns("users")]
+            if "is_verified" not in columns:
+                logger.warning("⚠️ DB schema is missing updates. Forcing stamp to baseline and rolling forward...")
+                alembic_command.stamp(alembic_cfg, "1c9bea9a0fd1")
+                alembic_command.upgrade(alembic_cfg, "head")
+            else:
+                # 正常 upgrade
+                alembic_command.upgrade(alembic_cfg, "head")
+                logger.info("Database migration completed successfully.")
     except Exception as e:
         logger.error(f"Alembic migration failed: {e}")
 
