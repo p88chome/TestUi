@@ -1,12 +1,14 @@
 <template>
   <div class="custom-node document-node">
+    <svg class="node-bg" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <!-- Standard document shape with wave bottom -->
+      <path d="M 2,2 L 98,2 L 98,85 Q 75,100 50,85 T 2,85 Z" fill="#ffffff" stroke="#ea580c" stroke-width="4"/>
+    </svg>
     <Handle type="target" :position="Position.Top" />
     <Handle type="source" :position="Position.Bottom" />
     
     <div class="node-content">
-      <i class="pi pi-file text-purple-400" style="font-size: 1.1rem"></i>
       <div class="label-text">{{ data.label }}</div>
-      <div v-if="data.lane" class="lane-tag">{{ data.lane }}</div>
     </div>
   </div>
 </template>
@@ -21,28 +23,33 @@ defineProps<{
 
 <style scoped>
 .custom-node {
-  padding: 10px 14px;
-  background: #312e81; /* Indigo */
-  border: 1px solid #6366f1;
-  border-radius: 0 12px 0 0; /* Folded corner look */
-  color: #e0e7ff;
-  font-size: 13px;
-  font-weight: 500;
-  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.3);
-  min-width: 120px;
-  text-align: center;
+  position: relative;
+  width: 150px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.node-bg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: -1;
+  filter: drop-shadow(0px 4px 6px rgba(234, 88, 12, 0.2));
 }
 .node-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  text-align: center;
+  z-index: 1;
+  padding: 0 15px;
+  margin-bottom: 5px; /* offset for the wave */
 }
-.lane-tag {
-  font-size: 10px;
-  color: #a5b4fc;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 2px 6px;
-  border-radius: 4px;
+.label-text {
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.custom-node:hover .node-bg path {
+  fill: #fff7ed;
 }
 </style>

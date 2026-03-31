@@ -252,6 +252,7 @@ import StartEndNode from '../components/flowchart/nodes/StartEndNode.vue';
 import ProcessNode from '../components/flowchart/nodes/ProcessNode.vue';
 import ControlNode from '../components/flowchart/nodes/ControlNode.vue';
 import DocumentNode from '../components/flowchart/nodes/DocumentNode.vue';
+import SwimlaneNode from '../components/flowchart/nodes/SwimlaneNode.vue';
 
 const nodeTypes: any = {
   start: markRaw(StartEndNode),
@@ -259,6 +260,7 @@ const nodeTypes: any = {
   process: markRaw(ProcessNode),
   control: markRaw(ControlNode),
   document: markRaw(DocumentNode),
+  swimlane: markRaw(SwimlaneNode),
 };
 
 const toast = useToast();
@@ -290,45 +292,83 @@ const editNodeLabel = ref('');
 
 const chatContainer = ref<HTMLElement | null>(null);
 
-// ─── Dagre Layout Engine ────────────────────────────────────────────────────
 const applyAutoLayout = () => {
   if (!chartNodes.value.length) return;
   
-  const g = new dagre.graphlib.Graph();
+  const g = new dagre.graphlib.Graph({ compound: true });
   g.setGraph({ rankdir: 'TB', nodesep: 100, ranksep: 120, edgesep: 40 });
   g.setDefaultEdgeLabel(() => ({}));
 
-  const nodeDimensions = {
+  const nodeDimensions: Record<string, { w: number, h: number }> = {
     start: { w: 120, h: 48 },
     end: { w: 120, h: 48 },
     process: { w: 160, h: 60 },
-    control: { w: 160, h: 80 },
-    document: { w: 120, h: 60 }
+    control: { w: 160, h: 100 },
+    document: { w: 150, h: 80 }
   };
 
-  chartNodes.value.forEach((n) => {
-    const dim = nodeDimensions[n.type as keyof typeof nodeDimensions] || { w: 150, h: 50 };
+  // 1. Add Swimlanes as clusters
+  const lanes = chartNodes.value.filter(n => n.type === 'swimlane');
+  lanes.forEach(lane => {
+    g.setNode(lane.id, { label: lane.data.label, clusterLabelPos: 'top' });
+  });
+
+  // 2. Add normal nodes and attach to parents
+  const childNodes = chartNodes.value.filter(n => n.type !== 'swimlane');
+  childNodes.forEach((n) => {
+    const dim = nodeDimensions[n.type] || { w: 150, h: 50 };
     g.setNode(n.id, { width: dim.w, height: dim.h });
+    if (n.parentNode) {
+      g.setParent(n.id, n.parentNode);
+    }
   });
 
   chartEdges.value.forEach((e) => {
     g.setEdge(e.source, e.target);
   });
 
-  dagre.layout(g);
+  try {
+    dagre.layout(g);
+  } catch(e) {
+    console.warn("Dagre layout issue", e); // fallback gracefully if bad structure
+  }
 
   // Apply layout to ref
   chartNodes.value = chartNodes.value.map((n) => {
-    const nodeWithPosition = g.node(n.id);
-    return {
-      ...n,
-      position: {
-        x: nodeWithPosition.x - (nodeDimensions[n.type as keyof typeof nodeDimensions]?.w || 150) / 2,
-        y: nodeWithPosition.y - (nodeDimensions[n.type as keyof typeof nodeDimensions]?.h || 50) / 2,
-      },
-      targetPosition: 'top',
-      sourcePosition: 'bottom',
-    };
+    const nodeData = g.node(n.id);
+    if (!nodeData) return n;
+
+    if (n.type === 'swimlane') {
+      return {
+        ...n,
+        position: {
+          x: nodeData.x - nodeData.width / 2,
+          y: nodeData.y - nodeData.height / 2,
+        },
+        style: { width: `${nodeData.width + 40}px`, height: `${nodeData.height + 60}px` }
+      };
+    } else {
+      let relativeX = nodeData.x - (nodeDimensions[n.type]?.w || 150) / 2;
+      let relativeY = nodeData.y - (nodeDimensions[n.type]?.h || 50) / 2;
+
+      if (n.parentNode) {
+        const parentData = g.node(n.parentNode);
+        if (parentData) {
+          const parentAbsX = parentData.x - parentData.width / 2;
+          const parentAbsY = parentData.y - parentData.height / 2;
+          // shift back relative to parent bounding box + padding
+          relativeX = relativeX - parentAbsX + 20;
+          relativeY = relativeY - parentAbsY + 40;
+        }
+      }
+
+      return {
+        ...n,
+        position: { x: relativeX, y: relativeY },
+        targetPosition: 'top',
+        sourcePosition: 'bottom',
+      };
+    }
   });
 
   // Re-fit view after tick
@@ -339,28 +379,44 @@ const applyAutoLayout = () => {
 
 // ─── Data Mapping ───────────────────────────────────────────────────────────
 const parseApiPayloadToVueFlow = (apiNodes: any[], apiEdges: any[]) => {
+  const uniqueLanes = [...new Set(apiNodes.map((n: any) => n.lane || '預設部門'))];
+  
+  const laneNodes = uniqueLanes.map(lane => ({
+    id: `lane-${lane}`,
+    type: 'swimlane',
+    data: { label: lane },
+    position: { x: 0, y: 0 },
+    style: { width: '400px', height: '800px' },
+    zIndex: -1
+  }));
+
   const vNodes = apiNodes.map((n: any) => ({
     id: n.id,
     type: n.type,
     data: { label: n.label, lane: n.lane, isStart: n.type === 'start', isEnd: n.type === 'end' },
-    position: { x: 0, y: 0 } // temporary
+    position: { x: 0, y: 0 },
+    parentNode: `lane-${n.lane || '預設部門'}`,
+    extent: 'parent'
   }));
 
-  const vEdges = apiEdges.map((e: any, idx: number) => ({
-    id: `e-${e.from}-${e.to}-${idx}`,
-    source: e.from,
-    target: e.to,
-    label: e.label || '',
-    type: 'smoothstep',
-    animated: true,
-    style: { stroke: '#94a3b8', strokeWidth: 2 },
-    labelBgPadding: [6, 4],
-    labelBgBorderRadius: 4,
-    labelBgStyle: { fill: '#1e293b', fillOpacity: 0.9 },
-    labelStyle: { fill: '#cbd5e1', fontWeight: 600, fontSize: 12 }
-  }));
+  const vEdges = apiEdges.map((e: any, idx: number) => {
+    const isDoc = apiNodes.find((n: any) => n.id === e.to)?.type === 'document';
+    return {
+      id: `e-${e.from}-${e.to}-${idx}`,
+      source: e.from,
+      target: e.to,
+      label: e.label || '',
+      type: 'smoothstep',
+      animated: !isDoc,
+      style: isDoc ? { strokeDasharray: '5 5', stroke: '#ea580c', strokeWidth: 2 } : { stroke: '#475569', strokeWidth: 2 },
+      labelBgPadding: [6, 4],
+      labelBgBorderRadius: 4,
+      labelBgStyle: { fill: '#1e293b', fillOpacity: 0.9 },
+      labelStyle: { fill: '#cbd5e1', fontWeight: 600, fontSize: 12 }
+    };
+  });
 
-  chartNodes.value = vNodes;
+  chartNodes.value = [...laneNodes, ...vNodes];
   chartEdges.value = vEdges;
 
   // Run layout

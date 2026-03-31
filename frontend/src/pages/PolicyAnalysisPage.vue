@@ -369,33 +369,74 @@ const analyzeGap = async () => {
   
   isAnalyzing.value = true;
   errorMsg.value = '';
+  output.value = ''; // Reset output for streaming
   
   try {
     const formData = new FormData();
     formData.append('policy_file', policyFile.value);
-    
     for (const file of interviewFiles.value) {
       formData.append('interview_files', file);
     }
     
-    const response: any = await apiClient.post('/policy/analyze', formData, {
-      timeout: 180000 // 3 minutes timeout
-    });
+    // Using native fetch for streaming
+    const baseUrl = import.meta.env.VITE_API_URL 
+      ? (import.meta.env.VITE_API_URL.endsWith('/') ? import.meta.env.VITE_API_URL + 'api/v1' : import.meta.env.VITE_API_URL + '/api/v1')
+      : '/api/v1';
     
-    if (response.status === 'success') {
-      output.value = response.report;
+    const response = await fetch(`${baseUrl}/policy/analyze`, {
+      method: 'POST',
+      body: formData,
+      // Note: Don't set Content-Type header, let browser set it with boundary
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'API 伺服器傳回錯誤' }));
+      throw new Error(errorData.detail || '連線失敗');
+    }
+
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+    
+    if (!reader) throw new Error('無法建立讀取流');
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+      
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const data = JSON.parse(line);
+          if (data.status === 'content') {
+            output.value += data.content;
+          } else if (data.status === 'error') {
+            errorMsg.value = data.error;
+            toast.add({ severity: 'error', summary: '分析錯誤', detail: data.error, life: 5000 });
+          } else if (data.status === 'extracting' || data.status === 'processing') {
+            // Optional: update a status message if you have one
+            console.log('Status:', data.message);
+          }
+        } catch (e) {
+          console.warn('NDJSON parse error:', e);
+        }
+      }
+    }
+
+    if (!errorMsg.value) {
       toast.add({
         severity: 'success',
         summary: '分析完成',
         detail: '差異分析報告已生成',
         life: 3000
       });
-    } else {
-      errorMsg.value = response.error || '分析失敗';
     }
   } catch (err: any) {
     console.error('Analyze error:', err);
-    errorMsg.value = err.response?.data?.detail || err.message || '分析時發生錯誤';
+    errorMsg.value = err.message || '分析時發生錯誤';
+    toast.add({ severity: 'error', summary: '發生錯誤', detail: errorMsg.value, life: 5000 });
   } finally {
     isAnalyzing.value = false;
   }
@@ -449,10 +490,16 @@ const downloadWord = async () => {
       },
       { responseType: 'blob', timeout: 60000 }
     );
-    const blob = new Blob([response as any], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    });
-    const url = URL.createObjectURL(blob);
+    
+    // Check if the response is actually a JSON error hidden in a blob
+    const responseBlob = response as unknown as Blob;
+    if (responseBlob.type === 'application/json') {
+      const text = await responseBlob.text();
+      const errorData = JSON.parse(text);
+      throw new Error(errorData.detail || '匯出 Word 失敗');
+    }
+
+    const url = URL.createObjectURL(responseBlob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `制度差異分析報告_${formatDate()}.docx`;
@@ -460,7 +507,8 @@ const downloadWord = async () => {
     URL.revokeObjectURL(url);
     toast.add({ severity: 'success', summary: '匯出成功', detail: 'Word 檔案已下載', life: 2000 });
   } catch (err: any) {
-    toast.add({ severity: 'error', summary: '匯出失敗', detail: err.message || '請重試', life: 3000 });
+    console.error('Export error:', err);
+    toast.add({ severity: 'error', summary: '匯出失敗', detail: err.message || '請重試', life: 5000 });
   } finally {
     isExportingWord.value = false;
   }
