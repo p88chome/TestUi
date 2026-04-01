@@ -118,9 +118,18 @@ router.beforeEach(async (to, _from, next) => {
             await apiClient.get('/users/me');
             // Token is valid, proceed
         } catch (error: any) {
-            // Token invalid or expired - clear it
+            // Token invalid or expired - clear it from BOTH storage and memory
             console.warn('Token validation failed:', error?.response?.status || error.message);
-            localStorage.removeItem('token');
+            
+            try {
+                const { useAuthStore } = await import('../stores/auth');
+                const auth = useAuthStore();
+                auth.logout(); // This clears localStorage AND auth.state
+            } catch (authError) {
+                // Fail-safe if store import fails
+                localStorage.removeItem('token');
+            }
+            
             isAuthenticated = false;
         }
     }
