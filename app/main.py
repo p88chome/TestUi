@@ -8,7 +8,8 @@ from alembic import command as alembic_command
 from app.core.config import settings
 from app.core.logging_config import setup_logging, RequestLoggingMiddleware
 from app.routers import components, workflows, runs, auth, users, models, ocr, chat, stats, news, skills, agent, feedback, system, meeting, policy, ppt, flowchart
-from app.core.database import SessionLocal
+from sqlalchemy import inspect
+from app.core.database import engine, SessionLocal
 from app.initial_data import init_db
 
 # 初始化結構化日誌（在 import 階段就生效）
@@ -27,67 +28,34 @@ async def lifespan(app: FastAPI):
     
     # 1. Run Alembic migration to ensure schema is up to date
     try:
-        from sqlalchemy import inspect
-        from app.core.database import engine
-        
+        # ─── 資料庫自動遷移與建表優化 ──────────────────────────────────────────
         alembic_cfg = AlembicConfig("alembic.ini")
-        
-        inspector = inspect(engine)
-        tables = inspector.get_table_names()
-        has_existing_tables = "users" in tables
-
-        # 正確判斷：檢查 alembic_version 表裡有沒有資料（而不只是表存在）
-        from sqlalchemy import text
-        has_alembic_version = False
-        if "alembic_version" in tables:
-            with engine.connect() as conn:
-                result = conn.execute(text("SELECT version_num FROM alembic_version LIMIT 1"))
-                has_alembic_version = result.fetchone() is not None
-
-        if has_existing_tables and not has_alembic_version:
-            # 舊資料庫，或 alembic_version 被清空 → 重新標記基準點並升級
-            logger.info("Detected existing database without Alembic version. Stamping baseline...")
-            alembic_command.stamp(alembic_cfg, "1c9bea9a0fd1")
-            alembic_command.upgrade(alembic_cfg, "head")
-            logger.info("Database migrated from baseline to head.")
-        elif not has_existing_tables:
-            # 全新資料庫 → 讓 SQLAlchemy 建立所有的表，然後 stamp
-            logger.info("Fresh database detected. Creating all tables...")
-            from app.core.database import Base
-            Base.metadata.create_all(bind=engine)
-            alembic_command.stamp(alembic_cfg, "head")
-            logger.info("All tables created and stamped.")
-        else:
-            # 正常情況 → 直接執行升級
-            alembic_command.upgrade(alembic_cfg, "head")
-            logger.info("Database migration completed successfully.")
-
-        # === One-Time Fix: Manual check for ai_models columns (for 500 error fix) ===
-        if "ai_models" in tables:
-            from sqlalchemy import text
-            ai_columns = [c["name"] for c in inspector.get_columns("ai_models")]
-            with engine.connect() as conn:
-                if "provider" not in ai_columns:
-                    logger.info("Missing 'provider' column in 'ai_models'. Adding now...")
-                    conn.execute(text("ALTER TABLE ai_models ADD COLUMN provider VARCHAR DEFAULT 'azure'"))
-                if "model_name" not in ai_columns:
-                    logger.info("Missing 'model_name' column in 'ai_models'. Adding now...")
-                    conn.execute(text("ALTER TABLE ai_models ADD COLUMN model_name VARCHAR"))
-                if "is_reasoning_model" not in ai_columns:
-                    logger.info("Missing 'is_reasoning_model' column in 'ai_models'. Adding now...")
-                    conn.execute(text("ALTER TABLE ai_models ADD COLUMN is_reasoning_model BOOLEAN DEFAULT FALSE"))
-                conn.commit()
-                logger.info("AI models table columns verified/updated.")
-
-        # === 補全保險：確保所有 SQLAlchemy 模型的表都存在 ===
-        # 這能補上 Alembic 腳本裡沒有處理到的表（例如 ai_models）
-        # checkfirst=True 確保已有的表不會被重建
         from app.core.database import Base
+
+        # 確保所有模型都被 import，才能讓 Base.metadata 知道有哪些表
+        import app.models  # noqa: F401
+
+        # 1. 直接確保所有模型定義的表都存在 (保險機制)
+        # checkfirst=True 會自動跳過已存在的表，補齊缺漏的表 (如 ai_models)
         Base.metadata.create_all(bind=engine, checkfirst=True)
         logger.info("All model tables ensured via create_all.")
 
+        # 2. 處理 Alembic 遷移版本
+        inspector = inspect(engine)
+        tables = inspector.get_table_names()
+        
+        if "alembic_version" not in tables:
+            # 如果沒有版本紀錄，直接標記為最新 (因為剛才 create_all 已經是最新的了)
+            logger.info("Stamping new database with head revision...")
+            alembic_command.stamp(alembic_cfg, "head")
+        else:
+            # 如果已有版本，執行升級
+            logger.info("Running Alembic upgrade to head...")
+            alembic_command.upgrade(alembic_cfg, "head")
+        # ───────────────────────────────────────────────────────────────────
+
     except Exception as e:
-        logger.error(f"Alembic migration failed: {e}")
+        logger.error(f"Critical: Database initialization failed: {e}")
 
     # 2. Init DB data and load skills
     db = SessionLocal()

@@ -42,8 +42,32 @@
       </div>
     </nav>
     
+    <!-- Model Selector -->
+    <div class="model-selector-container px-2 mb-3">
+        <div v-if="!isCollapsed" class="model-selector border-round flex flex-column gap-2 p-3 bg-gray-900 border-1 border-gray-800">
+            <div class="text-xs font-bold text-gray-500 uppercase tracking-wide flex align-items-center justify-content-between">
+                <span>Active Model</span>
+                <i class="pi pi-bolt text-yellow-500"></i>
+            </div>
+            <Dropdown 
+                v-model="selectedModel" 
+                :options="availableModels" 
+                optionLabel="name" 
+                class="w-full model-dropdown"
+                @change="onModelChange"
+                :loading="loadingModels"
+                placeholder="Select Model"
+            />
+        </div>
+        <div v-else class="collapsed-model-indicator flex justify-content-center p-2" v-tooltip.right="selectedModel?.name || 'Select Model'">
+            <div class="w-2rem h-2rem border-circle bg-gray-900 border-1 border-gray-800 flex align-items-center justify-content-center cursor-pointer hover:border-brand">
+                <i class="pi pi-server text-brand text-xs"></i>
+            </div>
+        </div>
+    </div>
+
     <!-- Bottom: All Apps Trigger -->
-    <div class="mt-auto px-2 pb-3">
+    <div class="px-2 pb-3">
         <div 
             class="nav-item flex align-items-center p-2 text-gray-400 border-round hover:surface-hover transition-colors cursor-pointer"
             @click="openAppLauncher"
@@ -96,20 +120,30 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useThemeStore } from '../stores/theme';
 import { getWorkflows } from '../api/workflows';
+import { getModels, setActiveModel, type AIModel } from '../api/models';
 import InputText from 'primevue/inputtext';
 import Sidebar from 'primevue/sidebar';
+import Dropdown from 'primevue/dropdown';
+import { useToast } from 'primevue/usetoast';
 
 const auth = useAuthStore();
 const themeStore = useThemeStore();
 const router = useRouter();
+
+const toast = useToast();
 
 const isCollapsed = ref(true); // Default collapsed on load (expanded on hover)
 const showAppLauncher = ref(false);
 const appSearch = ref('');
 const customApps = ref<any[]>([]);
 
+const availableModels = ref<AIModel[]>([]);
+const selectedModel = ref<AIModel | null>(null);
+const loadingModels = ref(false);
+
 onMounted(async () => {
     if (auth.state.token) {
+        // Fetch Apps
         try {
             const wfs = await getWorkflows();
             customApps.value = wfs.map(w => ({
@@ -120,8 +154,44 @@ onMounted(async () => {
         } catch (e) {
             console.error("Failed to fetch custom apps", e);
         }
+
+        // Fetch Models
+        try {
+            loadingModels.value = true;
+            const models = await getModels();
+            availableModels.value = models;
+            const active = models.find(m => m.is_active);
+            selectedModel.value = active || (models.length > 0 ? models[0] : null);
+        } catch (e) {
+            console.error("Failed to fetch models", e);
+        } finally {
+            loadingModels.value = false;
+        }
     }
 });
+
+const onModelChange = async (event: any) => {
+    const model = event.value;
+    if (!model) return;
+
+    try {
+        await setActiveModel(model.id);
+        toast.add({
+            severity: 'success',
+            summary: 'Model Switched',
+            detail: `Active model is now ${model.name}`,
+            life: 3000
+        });
+    } catch (e) {
+        console.error("Failed to set active model", e);
+        toast.add({
+            severity: 'error',
+            summary: 'Switch Failed',
+            detail: 'Could not update active model',
+            life: 5000
+        });
+    }
+};
 
 /* Hover Expand Logic */
 const expandSidebar = () => {
@@ -171,7 +241,6 @@ const menuGroups = computed(() => {
       {
         title: 'Operations',
         items: [
-           { label: 'Models', path: '/models', icon: 'pi pi-server' },
            { label: 'Settings', path: '/profile', icon: 'pi pi-cog' },
         ]
       }
@@ -239,5 +308,49 @@ const filteredApps = computed(() => {
   color: #FFF;
   border-left: 3px solid var(--color-brand-primary);
   padding-left: calc(0.5rem - 3px);
+}
+
+/* Model Selector Styling */
+.model-selector {
+    background-color: #0a0a0a !important;
+}
+
+.model-dropdown {
+    background: transparent !important;
+    border: none !important;
+    font-size: 0.85rem !important;
+    color: #fff !important;
+}
+
+:deep(.p-dropdown-label) {
+    padding: 0.25rem 0.5rem !important;
+    color: #e2e8f0;
+}
+
+:deep(.p-dropdown-trigger) {
+    width: 2rem !important;
+}
+
+:deep(.p-dropdown-panel) {
+    background-color: #0a0a0a !important;
+    border: 1px solid #1f1f1f !important;
+}
+
+:deep(.p-dropdown-item) {
+    color: #94a3b8 !important;
+    font-size: 0.85rem !important;
+}
+
+:deep(.p-dropdown-item.p-highlight) {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+    color: var(--color-brand-primary) !important;
+}
+
+.text-brand {
+    color: var(--color-brand-primary);
+}
+
+.hover\:border-brand:hover {
+    border-color: var(--color-brand-primary) !important;
 }
 </style>

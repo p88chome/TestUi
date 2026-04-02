@@ -121,7 +121,12 @@ async def generate_meeting_minutes(
             {"role": "user", "content": user_prompt}
         ]
         
-        response = await gateway.chat(messages=messages, temperature=0.3)
+        response = await gateway.chat(
+            messages=messages, 
+            user_id=current_user.id, # Added for per-user tracking
+            temperature=0.3,
+            app_name="Meeting Minutes" # Added for better analytics
+        )
         
         choices = response.get("choices", [])
         if choices:

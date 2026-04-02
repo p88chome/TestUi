@@ -14,6 +14,7 @@ from app.services.llm_service import call_llm
 
 async def call_azure_openai(
     db: Session,
+    user_id: int | None = None, # Added
     input_text: str | None = None,
     messages: list[dict] | None = None,
     system_prompt: str = "You are a helpful AI assistant.",
@@ -26,6 +27,7 @@ async def call_azure_openai(
     """
     return await call_llm(
         db=db,
+        user_id=user_id, # Added
         input_text=input_text,
         messages=messages,
         system_prompt=system_prompt,

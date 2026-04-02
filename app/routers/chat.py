@@ -4,7 +4,6 @@ from app.core.database import get_db
 from app.services.azure_integration import call_azure_openai, call_azure_ocr
 from app.api import deps
 from app.models.user import User
-from app.models.stats import UsageLog
 import json
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -53,38 +52,25 @@ async def chat_message(
     try:
         response = await call_azure_openai(
             db=db,
+            user_id=current_user.id, # Added: Crucial for per-user dashboard
             input_text=context_text,
             system_prompt=SMART_SYSTEM_PROMPT,
-            temperature=0.5 # Balanced for analysis vs chat
+            temperature=0.5,
+            app_name="Enterprise Chat" # Added for better analytics
         )
         
         # Extract the assistant's reply
         reply = response.get("choices", [])[0].get("message", {}).get("content", "")
         
-        # 3. Log Token Usage
+        # 3. Cost Estimation (Calculated from LLM response)
         usage = response.get("usage", {})
         prompt_tokens = usage.get("prompt_tokens", 0)
         completion_tokens = usage.get("completion_tokens", 0)
         total_tokens = usage.get("total_tokens", 0)
         
-        total_tokens = usage.get("total_tokens", 0)
         model_name = response.get("model", "gpt-4")
-        
-        # Cost Estimation
         from app.core.cost_calculator import calculate_ai_cost
         estimated_cost = calculate_ai_cost(model_name, prompt_tokens, completion_tokens)
-        
-        log_entry = UsageLog(
-            user_id=current_user.id,
-            app_name="Enterprise Chat",
-            model_name=model_name,
-            tokens_input=prompt_tokens,
-            tokens_output=completion_tokens,
-            total_tokens=total_tokens,
-            estimated_cost=estimated_cost
-        )
-        db.add(log_entry)
-        db.commit()
         
         return {
             "role": "assistant",

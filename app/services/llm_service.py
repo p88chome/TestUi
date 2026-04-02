@@ -6,6 +6,7 @@ Routing is based on the active AIModel's `provider` field.
 import httpx
 from sqlalchemy.orm import Session
 from app.models.domain import AIModel, LLMProvider
+from app.models.stats import UsageLog
 from app.core.config import settings
 
 
@@ -129,16 +130,19 @@ def _parse_gemini_response(raw: dict) -> dict:
 
 async def call_llm(
     db: Session,
+    user_id: int | None = None,  # Made optional for compatibility
     input_text: str | None = None,
     messages: list[dict] | None = None,
     system_prompt: str = "You are a helpful AI assistant.",
     model_id: str | None = None,
+    app_name: str = "Assistant", # Added: Name of the application (e.g. "Chatbot", "PPT Generator")
     temperature: float = 0.7,
     max_tokens: int = 2000,
 ) -> dict:
     """
     Unified async entry point.
     Resolves the active model from DB, then routes to the correct provider.
+    Logs usage (tokens, model, user) after successful completion.
     """
     ai_model = _resolve_model(db, model_id)
 
@@ -160,7 +164,12 @@ async def call_llm(
         raise ValueError(f"LLM API Error [{ai_model.provider}] ({response.status_code}): {response.text}")
 
     raw = response.json()
-    return raw if ai_model.provider == LLMProvider.AZURE else _parse_gemini_response(raw)
+    res = raw if ai_model.provider == LLMProvider.AZURE else _parse_gemini_response(raw)
+
+    # Log Usage
+    _log_usage(db, user_id, ai_model.name, app_name, res)
+    
+    return res
 
 
 # ---------------------------------------------------------------------------
@@ -169,16 +178,19 @@ async def call_llm(
 
 def call_llm_sync(
     db: Session,
+    user_id: int | None = None,  # Added: ID of the user calling the LLM
     input_text: str | None = None,
     messages: list[dict] | None = None,
     system_prompt: str = "You are a helpful AI assistant.",
     model_id: str | None = None,
+    app_name: str = "Assistant", # Added
     temperature: float = 0.7,
     max_tokens: int = 2000,
 ) -> dict:
     """
     Synchronous version of call_llm.
     Uses the same payload builders so behaviour is identical.
+    Logs usage (tokens, model, user) after successful completion.
     """
     ai_model = _resolve_model(db, model_id)
 
@@ -200,7 +212,12 @@ def call_llm_sync(
         raise ValueError(f"LLM API Error [{ai_model.provider}] ({response.status_code}): {response.text}")
 
     raw = response.json()
-    return raw if ai_model.provider == LLMProvider.AZURE else _parse_gemini_response(raw)
+    res = raw if ai_model.provider == LLMProvider.AZURE else _parse_gemini_response(raw)
+
+    # Log Usage
+    _log_usage(db, user_id, ai_model.name, app_name, res)
+
+    return res
 
 
 # ---------------------------------------------------------------------------
@@ -227,3 +244,32 @@ def _resolve_model(db: Session, model_id: str | None) -> AIModel:
         )
 
     return ai_model
+
+
+def _log_usage(db: Session, user_id: int, model_name: str, app_name: str, response_json: dict):
+    """Creates a UsageLog entry in the database based on the LLM response."""
+    try:
+        usage = response_json.get("usage", {})
+        
+        # Azure / OpenAI standard structure
+        prompt_tokens = usage.get("prompt_tokens", 0)
+        completion_tokens = usage.get("completion_tokens", 0)
+        total_tokens = usage.get("total_tokens", prompt_tokens + completion_tokens)
+
+        # Create record
+        log = UsageLog(
+            user_id=user_id,
+            app_name=app_name,
+            model_name=model_name,
+            tokens_input=prompt_tokens,
+            tokens_output=completion_tokens,
+            total_tokens=total_tokens,
+            # We can calculate estimated cost here if we have a pricing table
+            estimated_cost=0.0 
+        )
+        db.add(log)
+        db.commit()
+    except Exception as e:
+        # We don't want to crash the main response if logging fails
+        import logging
+        logging.getLogger("uvicorn").error(f"Failed to log LLM usage: {e}")

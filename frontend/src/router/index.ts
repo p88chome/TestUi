@@ -61,7 +61,7 @@ const routes = [
 
             // Operations
             { path: 'monitoring', name: 'Monitoring', component: () => import('../pages/ComingSoonPage.vue') },
-            { path: 'models', name: 'Models', component: () => import('../pages/ModelsPage.vue') },
+            { path: 'models', name: 'Models', component: () => import('../pages/ModelsPage.vue'), meta: { adminOnly: true } },
             { path: 'skills', name: 'Skills', component: () => import('../pages/SkillsPage.vue') },
             { path: 'news', name: 'News', component: () => import('../pages/NewsPage.vue') },
             { path: 'settings', name: 'Settings', component: () => import('../pages/ComingSoonPage.vue') },

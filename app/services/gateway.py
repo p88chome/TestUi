@@ -9,7 +9,7 @@ class LLMGateway:
     def __init__(self, db: Session):
         self.db = db
 
-    async def chat(self, messages: list[dict], temperature: float = 0.7, model_id: str = None) -> dict:
+    async def chat(self, messages: list[dict], user_id: int | None = None, temperature: float = 0.7, model_id: str = None) -> dict:
         """
         Unified Chat Interface.
         
@@ -26,6 +26,7 @@ class LLMGateway:
         
         return await call_azure_openai(
             db=self.db,
+            user_id=user_id, # Added
             input_text="", # Legacy param, ignored by call_azure_openai when messages is provided
             messages=messages,
             model_id=model_id,
