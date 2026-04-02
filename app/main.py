@@ -56,6 +56,24 @@ async def lifespan(app: FastAPI):
                 # 正常 upgrade
                 alembic_command.upgrade(alembic_cfg, "head")
                 logger.info("Database migration completed successfully.")
+
+        # === One-Time Fix: Manual check for ai_models columns (for 500 error fix) ===
+        if "ai_models" in tables:
+            from sqlalchemy import text
+            ai_columns = [c["name"] for c in inspector.get_columns("ai_models")]
+            with engine.connect() as conn:
+                if "provider" not in ai_columns:
+                    logger.info("Missing 'provider' column in 'ai_models'. Adding now...")
+                    conn.execute(text("ALTER TABLE ai_models ADD COLUMN provider VARCHAR DEFAULT 'azure'"))
+                if "model_name" not in ai_columns:
+                    logger.info("Missing 'model_name' column in 'ai_models'. Adding now...")
+                    conn.execute(text("ALTER TABLE ai_models ADD COLUMN model_name VARCHAR"))
+                if "is_reasoning_model" not in ai_columns:
+                    logger.info("Missing 'is_reasoning_model' column in 'ai_models'. Adding now...")
+                    conn.execute(text("ALTER TABLE ai_models ADD COLUMN is_reasoning_model BOOLEAN DEFAULT FALSE"))
+                conn.commit()
+                logger.info("AI models table columns verified/updated.")
+
     except Exception as e:
         logger.error(f"Alembic migration failed: {e}")
 
