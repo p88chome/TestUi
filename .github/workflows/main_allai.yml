@@ -18,7 +18,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -28,15 +28,28 @@ jobs:
         with:
           python-version: '3.11'
 
-      # 🛠️ Local Build Section (Optional)
-      # The following section in your workflow is designed to catch build issues early on the client side, before deployment. This can be helpful for debugging and validation. However, if this step significantly increases deployment time and early detection is not critical for your workflow, you may remove this section to streamline the deployment process.
       - name: Create and Start virtual environment and Install dependencies
         run: |
           python -m venv antenv
           source antenv/bin/activate
           pip install -r requirements.txt
-                
-      # By default, when you enable GitHub CI/CD integration through the Azure portal, the platform automatically sets the SCM_DO_BUILD_DURING_DEPLOYMENT application setting to true. This triggers the use of Oryx, a build engine that handles application compilation and dependency installation (e.g., pip install) directly on the platform during deployment. Hence, we exclude the antenv virtual environment directory from the deployment artifact to reduce the payload size. 
+
+      # ✅ Verify Python imports are valid before packaging
+      # This catches any NameError / ImportError before the code hits Azure
+      - name: Verify app imports
+        run: |
+          source antenv/bin/activate
+          python -c "
+          import sys
+          sys.path.insert(0, '.')
+          from sqlalchemy import inspect, create_engine
+          print('SQLAlchemy imports OK')
+          import app.models
+          print('app.models imports OK')
+          print('All critical imports verified.')
+          "
+
+      # 🎯 Only package backend-relevant files to minimize artifact size
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
@@ -44,26 +57,33 @@ jobs:
           path: |
             .
             !antenv/
-
-      # 🚫 Opting Out of Oryx Build
-      # If you prefer to disable the Oryx build process during deployment, follow these steps:
-      # 1. Remove the SCM_DO_BUILD_DURING_DEPLOYMENT app setting from your Azure App Service Environment variables.
-      # 2. Refer to sample workflows for alternative deployment strategies: https://github.com/Azure/actions-workflow-samples/tree/master/AppService
-      
+            !frontend/
+            !archive/
+            !global_skills/
+            !node_modules/
+            !.git/
+            !*.pptx
+            !*.db
+            !*.sqlite3
+            !test_*.py
+            !verify_*.py
+            !debug_*.py
+            !check_*.py
+            !seed_*.py
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: python-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -77,4 +97,3 @@ jobs:
         with:
           app-name: 'Allai'
           slot-name: 'Production'
-          
