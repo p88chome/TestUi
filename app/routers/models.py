@@ -38,7 +38,14 @@ class AIModelOut(AIModelBase):
 # Endpoints
 @router.get("/", response_model=list[AIModelOut])
 def list_models(db: Session = Depends(get_db)):
-    return db.query(AIModel).order_by(AIModel.name).all()
+    try:
+        models = db.query(AIModel).order_by(AIModel.name).all()
+        return models
+    except Exception as e:
+        import traceback
+        error_detail = traceback.format_exc()
+        raise HTTPException(status_code=500, detail=f"Database Error in /models/: {str(e)}\nTraceback: {error_detail}")
+
 
 @router.post("/", response_model=AIModelOut)
 def create_model(model: AIModelCreate, db: Session = Depends(get_db)):
