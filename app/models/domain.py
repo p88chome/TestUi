@@ -62,12 +62,21 @@ class RunExecution(Base):
 
     workflow = relationship("Workflow", back_populates="runs")
 
+class LLMProvider(str, Enum):
+    AZURE = "azure"
+    GOOGLE = "google"
+    OPENAI = "openai"
+
 class AIModel(Base):
     __tablename__ = "ai_models"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String, unique=True, index=True) # e.g., "GPT-4 Production"
-    deployment_name: Mapped[str] = mapped_column(String) # e.g., "gpt-4-prod" (Azure Deployment Name)
-    api_version: Mapped[str] = mapped_column(String) # e.g., "2023-05-15"
+    provider: Mapped[LLMProvider] = mapped_column(SQLEnum(LLMProvider), default=LLMProvider.AZURE)
+    model_name: Mapped[str | None] = mapped_column(String, nullable=True) # e.g., "gemini-1.5-pro", "gpt-4o"
+    deployment_name: Mapped[str | None] = mapped_column(String, nullable=True) # e.g., "gpt-4-prod" (Azure Deployment Name)
+    api_version: Mapped[str | None] = mapped_column(String, nullable=True) # e.g., "2023-05-15" (Azure specific)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=False) # Can be used to highlight default model
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False)
+    # True for o1/o3/o4-mini: requires max_completion_tokens instead of max_tokens
+    is_reasoning_model: Mapped[bool] = mapped_column(Boolean, default=False)

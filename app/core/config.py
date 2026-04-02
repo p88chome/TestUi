@@ -9,6 +9,7 @@ class ExecutionMode(str, Enum):
     MOCK = "mock"
     AZURE = "azure"
     ON_PREM = "on_prem"
+    GEMINI = "gemini"
 
 class EmailProvider(str, Enum):
     SMTP = "smtp"
@@ -50,12 +51,16 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     EXECUTION_MODE: ExecutionMode = ExecutionMode.MOCK
     
+    # Azure OpenAI
     AZURE_OPENAI_ENDPOINT: str | None = None
-    AZURE_OPENAI_API_KEY: str | None = None # Matches common naming
-    AZURE_OPENAI_KEY: str | None = None     # Matches what might be there locally
-    
+    AZURE_OPENAI_API_KEY: str | None = None
+    AZURE_OPENAI_KEY: str | None = None
     AZURE_OPENAI_DEPLOYMENT_NAME: str | None = None
     AZURE_OPENAI_API_VERSION: str = "2024-12-01-preview"
+
+    # Google Gemini
+    GEMINI_API_KEY: str | None = None
+    GEMINI_MODEL_NAME: str = "gemini-1.5-flash"
 
     # Azure Computer Vision
     AZURE_VISION_ENDPOINT: str | None = None

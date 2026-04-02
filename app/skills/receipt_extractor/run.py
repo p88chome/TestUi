@@ -27,91 +27,30 @@ def execute(input_data: dict) -> dict:
     
     user_prompt = f"Receipt Text:\n{text}\n\nExtract JSON:"
 
-    # Call LLM
-    # We need a db session for logging stats (optional but good practice)
-    # Since run.py is independent, we create a new session or pass it in if architected that way.
-    # The current execute_skill signature is execute(input_data, db=None) - wait, loader calls execute(input_data).
-    # Ideally loader should inject context. For MVP, we'll skip DB logging or create a local session.
+    from app.core.database import SessionLocal
+    from app.services.llm_service import call_llm_sync
     
+    db = SessionLocal()
     try:
-        # Note: call_azure_openai is async, but this execute is sync. 
-        # We need to run it synchronously.
-        import asyncio
+        result = call_llm_sync(
+            db=db,
+            input_text=user_prompt,
+            system_prompt=system_prompt,
+            temperature=0.1,
+            max_tokens=800
+        )
+        content = result['choices'][0]['message']['content']
         
-        async def run_llm():
-            db = SessionLocal()
-            try:
-                response = await call_azure_openai(
-                    db=db,
-                    input_text=user_prompt,
-                    system_prompt=system_prompt,
-                    temperature=0.1
-                )
-                return response
-            finally:
-                db.close()
-
-        # Check if we have an event loop
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                 # We are likely inside a fastAPI async context already? 
-                 # But execute_skill was imported dynamically. 
-                 # If this is called from an async endpoint, we should fix execute_skill to be async.
-                 # For now, let's assume we can't easily await here without refactoring loader.
-                 # HACK: Use a synchronous HTTP client or assume this runs in a threadpool.
-                 # Let's try to run it. If it fails, we know why.
-                 pass
-        except RuntimeError:
-             pass
-
-        # To avoid async complexity in this MVP step, let's use a direct sync request 
-        # OR update the loader to await. The loader is sync.
-        # Let's use `httpx` sync client directly to Azure OpenAI to avoid `await`.
-        
-        from app.core.config import settings
-        import httpx
-
-        api_key = settings.AZURE_OPENAI_API_KEY
-        endpoint = settings.AZURE_OPENAI_ENDPOINT
-        deployment = settings.AZURE_OPENAI_DEPLOYMENT_NAME
-        api_version = settings.AZURE_OPENAI_API_VERSION
-
-        if not api_key:
-             return {"error": "No Azure API Key", "data": {"merchant": "Mock Store", "total": 99.99}}
-
-        url = f"{endpoint}openai/deployments/{deployment}/chat/completions?api-version={api_version}"
-        
-        headers = {
-            "Content-Type": "application/json",
-            "api-key": api_key
-        }
-        
-        payload = {
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            "temperature": 0.1,
-            "max_tokens": 800
-        }
-
-        with httpx.Client() as client:
-            resp = client.post(url, headers=headers, json=payload, timeout=30.0)
-            if resp.status_code != 200:
-                raise ValueError(f"LLM Error: {resp.text}")
+        # Clean content (remove markdown ```json ... ```)
+        if "```json" in content:
+            content = content.split("```json")[1].split("```")[0].strip()
+        elif "```" in content:
+            content = content.split("```")[1].split("```")[0].strip()
             
-            result = resp.json()
-            content = result['choices'][0]['message']['content']
-            
-            # Clean content (remove markdown ```json ... ```)
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0].strip()
-            elif "```" in content:
-                content = content.split("```")[1].split("```")[0].strip()
-                
-            return json.loads(content)
+        return json.loads(content)
 
     except Exception as e:
         return {"status": "error", "message": str(e)}
+    finally:
+        db.close()
 

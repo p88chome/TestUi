@@ -10,74 +10,28 @@ from app.core.config import settings
 # Azure OpenAI Integration
 # -----------------------------------------------------------------------------
 
+from app.services.llm_service import call_llm
+
 async def call_azure_openai(
     db: Session,
-    input_text: str,
+    input_text: str | None = None,
     messages: list[dict] | None = None,
     system_prompt: str = "You are a helpful AI assistant.",
     model_id: str | None = None,
     temperature: float = 0.7
 ) -> dict:
     """
-    Calls Azure OpenAI Chat Completions API.
-    Used by: Workflow Engine (Universal Azure LLM), Chat Router (Enterprise Chat).
-    Supports either manual 'messages' list OR simple 'input_text' + 'system_prompt'.
+    Calls unified LLM service. 
+    Maintained for backward compatibility.
     """
-
-    # 1. Determine Model
-    ai_model = None
-    if model_id:
-        ai_model = db.query(AIModel).filter(AIModel.id == model_id).first()
-    
-    if not ai_model:
-        # Fallback to default active
-        ai_model = db.query(AIModel).filter(AIModel.is_active == True).first()
-    
-    if not ai_model:
-        raise ValueError("No active AIModel configuration found.")
-
-    # 2. Get Credentials
-    api_key = settings.AZURE_OPENAI_API_KEY or settings.AZURE_OPENAI_KEY
-    endpoint = settings.AZURE_OPENAI_ENDPOINT
-    
-    if not api_key or not endpoint:
-        raise ValueError("Missing Azure OpenAI Credentials (AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT) in settings.")
-
-    # 3. Construct URL
-    endpoint = endpoint.rstrip('/')
-    url = f"{endpoint}/openai/deployments/{ai_model.deployment_name}/chat/completions?api-version={ai_model.api_version}"
-
-    print(f"DEBUG: Calling Azure OpenAI Model: {ai_model.name}, Deployment: {ai_model.deployment_name}")
-    print(f"DEBUG: Full URL: {url}") # CAREFUL: Don't log API Key, but URL is okay-ish for local debug (contains deployment name)
-
-    # 4. Prepare Payload
-    if messages:
-        payload = {
-            "messages": messages,
-            "temperature": temperature
-        }
-    else:
-        payload = {
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": input_text}
-            ],
-            "temperature": temperature
-        }
-
-    headers = {
-        "Content-Type": "application/json",
-        "api-key": api_key
-    }
-
-    # 5. Call API
-    async with httpx.AsyncClient() as client:
-        response = await client.post(url, json=payload, headers=headers, timeout=60.0)
-        
-        if response.status_code != 200:
-             raise ValueError(f"Azure OpenAI Error ({response.status_code}): {response.text}")
-        
-        return response.json()
+    return await call_llm(
+        db=db,
+        input_text=input_text,
+        messages=messages,
+        system_prompt=system_prompt,
+        model_id=model_id,
+        temperature=temperature
+    )
 
 
 # -----------------------------------------------------------------------------

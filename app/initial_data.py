@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.database import SessionLocal
 from app.core import security
 from app.models.user import User
-from app.models.domain import AIModel
+from app.models.domain import AIModel, LLMProvider
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -36,16 +36,37 @@ def init_db(db: Session) -> None:
 
     # Seed AI Models
     models_data = [
-        {"name": "GPT-4.1", "deployment_name": "gpt-4.1", "api_version": "2024-12-01-preview", "is_active": True},
+        {
+            "name": "GPT-4.1",
+            "provider": LLMProvider.AZURE,
+            "deployment_name": "gpt-4.1",
+            "api_version": "2024-12-01-preview",
+            "description": "Azure OpenAI GPT-4.1 (standard chat model)",
+            "is_active": True,
+            "is_reasoning_model": False,
+        },
+        {
+            "name": "GPT-4.5",
+            "provider": LLMProvider.AZURE,
+            "deployment_name": "gpt-4.5",
+            "api_version": "2024-12-01-preview",
+            "description": "Azure OpenAI GPT-4.5 (latest standard model, uses max_tokens)",
+            "is_active": False,
+            "is_reasoning_model": False,
+        },
     ]
 
     for m in models_data:
-        existing = db.query(AIModel).filter(AIModel.deployment_name == m["deployment_name"]).first()
+        existing = db.query(AIModel).filter(AIModel.name == m["name"]).first()
         if not existing:
             db.add(AIModel(**m))
             logger.info(f"Seeded Model: {m['name']}")
-    
-    db.commit()
+        else:
+            # Update fields on upgrade so existing deployments stay current
+            for k, v in m.items():
+                setattr(existing, k, v)
+            db.add(existing)
+            logger.info(f"Updated Model: {m['name']}")
 
     # Seed Components
     from app.models.domain import Component, EndpointType
