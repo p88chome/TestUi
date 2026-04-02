@@ -446,7 +446,8 @@ const generatePPT = async () => {
 
 const downloadPPT = () => {
   if (generatedResult.value?.download_url) {
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    // Use VITE_API_URL if set (production), otherwise use relative path (works via proxy)
+    const baseUrl = import.meta.env.VITE_API_URL || '';
     window.open(`${baseUrl}${generatedResult.value.download_url}`, '_blank');
   }
 };

@@ -1,12 +1,10 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL
-    ? `${import.meta.env.VITE_API_URL}/api/v1`
-    : '/api/v1'
+  // Always use relative path - Azure SWA linked backend proxies this to the App Service.
+  // This eliminates http/https issues since the browser inherits the page's protocol.
+  baseURL: '/api/v1'
 });
-
-console.log('API Base URL:', apiClient.defaults.baseURL);
 
 apiClient.interceptors.request.use((config: any) => {
   const token = localStorage.getItem('token');
