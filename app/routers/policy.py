@@ -175,9 +175,17 @@ async def analyze_policy_gap(
 
 請產出完整的差異分析報告。"""
 
+            from app.models.domain import AIModel, UsageLog
+            active_model = db.query(AIModel).filter(AIModel.is_active == True).first()
+            if active_model and active_model.deployment_name:
+                deployment = active_model.deployment_name
+                model_name_for_log = active_model.name
+            else:
+                deployment = getattr(settings, "AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4.1")
+                model_name_for_log = "Azure OpenAI GPT-4.1"
+
             api_key = settings.AZURE_OPENAI_API_KEY
             endpoint = settings.AZURE_OPENAI_ENDPOINT
-            deployment = getattr(settings, "AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4.1")
             api_version = getattr(settings, "AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
             
             if not api_key:
@@ -188,7 +196,9 @@ async def analyze_policy_gap(
             headers = {"Content-Type": "application/json", "api-key": api_key}
             payload = {
                 "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
-                "temperature": 0.2, "stream": True
+                "temperature": 0.2, 
+                "stream": True,
+                "stream_options": {"include_usage": True}
             }
             
             async with httpx.AsyncClient(timeout=300.0) as client:
@@ -204,10 +214,31 @@ async def analyze_policy_gap(
                         
                         try:
                             data = json.loads(line[6:])
-                            delta = data['choices'][0].get('delta', {})
-                            content = delta.get('content', '')
-                            if content:
-                                yield json.dumps({"status": "content", "content": content}) + "\n"
+                            
+                            # 擷取 OpenAI 串流最後一包的 Token 用量
+                            if "usage" in data and data["usage"]:
+                                usage = data["usage"]
+                                total_tokens = usage.get("total_tokens", 0)
+                                if total_tokens > 0:
+                                    try:
+                                        log = UsageLog(
+                                            user_id=current_user.id,
+                                            app_name="Policy Analysis",
+                                            model_name=model_name_for_log,
+                                            total_tokens=total_tokens,
+                                            estimated_cost=total_tokens * 0.000003  # 粗略估算成本
+                                        )
+                                        db.add(log)
+                                        db.commit()
+                                    except Exception as db_err:
+                                        print(f"Failed to log usage: {db_err}")
+
+                            # 一般內容串流 (最後一包含有 usage 的 chunk 其 choices 會是空的)
+                            if data.get('choices'):
+                                delta = data['choices'][0].get('delta', {})
+                                content = delta.get('content', '')
+                                if content:
+                                    yield json.dumps({"status": "content", "content": content}) + "\n"
                         except:
                             continue
             
@@ -255,22 +286,32 @@ async def analyze_policy_gap_text(
 
 請產出完整的差異分析報告。"""
 
+            from app.models.domain import AIModel, UsageLog
+            active_model = db.query(AIModel).filter(AIModel.is_active == True).first()
+            if active_model and active_model.deployment_name:
+                deployment = active_model.deployment_name
+                model_name_for_log = active_model.name
+            else:
+                deployment = getattr(settings, "AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4.1")
+                model_name_for_log = "Azure OpenAI GPT-4.1"
+
             api_key = settings.AZURE_OPENAI_API_KEY
             endpoint = settings.AZURE_OPENAI_ENDPOINT
-            deployment = getattr(settings, "AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4.1")
             api_version = getattr(settings, "AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
             
             url = f"{endpoint}openai/deployments/{deployment}/chat/completions?api-version={api_version}"
             headers = {"Content-Type": "application/json", "api-key": api_key}
             payload = {
                 "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
-                "temperature": 0.2, "stream": True
+                "temperature": 0.2, 
+                "stream": True,
+                "stream_options": {"include_usage": True}
             }
             
             async with httpx.AsyncClient(timeout=300.0) as client:
                 async with client.stream("POST", url, headers=headers, json=payload) as response:
                     if response.status_code != 200:
-                        yield json.dumps({"status": "error", "error": "AI 服務異常"}) + "\n"
+                        yield json.dumps({"status": "error", "error": f"AI 服務異常 (HTTP {response.status_code})"}) + "\n"
                         return
 
                     async for line in response.aiter_lines():
@@ -278,9 +319,28 @@ async def analyze_policy_gap_text(
                             if line.strip() == "data: [DONE]": break
                             try:
                                 data = json.loads(line[6:])
-                                content = data['choices'][0].get('delta', {}).get('content', '')
-                                if content:
-                                    yield json.dumps({"status": "content", "content": content}) + "\n"
+                                
+                                if "usage" in data and data["usage"]:
+                                    usage = data["usage"]
+                                    total_tokens = usage.get("total_tokens", 0)
+                                    if total_tokens > 0:
+                                        try:
+                                            log = UsageLog(
+                                                user_id=current_user.id,
+                                                app_name="Policy Analysis (Text)",
+                                                model_name=model_name_for_log,
+                                                total_tokens=total_tokens,
+                                                estimated_cost=total_tokens * 0.000003
+                                            )
+                                            db.add(log)
+                                            db.commit()
+                                        except Exception as db_err:
+                                            print(f"Failed to log usage: {db_err}")
+
+                                if data.get('choices'):
+                                    content = data['choices'][0].get('delta', {}).get('content', '')
+                                    if content:
+                                        yield json.dumps({"status": "content", "content": content}) + "\n"
                             except: continue
             
             yield json.dumps({"status": "done"}) + "\n"

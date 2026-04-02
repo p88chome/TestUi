@@ -196,13 +196,6 @@ async def search_web(query: str) -> str:
 
 async def generate_outline_with_llm(topic: str, search_results: str, slide_count: int, language: str) -> List[dict]:
     """使用 Azure OpenAI 生成簡報大綱"""
-    from app.core.config import settings
-    
-    # Azure OpenAI 配置
-    endpoint = settings.AZURE_OPENAI_ENDPOINT.rstrip('/')
-    api_key = settings.AZURE_OPENAI_API_KEY
-    deployment = getattr(settings, 'AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4')
-    api_version = "2024-02-15-preview"
     
     system_prompt = f"""你是一位專業的簡報設計師。根據用戶提供的主題和參考資料，生成一份完整的簡報大綱。
 
@@ -228,38 +221,35 @@ async def generate_outline_with_llm(topic: str, search_results: str, slide_count
 請生成 {slide_count} 張投影片的大綱（JSON 格式）。"""
 
     try:
-        url = f"{endpoint}/openai/deployments/{deployment}/chat/completions?api-version={api_version}"
+        from app.core.database import SessionLocal
+        from app.services.gateway import LLMGateway
         
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                url,
-                headers={
-                    "api-key": api_key,
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt}
-                    ],
-                    "temperature": 0.7
-                }
+        # PPT generation doesn't always have a single active DB session injected manually because it's a util func, 
+        # but wait, let's use the DB context
+        db = SessionLocal()
+        gateway = LLMGateway(db)
+        
+        try:
+            response = await gateway.chat(
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.7
             )
             
-            if response.status_code == 200:
-                data = response.json()
-                content = data["choices"][0]["message"]["content"]
-                
-                # 解析 JSON（處理 markdown code block）
-                if "```json" in content:
-                    content = content.split("```json")[1].split("```")[0]
-                elif "```" in content:
-                    content = content.split("```")[1].split("```")[0]
-                
-                slides = json.loads(content.strip())
-                return slides
-            else:
-                print(f"Azure OpenAI API error: {response.status_code} - {response.text}")
+            content = response["choices"][0]["message"]["content"]
+            
+            # 解析 JSON（處理 markdown code block）
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0]
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0]
+            
+            slides = json.loads(content.strip())
+            return slides
+        finally:
+            db.close()
                 
     except Exception as e:
         print(f"LLM generation error: {e}")

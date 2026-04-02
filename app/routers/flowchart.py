@@ -180,16 +180,16 @@ async def analyze_document(
         {"role": "user", "content": user_content},
     ]
 
-    url, headers = _get_llm_url_and_headers()
-    payload = {"messages": messages, "temperature": 0.2, "max_tokens": 4000}
+    from app.services.gateway import LLMGateway
+    gateway = LLMGateway(db)
+    
+    try:
+        # call_llm inside LLMGateway records usage automatically
+        resp = await gateway.chat(messages=messages, user_id=current_user.id, temperature=0.2)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"LLM API Error: {str(e)}")
 
-    with httpx.Client(timeout=120.0) as client:
-        resp = client.post(url, headers=headers, json=payload)
-        if resp.status_code != 200:
-            raise HTTPException(status_code=500, detail=f"LLM API Error: {resp.text}")
-        result = resp.json()
-
-    raw_reply = result["choices"][0]["message"]["content"]
+    raw_reply = resp["choices"][0]["message"]["content"]
     parsed = _parse_llm_json(raw_reply)
     messages.append({"role": "assistant", "content": raw_reply})
 
@@ -221,16 +221,15 @@ async def flowchart_chat(
     messages = list(request.messages)
     messages.append({"role": "user", "content": request.user_message})
 
-    url, headers = _get_llm_url_and_headers()
-    payload = {"messages": messages, "temperature": 0.2, "max_tokens": 4000}
+    from app.services.gateway import LLMGateway
+    gateway = LLMGateway(db)
+    
+    try:
+        resp = await gateway.chat(messages=messages, user_id=current_user.id, temperature=0.2)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"LLM API Error: {str(e)}")
 
-    with httpx.Client(timeout=120.0) as client:
-        resp = client.post(url, headers=headers, json=payload)
-        if resp.status_code != 200:
-            raise HTTPException(status_code=500, detail=f"LLM API Error: {resp.text}")
-        result = resp.json()
-
-    raw_reply = result["choices"][0]["message"]["content"]
+    raw_reply = resp["choices"][0]["message"]["content"]
     parsed = _parse_llm_json(raw_reply)
     messages.append({"role": "assistant", "content": raw_reply})
 
