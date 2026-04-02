@@ -161,7 +161,7 @@ onMounted(async () => {
             const models = await getModels();
             availableModels.value = models;
             const active = models.find(m => m.is_active);
-            selectedModel.value = active || (models.length > 0 ? models[0] : null);
+            selectedModel.value = active ?? models[0] ?? null;
         } catch (e) {
             console.error("Failed to fetch models", e);
         } finally {
