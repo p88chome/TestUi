@@ -32,30 +32,35 @@ async def lifespan(app: FastAPI):
         
         alembic_cfg = AlembicConfig("alembic.ini")
         
-        # 檢查是否為「舊版資料庫」（有 users 表但沒有 alembic_version 表）
-        # 這代表 DB 是由舊版 Base.metadata.create_all() 建立的
         inspector = inspect(engine)
         tables = inspector.get_table_names()
-        has_alembic = "alembic_version" in tables
         has_existing_tables = "users" in tables
-        
-        if has_existing_tables and not has_alembic:
-            # 舊資料庫 → 標記為基準點 (baseline)，然後執行接下來的升級
-            logger.info("Detected existing database without Alembic. Stamping baseline...")
+
+        # 正確判斷：檢查 alembic_version 表裡有沒有資料（而不只是表存在）
+        from sqlalchemy import text
+        has_alembic_version = False
+        if "alembic_version" in tables:
+            with engine.connect() as conn:
+                result = conn.execute(text("SELECT version_num FROM alembic_version LIMIT 1"))
+                has_alembic_version = result.fetchone() is not None
+
+        if has_existing_tables and not has_alembic_version:
+            # 舊資料庫，或 alembic_version 被清空 → 重新標記基準點並升級
+            logger.info("Detected existing database without Alembic version. Stamping baseline...")
             alembic_command.stamp(alembic_cfg, "1c9bea9a0fd1")
             alembic_command.upgrade(alembic_cfg, "head")
             logger.info("Database migrated from baseline to head.")
+        elif not has_existing_tables:
+            # 全新資料庫 → 讓 SQLAlchemy 建立所有的表，然後 stamp
+            logger.info("Fresh database detected. Creating all tables...")
+            from app.core.database import Base
+            Base.metadata.create_all(bind=engine)
+            alembic_command.stamp(alembic_cfg, "head")
+            logger.info("All tables created and stamped.")
         else:
-            # 檢查是否發生了「被誤標記為 head 但其實沒有升級」的慘案
-            columns = [c["name"] for c in inspector.get_columns("users")]
-            if "is_verified" not in columns:
-                logger.warning("⚠️ DB schema is missing updates. Forcing stamp to baseline and rolling forward...")
-                alembic_command.stamp(alembic_cfg, "1c9bea9a0fd1")
-                alembic_command.upgrade(alembic_cfg, "head")
-            else:
-                # 正常 upgrade
-                alembic_command.upgrade(alembic_cfg, "head")
-                logger.info("Database migration completed successfully.")
+            # 正常情況 → 直接執行升級
+            alembic_command.upgrade(alembic_cfg, "head")
+            logger.info("Database migration completed successfully.")
 
         # === One-Time Fix: Manual check for ai_models columns (for 500 error fix) ===
         if "ai_models" in tables:
