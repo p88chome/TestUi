@@ -37,11 +37,11 @@ export interface AIModelUpdate {
 }
 
 export const getModels = (): Promise<AIModel[]> => {
-    return apiClient.get('/models') as Promise<AIModel[]>;
+    return apiClient.get('/models/') as Promise<AIModel[]>;
 };
 
 export const createModel = (data: AIModelCreate): Promise<AIModel> => {
-    return apiClient.post('/models', data) as Promise<AIModel>;
+    return apiClient.post('/models/', data) as Promise<AIModel>;
 };
 
 export const updateModel = (id: string, data: AIModelUpdate): Promise<AIModel> => {

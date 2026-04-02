@@ -2,7 +2,7 @@ import apiClient from './client';
 import type { WorkflowCreate, WorkflowOut, WorkflowUpdate, RunExecutionOut } from '../types';
 
 export const getWorkflows = (): Promise<WorkflowOut[]> => {
-    return apiClient.get('/workflows') as Promise<WorkflowOut[]>;
+    return apiClient.get('/workflows/') as Promise<WorkflowOut[]>;
 };
 
 export const getWorkflow = (id: string): Promise<WorkflowOut> => {
@@ -10,7 +10,7 @@ export const getWorkflow = (id: string): Promise<WorkflowOut> => {
 };
 
 export const createWorkflow = (data: WorkflowCreate): Promise<WorkflowOut> => {
-    return apiClient.post('/workflows', data) as Promise<WorkflowOut>;
+    return apiClient.post('/workflows/', data) as Promise<WorkflowOut>;
 };
 
 export const updateWorkflow = (id: string, data: WorkflowUpdate): Promise<WorkflowOut> => {

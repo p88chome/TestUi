@@ -20,7 +20,7 @@ export const getSkills = async () => {
 };
 
 export const refreshSkills = async () => {
-    const response = await client.post('/skills/refresh');
+    const response = await client.post('/skills/refresh/');
     return response;
 };
 

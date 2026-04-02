@@ -2,6 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from alembic.config import Config as AlembicConfig
 from alembic import command as alembic_command
 from app.core.config import settings
@@ -101,6 +102,20 @@ app.add_middleware(
 
 # Request Logging Middleware — 自動記錄每個 API 的回應時間
 app.add_middleware(RequestLoggingMiddleware)
+
+# Trust Proxy Headers (Fixed for Azure/SWA)
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+
+@app.middleware("http")
+async def set_https_scheme(request, call_next):
+    """
+    Force HTTPS scheme for generated URLs if we are behind a proxy.
+    This fixes the Mixed Content error on redirects.
+    """
+    forwarded_proto = request.headers.get("x-forwarded-proto")
+    if forwarded_proto:
+        request.scope["scheme"] = forwarded_proto
+    return await call_next(request)
 
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users")
