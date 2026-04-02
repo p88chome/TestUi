@@ -28,7 +28,7 @@ class Component(Base):
     input_schema: Mapped[dict] = mapped_column(JSON)
     output_schema: Mapped[dict] = mapped_column(JSON)
     tags: Mapped[list[str]] = mapped_column(JSON)  # Simple list of strings stored as JSON
-    endpoint_type: Mapped[EndpointType] = mapped_column(SQLEnum(EndpointType))
+    endpoint_type: Mapped[EndpointType] = mapped_column(SQLEnum(EndpointType, values_callable=lambda obj: [e.value for e in obj]))
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     configuration: Mapped[dict] = mapped_column(JSON, default={})
     
@@ -53,7 +53,7 @@ class RunExecution(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     workflow_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workflows.id"))
-    status: Mapped[RunStatus] = mapped_column(SQLEnum(RunStatus), default=RunStatus.PENDING)
+    status: Mapped[RunStatus] = mapped_column(SQLEnum(RunStatus, values_callable=lambda obj: [e.value for e in obj]), default=RunStatus.PENDING)
     input_payload: Mapped[dict] = mapped_column(JSON)
     output_payload: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     log: Mapped[list[dict]] = mapped_column(JSON, default=[]) # List of execution logs per step
@@ -72,7 +72,10 @@ class AIModel(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String, unique=True, index=True) # e.g., "GPT-4 Production"
-    provider: Mapped[LLMProvider] = mapped_column(SQLEnum(LLMProvider), default=LLMProvider.AZURE)
+    provider: Mapped[LLMProvider] = mapped_column(
+        SQLEnum(LLMProvider, values_callable=lambda obj: [e.value for e in obj]), 
+        default=LLMProvider.AZURE
+    )
     model_name: Mapped[str | None] = mapped_column(String, nullable=True) # e.g., "gemini-1.5-pro", "gpt-4o"
     deployment_name: Mapped[str | None] = mapped_column(String, nullable=True) # e.g., "gpt-4-prod" (Azure Deployment Name)
     api_version: Mapped[str | None] = mapped_column(String, nullable=True) # e.g., "2023-05-15" (Azure specific)
