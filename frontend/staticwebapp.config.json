@@ -2,5 +2,12 @@
   "navigationFallback": {
     "rewrite": "/index.html",
     "exclude": ["/assets/*", "/*.{png,jpg,gif,ico,css,js,svg,woff,woff2}"]
-  }
+  },
+  "routes": [
+    {
+      "route": "/api/v1/*",
+      "rewrite": "https://allai-dcg7ekbbexdhh6gu.japaneast-01.azurewebsites.net/api/v1/*",
+      "allowedRoles": ["anonymous"]
+    }
+  ]
 }
