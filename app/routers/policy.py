@@ -175,7 +175,8 @@ async def analyze_policy_gap(
 
 請產出完整的差異分析報告。"""
 
-            from app.models.domain import AIModel, UsageLog
+            from app.models.domain import AIModel
+            from app.models.stats import UsageLog
             active_model = db.query(AIModel).filter(AIModel.is_active == True).first()
             if active_model and active_model.deployment_name:
                 deployment = active_model.deployment_name
@@ -286,7 +287,8 @@ async def analyze_policy_gap_text(
 
 請產出完整的差異分析報告。"""
 
-            from app.models.domain import AIModel, UsageLog
+            from app.models.domain import AIModel
+            from app.models.stats import UsageLog
             active_model = db.query(AIModel).filter(AIModel.is_active == True).first()
             if active_model and active_model.deployment_name:
                 deployment = active_model.deployment_name
