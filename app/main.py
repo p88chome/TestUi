@@ -79,6 +79,13 @@ async def lifespan(app: FastAPI):
                 conn.commit()
                 logger.info("AI models table columns verified/updated.")
 
+        # === 補全保險：確保所有 SQLAlchemy 模型的表都存在 ===
+        # 這能補上 Alembic 腳本裡沒有處理到的表（例如 ai_models）
+        # checkfirst=True 確保已有的表不會被重建
+        from app.core.database import Base
+        Base.metadata.create_all(bind=engine, checkfirst=True)
+        logger.info("All model tables ensured via create_all.")
+
     except Exception as e:
         logger.error(f"Alembic migration failed: {e}")
 
