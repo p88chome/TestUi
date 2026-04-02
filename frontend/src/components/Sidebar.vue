@@ -57,6 +57,7 @@
                 @change="onModelChange"
                 :loading="loadingModels"
                 placeholder="Select Model"
+                appendTo="self"
             />
         </div>
         <div v-else class="collapsed-model-indicator flex justify-content-center p-2" v-tooltip.right="selectedModel?.name || 'Select Model'">
