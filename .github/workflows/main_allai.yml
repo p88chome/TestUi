@@ -35,8 +35,10 @@ jobs:
           pip install -r requirements.txt
 
       # ✅ Verify Python imports are valid before packaging
-      # This catches any NameError / ImportError before the code hits Azure
+      # DATABASE_URL is mocked because pydantic Settings() requires it at import time
       - name: Verify app imports
+        env:
+          DATABASE_URL: "postgresql://ci_mock:ci_mock@localhost/ci_mock"
         run: |
           source antenv/bin/activate
           python -c "
