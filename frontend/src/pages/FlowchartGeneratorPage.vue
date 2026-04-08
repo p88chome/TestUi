@@ -7,9 +7,9 @@
           <i class="pi pi-share-alt mr-2 text-green-500"></i>
           互動流程圖產生器
         </h1>
-        <p class="text-body-lg m-0 text-500">上傳文件，AI 分析後產出 Vue Flow 互動畫布，可即時拖曳與編輯</p>
+        <p class="text-body-lg m-0 text-500">上傳文件，AI 兩步拆解後產出互動畫布與 Mermaid 語法，可即時拖曳與切換檢視</p>
       </div>
-      <Tag value="Vue Flow + AI Powered" severity="success" class="font-bold" />
+      <Tag value="Vue Flow + Mermaid + AI Powered" severity="success" class="font-bold" />
     </div>
 
     <div class="grid" style="height: calc(100vh - 130px);">
@@ -154,47 +154,64 @@
         <div class="deloitte-card p-4 flex flex-column h-full" style="overflow: hidden; background: #0f172a;">
 
           <!-- Toolbar -->
-          <div class="flex align-items-center justify-content-between mb-3 z-5">
+          <div class="flex align-items-center justify-content-between mb-3 z-5 flex-wrap gap-2">
             <h2 class="text-heading-md m-0 text-white">
               <i class="pi pi-sitemap mr-2 text-green-400"></i>互動流程畫布
             </h2>
-            <div v-if="chartNodes.length" class="flex gap-2 flex-wrap">
-              <Button
-                label="重新排版 (Auto Layout)"
-                icon="pi pi-align-center"
-                size="small"
-                outlined
-                severity="success"
-                @click="applyAutoLayout"
-              />
-              <Button
-                label="下載 PPTX（可編輯）"
-                icon="pi pi-desktop"
-                size="small"
-                :loading="isExportingPptx"
-                @click="downloadPptx"
-              />
+            <div class="flex gap-2 flex-wrap align-items-center">
+              <!-- View Mode Toggle -->
+              <div v-if="chartNodes.length || mermaidCode" class="view-toggle flex border-round overflow-hidden">
+                <button
+                  :class="['toggle-btn px-3 py-1 text-sm font-semibold', viewMode === 'flow' ? 'toggle-active' : 'toggle-inactive']"
+                  @click="viewMode = 'flow'"
+                >
+                  <i class="pi pi-share-alt mr-1"></i>Flow 圖
+                </button>
+                <button
+                  :class="['toggle-btn px-3 py-1 text-sm font-semibold', viewMode === 'mermaid' ? 'toggle-active' : 'toggle-inactive']"
+                  @click="switchToMermaid"
+                >
+                  <i class="pi pi-code mr-1"></i>Mermaid
+                </button>
+              </div>
+              <template v-if="chartNodes.length && viewMode === 'flow'">
+                <Button
+                  label="重新排版"
+                  icon="pi pi-align-center"
+                  size="small"
+                  outlined
+                  severity="success"
+                  @click="applyAutoLayout"
+                />
+                <Button
+                  label="下載 PPTX"
+                  icon="pi pi-desktop"
+                  size="small"
+                  :loading="isExportingPptx"
+                  @click="downloadPptx"
+                />
+              </template>
             </div>
           </div>
 
           <!-- Flow Area -->
-          <div class="chart-area flex-1 relative border-round overflow-hidden bg-white" style="background: #0f172a;">
+          <div class="chart-area flex-1 relative border-round overflow-hidden" style="background: #0f172a;">
             
             <!-- Loading -->
             <div v-if="isLoading && !chartNodes.length" class="absolute inset-0 z-5 flex flex-column align-items-center justify-content-center bg-black-alpha-40 text-white">
               <ProgressSpinner style="width:50px;height:50px;" />
-              <p class="text-300 mt-3 font-medium">✨ AI 正在解析內控制度文件，建構知識圖譜...</p>
+              <p class="text-300 mt-3 font-medium">✨ AI 正在兩步拆解文件，建構知識圖譜...</p>
             </div>
 
             <!-- Empty state -->
-            <div v-else-if="!chartNodes.length" class="absolute inset-0 flex flex-column align-items-center justify-content-center text-500">
+            <div v-else-if="!chartNodes.length && !mermaidCode" class="absolute inset-0 flex flex-column align-items-center justify-content-center text-500">
               <i class="pi pi-share-alt text-6xl mb-4 opacity-20 text-white"></i>
               <p class="m-0 text-lg font-medium text-400">請在左側上傳文件，開始 AI 視覺化流程</p>
             </div>
 
             <!-- Vue Flow Canvas -->
             <VueFlow
-              v-else
+              v-else-if="viewMode === 'flow'"
               v-model:nodes="chartNodes"
               v-model:edges="chartEdges"
               :node-types="nodeTypes"
@@ -207,8 +224,29 @@
               <Controls />
               <MiniMap node-color="#1e293b" mask-color="rgba(0,0,0,0.5)" class="border-round border-1 border-gray-700" />
             </VueFlow>
+
+            <!-- Mermaid View -->
+            <div v-else-if="viewMode === 'mermaid'" class="h-full flex flex-column overflow-hidden" style="background: #0f172a;">
+              <!-- Mermaid rendered preview -->
+              <div class="mermaid-preview flex-1 overflow-auto p-4 flex justify-content-center" style="background: #fff;">
+                <div ref="mermaidContainer" class="w-full"></div>
+              </div>
+              <!-- Mermaid code editor -->
+              <div class="mermaid-code-area border-top-1 border-gray-700" style="height: 200px; overflow: auto;">
+                <div class="flex align-items-center justify-content-between px-3 py-2 bg-gray-900">
+                  <span class="text-xs font-semibold text-gray-400">📝 Mermaid 語法（可直接編輯）</span>
+                  <Button label="重新渲染" icon="pi pi-refresh" size="small" text severity="success" @click="renderMermaid" />
+                </div>
+                <Textarea
+                  v-model="mermaidCode"
+                  class="w-full border-none border-round-none"
+                  style="min-height: 155px; background: #1e293b; color: #94a3b8; font-family: monospace; font-size: 12px; resize: none;"
+                  @blur="renderMermaid"
+                />
+              </div>
+            </div>
             
-            <!-- Editing Dialog (Invisible input via PrimeVue Dialog overlay) -->
+            <!-- Editing Dialog -->
             <Dialog v-model:visible="isEditingNode" header="編輯節點文字" :style="{ width: '300px' }" modal>
               <div class="flex flex-column gap-3 mt-3">
                 <InputText v-model="editNodeLabel" autofocus @keyup.enter="saveNodeEdit" />
@@ -225,6 +263,9 @@
 
 <script setup lang="ts">
 import { ref, nextTick, markRaw } from 'vue';
+import mermaid from 'mermaid';
+
+mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
 import { useToast } from 'primevue/usetoast';
 import apiClient from '../api/client';
 import dagre from 'dagre';
@@ -285,12 +326,38 @@ const explanation = ref('');
 const chartNodes = ref<any[]>([]);
 const chartEdges = ref<any[]>([]);
 
+// Intermediate steps (from two-step LLM)
+const currentSteps = ref<any>(null);
+
+// Mermaid
+const viewMode = ref<'flow' | 'mermaid'>('flow');
+const mermaidCode = ref('');
+const mermaidContainer = ref<HTMLElement | null>(null);
+
 // Node Editing
 const isEditingNode = ref(false);
 const editNodeId = ref('');
 const editNodeLabel = ref('');
 
 const chatContainer = ref<HTMLElement | null>(null);
+
+// Render Mermaid in the container
+const renderMermaid = async () => {
+  if (!mermaidContainer.value || !mermaidCode.value.trim()) return;
+  try {
+    mermaidContainer.value.innerHTML = '';
+    const { svg } = await mermaid.render('mermaid-graph-' + Date.now(), mermaidCode.value);
+    mermaidContainer.value.innerHTML = svg;
+  } catch (e) {
+    mermaidContainer.value.innerHTML = `<pre style="color:#ef4444;font-size:12px;">${e}</pre>`;
+  }
+};
+
+const switchToMermaid = async () => {
+  viewMode.value = 'mermaid';
+  await nextTick();
+  await renderMermaid();
+};
 
 const applyAutoLayout = () => {
   if (!chartNodes.value.length) return;
@@ -477,22 +544,21 @@ const analyzeDocument = async () => {
     if (res.status === 'success') {
       messages.value = res.messages;
       explanation.value = res.explanation;
+      currentSteps.value = res.steps ?? null;
+      mermaidCode.value = res.mermaid ?? '';
       
       // Parse to Vue Flow Format
       parseApiPayloadToVueFlow(res.nodes || [], res.edges || []);
 
-      const firstAiMsg = messages.value.find(m => m.role === 'assistant');
       displayMessages.value = [];
-      if (firstAiMsg) {
-        displayMessages.value.push({
-          role: 'assistant',
-          content: `✅ 我已分析完文件「${selectedFile.value?.name}」並產生互動式畫布！\n\n${res.explanation}\n\n你可以直接在右側拖拉節點與連線，雙擊可以修改文字。如果需要大幅結構修改，也可以繼續跟我說！`,
-        });
-      }
+      displayMessages.value.push({
+        role: 'assistant',
+        content: `✅ 已完成兩步驟 AI 分析！\n\n${res.explanation}\n\n💡 右上角可切換「Flow 圖」或「Mermaid 語法」視圖。`,
+      });
 
       step.value = 1;
       await scrollChat();
-      toast.add({ severity: 'success', summary: '分析完成', detail: '已產出 Vue Flow 畫布', life: 3000 });
+      toast.add({ severity: 'success', summary: '分析完成', detail: '已產出 Vue Flow 畫布 + Mermaid 語法', life: 3000 });
     }
   } catch (err: any) {
     errorMsg.value = err.response?.data?.detail || err.message || '分析失敗，請重試';
@@ -518,11 +584,18 @@ const sendMessage = async () => {
     const res: any = await apiClient.post('/flowchart/chat', {
       messages: messages.value,
       user_message: userText,
+      steps: currentSteps.value ?? undefined,
     }, { timeout: 120000 });
 
     if (res.status === 'success') {
       messages.value = res.messages;
       explanation.value = res.explanation;
+      if (res.steps) currentSteps.value = res.steps;
+      if (res.mermaid) {
+        mermaidCode.value = res.mermaid;
+        // Re-render mermaid if we are currently in mermaid view
+        if (viewMode.value === 'mermaid') await renderMermaid();
+      }
       
       parseApiPayloadToVueFlow(res.nodes || [], res.edges || []);
 
@@ -600,6 +673,9 @@ const restart = () => {
   selectedFile.value = null;
   additionalContext.value = '';
   userInput.value = '';
+  currentSteps.value = null;
+  mermaidCode.value = '';
+  viewMode.value = 'flow';
 };
 </script>
 
@@ -607,6 +683,29 @@ const restart = () => {
 .flowchart-page {
   min-height: 100vh;
   background: var(--surface-ground);
+}
+
+/* View Mode Toggle */
+.view-toggle {
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+.toggle-btn {
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.toggle-active {
+  background: #16a34a;
+  color: #fff;
+}
+.toggle-inactive {
+  background: transparent;
+  color: #94a3b8;
+}
+.toggle-inactive:hover {
+  background: rgba(255,255,255,0.08);
+  color: #e2e8f0;
 }
 
 .chat-messages {

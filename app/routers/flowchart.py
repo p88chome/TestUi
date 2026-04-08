@@ -67,57 +67,88 @@ def _extract_text(filename: str, content: bytes) -> str:
     return content.decode("utf-8", errors="ignore")
 
 
-# ─── System Prompt（內控專用版）──────────────────────────────────────────────
+# ─── 【第一步】結構拆解 Prompt ────────────────────────────────────────────────
 
-SYSTEM_PROMPT = """你是一位資深的內部控制顧問，專精於協助企業繪製符合內控標準的流程圖。
+DECOMPOSE_PROMPT = """你是一位資深的內部控制顧問，請你仔細閱讀以下的作業程序說明（可能是 SOP、稽核文件、Email 或逐字稿），
+將其拆解成一個清晰的、結構化的流程步驟清單。
 
-你的任務是根據使用者提供的內控二階文件（作業程序說明書），分析業務流程並產生高度結構化的 JSON 資料。
-
-## 流程圖圖示規則（嚴格遵守，不得違反）
-
-你的 JSON 必須精確區分以下節點類型（type）：
-
-| 節點類型 | 用途 |
-|---------|------|
-| `start` / `end` | 流程的起點與終點 |
-| `process` | 一般作業節點、執行步驟 |
-| `control` | 內控控制點、主管審核、決策判斷 |
-| `document` | 需要填寫、夾帶或產出的表單文件 |
-
-## 版面與連線結構原則（極為重要）
-1. **主線分離**：主流程只能由 `start`, `process`, `control`, `end` 這四種節點首尾相連組成。
-2. **文件懸掛**：如果某個步驟產生了文件，或者需要某份文件，該 `document` 節點必須**作為一個「分支的終點」掛載**在該作業步驟旁邊，**絕對不可以**讓流程穿過文件再接到下一個步驟！
-   - 錯誤示範：[作業A] -> [表單外觀] -> [作業B]
-   - 正確示範：[作業A] -> [作業B] (主流程)；且 [作業A] -> [表單外觀] (分支產出)
-3. **決策迴圈**：`control` 節點(判斷點)通常會分出兩條線，一條往下，一條退回之前的點。請明確加上 label (例如 "是", "否")。
-
-## 泳道（Swimlane）原則
-- 從文件中識別出參與的角色、部門或權責單位，填入節點的 `lane` 屬性。
-
-## 輸出格式（必須嚴格遵守，只輸出 JSON，不加任何 Markdown 語法或說明）
+## 輸出格式（只輸出 JSON，不加任何 Markdown 語法或多餘說明）
 
 ```json
 {
-  "explanation": "流程說明（繁體中文）：識別到的主要流程步驟、控制點、角色泳道分組",
-  "nodes": [
-    {"id": "node_1", "type": "start", "label": "開始", "lane": "申請人"},
-    {"id": "node_2", "type": "process", "label": "填寫採購申請單", "lane": "申請人"},
-    {"id": "node_3", "type": "control", "label": "主管審核?", "lane": "主管"},
-    {"id": "node_4", "type": "document", "label": "採購申請單", "lane": "申請人"},
-    {"id": "node_5", "type": "end", "label": "結束", "lane": ""}
-  ],
-  "edges": [
-    {"from": "node_1", "to": "node_2", "label": ""},
-    {"from": "node_2", "to": "node_3", "label": ""},
-    {"from": "node_2", "to": "node_4", "label": ""},  <-- 文件作為輸出掛著
-    {"from": "node_3", "to": "node_5", "label": "核准"},
-    {"from": "node_3", "to": "node_2", "label": "退回"}
+  "title": "流程名稱",
+  "summary": "一段話說明這個流程的目的與範圍",
+  "steps": [
+    {
+      "id": "step_1",
+      "action": "動作描述，盡量精簡（15字以內）",
+      "role": "負責角色或部門（用於泳道分組）",
+      "is_decision": false,
+      "condition_yes": null,
+      "condition_no": null,
+      "next_ids": ["step_2"],
+      "generates_document": null
+    },
+    {
+      "id": "step_2",
+      "action": "主管審核申請單？",
+      "role": "部門主管",
+      "is_decision": true,
+      "condition_yes": "step_3",
+      "condition_no": "step_1",
+      "next_ids": ["step_3", "step_1"],
+      "generates_document": "採購申請單"
+    }
   ]
 }
 ```
 
-節點 type 只能是：`start` / `end` / `process` / `control` / `document`。
-每個節點的 id 必須唯一（例如：node_1, step_2 都可以）。
+## 規則
+- `is_decision: true` → 這是一個判斷點（是/否分歧），`condition_yes` 和 `condition_no` 必須填入下一步的 step id
+- `generates_document` → 如果這個步驟會產生或需要一份特定表單，填入表單名稱，否則填 null
+- `next_ids` → 正常情況下填入下一步的 id；如果是決策點，填入所有分支的 id
+- 只需要輸出 JSON，不要加任何解釋文字
+"""
+
+# ─── 【第二步】圖形渲染 Prompt ────────────────────────────────────────────────
+
+RENDER_PROMPT = """你是一位流程圖繪製專家。根據以下的結構化流程步驟清單，同時產出兩種格式：
+
+1. **nodes/edges JSON**：用於前端 Vue Flow 渲染
+2. **Mermaid flowchart 語法**：用於文字視圖顯示
+
+## nodes/edges 格式規則
+- 節點 type 只能是：`start` / `end` / `process` / `control` / `document`
+- `control` 用於決策點；`document` 用於文件節點（作為側邊分支，不在主流上）
+- 每個節點必須有 `lane`（對應步驟的 role）
+
+## Mermaid 格式規則
+- 使用 `flowchart TD`（由上至下）
+- 決策點用菱形 `{動作}`
+- 文件節點用方形 `[文件名]`，用虛線連接到產生它的步驟
+
+## 輸出格式（只輸出 JSON，不加任何 Markdown 語法）
+
+```json
+{
+  "explanation": "用繁體中文說明這個流程圖的主要結構、涉及角色與關鍵控制點",
+  "nodes": [
+    {"id": "node_1", "type": "start", "label": "開始", "lane": "申請人"},
+    {"id": "node_2", "type": "process", "label": "填寫申請單", "lane": "申請人"},
+    {"id": "node_3", "type": "control", "label": "主管審核?", "lane": "部門主管"},
+    {"id": "node_4", "type": "document", "label": "採購申請單", "lane": "申請人"},
+    {"id": "node_5", "type": "end", "label": "結束", "lane": "採購部"}
+  ],
+  "edges": [
+    {"from": "node_1", "to": "node_2", "label": ""},
+    {"from": "node_2", "to": "node_3", "label": ""},
+    {"from": "node_2", "to": "node_4", "label": "產出"},
+    {"from": "node_3", "to": "node_5", "label": "核准"},
+    {"from": "node_3", "to": "node_2", "label": "退回"}
+  ],
+  "mermaid": "flowchart TD\\n  node_1([開始]):::start --> node_2[填寫申請單]\\n  node_2 --> node_3{主管審核?}\\n  node_2 -.->|產出| node_4[/採購申請單/]\\n  node_3 -->|核准| node_5([結束]):::end\\n  node_3 -->|退回| node_2\\n  classDef start fill:#16a34a,color:#fff\\n  classDef end fill:#dc2626,color:#fff"
+}
+```
 """
 
 
@@ -145,8 +176,42 @@ def _parse_llm_json(raw: str) -> dict:
         return {
             "explanation": "無法解析 AI 回應的 JSON 格式，請重試。",
             "nodes": [],
-            "edges": []
+            "edges": [],
+            "mermaid": ""
         }
+
+
+# ─── Two-step LLM calls ──────────────────────────────────────────────────────
+
+async def _decompose_to_steps(gateway, user_id: int, doc_text: str, extra: str = "") -> dict:
+    """Step 1: Ask LLM to decompose document into structured steps (intermediate layer)."""
+    user_content = f"請將以下內容拆解成結構化流程步驟清單：\n\n---\n{doc_text}\n---"
+    if extra:
+        user_content += f"\n\n補充說明：{extra}"
+
+    messages = [
+        {"role": "system", "content": DECOMPOSE_PROMPT},
+        {"role": "user", "content": user_content},
+    ]
+    resp = await gateway.chat(messages=messages, user_id=user_id, temperature=0.1, app_name="Flowchart-Decompose")
+    raw = resp["choices"][0]["message"]["content"]
+    return _parse_llm_json(raw)
+
+
+async def _render_steps_to_diagram(gateway, user_id: int, steps_data: dict, modification: str = "") -> dict:
+    """Step 2: Convert structured steps into nodes/edges JSON + Mermaid syntax."""
+    steps_json = json.dumps(steps_data, ensure_ascii=False, indent=2)
+    user_content = f"請根據以下結構化步驟清單，產出流程圖的 nodes/edges JSON 以及 Mermaid 語法：\n\n```json\n{steps_json}\n```"
+    if modification:
+        user_content += f"\n\n⚠️ 使用者補充修改要求：{modification}\n（請先按修改要求調整步驟結構，再輸出圖形格式）"
+
+    messages = [
+        {"role": "system", "content": RENDER_PROMPT},
+        {"role": "user", "content": user_content},
+    ]
+    resp = await gateway.chat(messages=messages, user_id=user_id, temperature=0.1, app_name="Flowchart-Render")
+    raw = resp["choices"][0]["message"]["content"]
+    return _parse_llm_json(raw)
 
 
 # ─── Routes ──────────────────────────────────────────────────────────────────
@@ -171,33 +236,35 @@ async def analyze_document(
     if len(doc_text) > 12000:
         doc_text = doc_text[:12000] + "\n\n[...文件內容已截斷...]"
 
-    user_content = f"請根據以下內控二階文件，分析業務流程並產生符合內控標準的流程圖：\n\n---\n{doc_text}\n---"
-    if additional_context:
-        user_content += f"\n\n補充說明：{additional_context}"
-
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": user_content},
-    ]
-
     from app.services.gateway import LLMGateway
     gateway = LLMGateway(db)
-    
+
     try:
-        # call_llm inside LLMGateway records usage automatically
-        resp = await gateway.chat(messages=messages, user_id=current_user.id, temperature=0.2)
+        # ── Step 1: Decompose ──
+        steps_data = await _decompose_to_steps(
+            gateway, current_user.id, doc_text, additional_context or ""
+        )
+
+        # ── Step 2: Render ──
+        diagram_data = await _render_steps_to_diagram(gateway, current_user.id, steps_data)
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM API Error: {str(e)}")
 
-    raw_reply = resp["choices"][0]["message"]["content"]
-    parsed = _parse_llm_json(raw_reply)
-    messages.append({"role": "assistant", "content": raw_reply})
+    # Build conversation history for chat continuity
+    messages = [
+        {"role": "system", "content": RENDER_PROMPT},
+        {"role": "user", "content": f"[已分析文件: {file.filename}]"},
+        {"role": "assistant", "content": json.dumps(diagram_data, ensure_ascii=False)},
+    ]
 
     return {
         "status": "success",
-        "explanation": parsed.get("explanation", ""),
-        "nodes": parsed.get("nodes", []),
-        "edges": parsed.get("edges", []),
+        "explanation": diagram_data.get("explanation", steps_data.get("summary", "")),
+        "steps": steps_data,
+        "nodes": diagram_data.get("nodes", []),
+        "edges": diagram_data.get("edges", []),
+        "mermaid": diagram_data.get("mermaid", ""),
         "messages": messages,
         "filename": file.filename,
         "generated_at": datetime.now().isoformat(),
@@ -207,6 +274,7 @@ async def analyze_document(
 class ChatRequest(BaseModel):
     messages: List[dict]
     user_message: str
+    steps: Optional[dict] = None
 
 
 @router.post("/chat")
@@ -218,26 +286,37 @@ async def flowchart_chat(
     if not request.user_message.strip():
         raise HTTPException(status_code=400, detail="訊息不可為空")
 
-    messages = list(request.messages)
-    messages.append({"role": "user", "content": request.user_message})
-
     from app.services.gateway import LLMGateway
     gateway = LLMGateway(db)
-    
+
     try:
-        resp = await gateway.chat(messages=messages, user_id=current_user.id, temperature=0.2)
+        if request.steps:
+            # ── Two-step path: re-render from updated steps ──
+            diagram_data = await _render_steps_to_diagram(
+                gateway, current_user.id, request.steps, request.user_message
+            )
+        else:
+            # ── Fallback: single-step legacy path (no steps provided) ──
+            messages = list(request.messages)
+            messages.append({"role": "user", "content": request.user_message})
+            resp = await gateway.chat(messages=messages, user_id=current_user.id, temperature=0.2, app_name="Flowchart-Chat")
+            raw = resp["choices"][0]["message"]["content"]
+            diagram_data = _parse_llm_json(raw)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM API Error: {str(e)}")
 
-    raw_reply = resp["choices"][0]["message"]["content"]
-    parsed = _parse_llm_json(raw_reply)
-    messages.append({"role": "assistant", "content": raw_reply})
+    # Update messages for continuity
+    messages = list(request.messages)
+    messages.append({"role": "user", "content": request.user_message})
+    messages.append({"role": "assistant", "content": json.dumps(diagram_data, ensure_ascii=False)})
 
     return {
         "status": "success",
-        "explanation": parsed.get("explanation", ""),
-        "nodes": parsed.get("nodes", []),
-        "edges": parsed.get("edges", []),
+        "explanation": diagram_data.get("explanation", ""),
+        "steps": request.steps,
+        "nodes": diagram_data.get("nodes", []),
+        "edges": diagram_data.get("edges", []),
+        "mermaid": diagram_data.get("mermaid", ""),
         "messages": messages,
     }
 
