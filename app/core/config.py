@@ -60,7 +60,7 @@ class Settings(BaseSettings):
 
     # Google Gemini
     GEMINI_API_KEY: str | None = None
-    GEMINI_MODEL_NAME: str = "gemini-1.5-flash"
+    GEMINI_MODEL_NAME: str = "gemini-3-flash-preview"
 
     # Azure Computer Vision
     AZURE_VISION_ENDPOINT: str | None = None

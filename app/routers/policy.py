@@ -175,73 +175,129 @@ async def analyze_policy_gap(
 
 請產出完整的差異分析報告。"""
 
-            from app.models.domain import AIModel
+            from app.models.domain import AIModel, LLMProvider
             from app.models.stats import UsageLog
             active_model = db.query(AIModel).filter(AIModel.is_active == True).first()
-            if active_model and active_model.deployment_name:
-                deployment = active_model.deployment_name
-                model_name_for_log = active_model.name
-            else:
-                deployment = getattr(settings, "AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4.1")
-                model_name_for_log = "Azure OpenAI GPT-4.1"
 
-            api_key = settings.AZURE_OPENAI_API_KEY
-            endpoint = settings.AZURE_OPENAI_ENDPOINT
-            api_version = getattr(settings, "AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
-            
-            if not api_key:
-                yield json.dumps({"status": "error", "error": "未設定 Azure OpenAI API Key"}) + "\n"
-                return
+            if active_model and active_model.provider == LLMProvider.GOOGLE:
+                from google import genai
+                from google.genai import types
                 
-            url = f"{endpoint}openai/deployments/{deployment}/chat/completions?api-version={api_version}"
-            headers = {"Content-Type": "application/json", "api-key": api_key}
-            payload = {
-                "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
-                "temperature": 0.2, 
-                "stream": True,
-                "stream_options": {"include_usage": True}
-            }
-            
-            async with httpx.AsyncClient(timeout=300.0) as client:
-                async with client.stream("POST", url, headers=headers, json=payload) as response:
-                    if response.status_code != 200:
-                        err_text = await response.aread()
-                        yield json.dumps({"status": "error", "error": f"AI 服務傳回錯誤：{err_text.decode()}"}) + "\n"
-                        return
+                api_key = settings.GEMINI_API_KEY
+                if not api_key:
+                    yield json.dumps({"status": "error", "error": "未設定 Google Gemini API Key"}) + "\n"
+                    return
+                
+                client = genai.Client(api_key=api_key)
+                model_name = active_model.model_name or "gemini-3-flash-preview"
+                model_name_for_log = active_model.name
 
-                    async for line in response.aiter_lines():
-                        if not line or not line.startswith("data: "): continue
-                        if line.strip() == "data: [DONE]": break
-                        
+                contents = [
+                    types.Content(role="user", parts=[types.Part.from_text(text=system_prompt + "\n\n" + user_prompt)])
+                ]
+                
+                thinking_config = None
+                if "thinking" in model_name.lower() or "preview" in model_name.lower():
+                    thinking_config = types.ThinkingConfig(thinking_level="HIGH")
+
+                config = types.GenerateContentConfig(
+                    temperature=0.2,
+                    thinking_config=thinking_config,
+                )
+
+                try:
+                    total_tokens_used = 0
+                    # Using async iterable stream
+                    async for chunk in await client.aio.models.generate_content_stream(model=model_name, contents=contents, config=config):
+                        if chunk.text:
+                            yield json.dumps({"status": "content", "content": chunk.text}) + "\n"
+                        if chunk.usage_metadata:
+                            total_tokens_used = chunk.usage_metadata.total_token_count
+
+                    if total_tokens_used > 0:
                         try:
-                            data = json.loads(line[6:])
-                            
-                            # 擷取 OpenAI 串流最後一包的 Token 用量
-                            if "usage" in data and data["usage"]:
-                                usage = data["usage"]
-                                total_tokens = usage.get("total_tokens", 0)
-                                if total_tokens > 0:
-                                    try:
-                                        log = UsageLog(
-                                            user_id=current_user.id,
-                                            app_name="Policy Analysis",
-                                            model_name=model_name_for_log,
-                                            total_tokens=total_tokens,
-                                            estimated_cost=total_tokens * 0.000003  # 粗略估算成本
-                                        )
-                                        db.add(log)
-                                        db.commit()
-                                    except Exception as db_err:
-                                        print(f"Failed to log usage: {db_err}")
+                            log = UsageLog(
+                                user_id=current_user.id,
+                                app_name="Policy Analysis",
+                                model_name=model_name_for_log,
+                                total_tokens=total_tokens_used,
+                                estimated_cost=total_tokens_used * 0.000003
+                            )
+                            db.add(log)
+                            db.commit()
+                        except Exception as db_err:
+                            import logging
+                            logging.error(f"Failed to log usage: {db_err}")
 
-                            # 一般內容串流 (最後一包含有 usage 的 chunk 其 choices 會是空的)
-                            if data.get('choices'):
-                                delta = data['choices'][0].get('delta', {})
-                                content = delta.get('content', '')
-                                if content:
-                                    yield json.dumps({"status": "content", "content": content}) + "\n"
-                        except:
-                            continue
+                except Exception as api_err:
+                    yield json.dumps({"status": "error", "error": f"Gemini 服務發生錯誤：{str(api_err)}"}) + "\n"
+                    return
+
+            else:
+                if active_model and active_model.deployment_name:
+                    deployment = active_model.deployment_name
+                    model_name_for_log = active_model.name
+                else:
+                    deployment = getattr(settings, "AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4.1")
+                    model_name_for_log = "Azure OpenAI GPT-4.1"
+    
+                api_key = settings.AZURE_OPENAI_API_KEY
+                endpoint = settings.AZURE_OPENAI_ENDPOINT
+                api_version = getattr(settings, "AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
+                
+                if not api_key:
+                    yield json.dumps({"status": "error", "error": "未設定 Azure OpenAI API Key"}) + "\n"
+                    return
+                    
+                url = f"{endpoint.rstrip('/')}/openai/deployments/{deployment}/chat/completions?api-version={api_version}"
+                headers = {"Content-Type": "application/json", "api-key": api_key}
+                payload = {
+                    "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
+                    "temperature": 0.2, 
+                    "stream": True,
+                    "stream_options": {"include_usage": True}
+                }
+                
+                async with httpx.AsyncClient(timeout=300.0) as client:
+                    async with client.stream("POST", url, headers=headers, json=payload) as response:
+                        if response.status_code != 200:
+                            err_text = await response.aread()
+                            yield json.dumps({"status": "error", "error": f"AI 服務傳回錯誤：{err_text.decode()}"}) + "\n"
+                            return
+    
+                        async for line in response.aiter_lines():
+                            if not line or not line.startswith("data: "): continue
+                            if line.strip() == "data: [DONE]": break
+                            
+                            try:
+                                data = json.loads(line[6:])
+                                
+                                # 擷取 OpenAI 串流最後一包的 Token 用量
+                                if "usage" in data and data["usage"]:
+                                    usage = data["usage"]
+                                    total_tokens = usage.get("total_tokens", 0)
+                                    if total_tokens > 0:
+                                        try:
+                                            log = UsageLog(
+                                                user_id=current_user.id,
+                                                app_name="Policy Analysis",
+                                                model_name=model_name_for_log,
+                                                total_tokens=total_tokens,
+                                                estimated_cost=total_tokens * 0.000003  # 粗略估算成本
+                                            )
+                                            db.add(log)
+                                            db.commit()
+                                        except Exception as db_err:
+                                            print(f"Failed to log usage: {db_err}")
+    
+                                # 一般內容串流 (最後一包含有 usage 的 chunk 其 choices 會是空的)
+                                if data.get('choices'):
+                                    delta = data['choices'][0].get('delta', {})
+                                    content = delta.get('content', '')
+                                    if content:
+                                        yield json.dumps({"status": "content", "content": content}) + "\n"
+                            except:
+                                continue
             
             yield json.dumps({"status": "done"}) + "\n"
             
@@ -287,64 +343,119 @@ async def analyze_policy_gap_text(
 
 請產出完整的差異分析報告。"""
 
-            from app.models.domain import AIModel
+            from app.models.domain import AIModel, LLMProvider
             from app.models.stats import UsageLog
             active_model = db.query(AIModel).filter(AIModel.is_active == True).first()
-            if active_model and active_model.deployment_name:
-                deployment = active_model.deployment_name
+
+            if active_model and active_model.provider == LLMProvider.GOOGLE:
+                from google import genai
+                from google.genai import types
+                
+                api_key = settings.GEMINI_API_KEY
+                if not api_key:
+                    yield json.dumps({"status": "error", "error": "未設定 Google Gemini API Key"}) + "\n"
+                    return
+                
+                client = genai.Client(api_key=api_key)
+                model_name = active_model.model_name or "gemini-3-flash-preview"
                 model_name_for_log = active_model.name
+
+                contents = [
+                    types.Content(role="user", parts=[types.Part.from_text(text=system_prompt + "\n\n" + user_prompt)])
+                ]
+                
+                thinking_config = None
+                if "thinking" in model_name.lower() or "preview" in model_name.lower():
+                    thinking_config = types.ThinkingConfig(thinking_level="HIGH")
+
+                config = types.GenerateContentConfig(
+                    temperature=0.2,
+                    thinking_config=thinking_config,
+                )
+
+                try:
+                    total_tokens_used = 0
+                    async for chunk in await client.aio.models.generate_content_stream(model=model_name, contents=contents, config=config):
+                        if chunk.text:
+                            yield json.dumps({"status": "content", "content": chunk.text}) + "\n"
+                        if chunk.usage_metadata:
+                            total_tokens_used = chunk.usage_metadata.total_token_count
+
+                    if total_tokens_used > 0:
+                        try:
+                            log = UsageLog(
+                                user_id=current_user.id,
+                                app_name="Policy Analysis (Text)",
+                                model_name=model_name_for_log,
+                                total_tokens=total_tokens_used,
+                                estimated_cost=total_tokens_used * 0.000003
+                            )
+                            db.add(log)
+                            db.commit()
+                        except Exception as db_err:
+                            import logging
+                            logging.error(f"Failed to log usage: {db_err}")
+
+                except Exception as api_err:
+                    yield json.dumps({"status": "error", "error": f"Gemini 服務發生錯誤：{str(api_err)}"}) + "\n"
+                    return
+
             else:
-                deployment = getattr(settings, "AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4.1")
-                model_name_for_log = "Azure OpenAI GPT-4.1"
-
-            api_key = settings.AZURE_OPENAI_API_KEY
-            endpoint = settings.AZURE_OPENAI_ENDPOINT
-            api_version = getattr(settings, "AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
-            
-            url = f"{endpoint}openai/deployments/{deployment}/chat/completions?api-version={api_version}"
-            headers = {"Content-Type": "application/json", "api-key": api_key}
-            payload = {
-                "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
-                "temperature": 0.2, 
-                "stream": True,
-                "stream_options": {"include_usage": True}
-            }
-            
-            async with httpx.AsyncClient(timeout=300.0) as client:
-                async with client.stream("POST", url, headers=headers, json=payload) as response:
-                    if response.status_code != 200:
-                        yield json.dumps({"status": "error", "error": f"AI 服務異常 (HTTP {response.status_code})"}) + "\n"
-                        return
-
-                    async for line in response.aiter_lines():
-                        if line.startswith("data: "):
-                            if line.strip() == "data: [DONE]": break
-                            try:
-                                data = json.loads(line[6:])
-                                
-                                if "usage" in data and data["usage"]:
-                                    usage = data["usage"]
-                                    total_tokens = usage.get("total_tokens", 0)
-                                    if total_tokens > 0:
-                                        try:
-                                            log = UsageLog(
-                                                user_id=current_user.id,
-                                                app_name="Policy Analysis (Text)",
-                                                model_name=model_name_for_log,
-                                                total_tokens=total_tokens,
-                                                estimated_cost=total_tokens * 0.000003
-                                            )
-                                            db.add(log)
-                                            db.commit()
-                                        except Exception as db_err:
-                                            print(f"Failed to log usage: {db_err}")
-
-                                if data.get('choices'):
-                                    content = data['choices'][0].get('delta', {}).get('content', '')
-                                    if content:
-                                        yield json.dumps({"status": "content", "content": content}) + "\n"
-                            except: continue
-            
+                if active_model and active_model.deployment_name:
+                    deployment = active_model.deployment_name
+                    model_name_for_log = active_model.name
+                else:
+                    deployment = getattr(settings, "AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4.1")
+                    model_name_for_log = "Azure OpenAI GPT-4.1"
+    
+                api_key = settings.AZURE_OPENAI_API_KEY
+                endpoint = settings.AZURE_OPENAI_ENDPOINT
+                api_version = getattr(settings, "AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
+                
+                url = f"{endpoint.rstrip('/')}/openai/deployments/{deployment}/chat/completions?api-version={api_version}"
+                headers = {"Content-Type": "application/json", "api-key": api_key}
+                payload = {
+                    "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
+                    "temperature": 0.2, 
+                    "stream": True,
+                    "stream_options": {"include_usage": True}
+                }
+                
+                async with httpx.AsyncClient(timeout=300.0) as client:
+                    async with client.stream("POST", url, headers=headers, json=payload) as response:
+                        if response.status_code != 200:
+                            yield json.dumps({"status": "error", "error": f"AI 服務異常 (HTTP {response.status_code})"}) + "\n"
+                            return
+    
+                        async for line in response.aiter_lines():
+                            if line.startswith("data: "):
+                                if line.strip() == "data: [DONE]": break
+                                try:
+                                    data = json.loads(line[6:])
+                                    
+                                    if "usage" in data and data["usage"]:
+                                        usage = data["usage"]
+                                        total_tokens = usage.get("total_tokens", 0)
+                                        if total_tokens > 0:
+                                            try:
+                                                log = UsageLog(
+                                                    user_id=current_user.id,
+                                                    app_name="Policy Analysis (Text)",
+                                                    model_name=model_name_for_log,
+                                                    total_tokens=total_tokens,
+                                                    estimated_cost=total_tokens * 0.000003
+                                                )
+                                                db.add(log)
+                                                db.commit()
+                                            except Exception as db_err:
+                                                print(f"Failed to log usage: {db_err}")
+    
+                                    if data.get('choices'):
+                                        content = data['choices'][0].get('delta', {}).get('content', '')
+                                        if content:
+                                            yield json.dumps({"status": "content", "content": content}) + "\n"
+                                except: continue
+                
             yield json.dumps({"status": "done"}) + "\n"
         except Exception as e:
             yield json.dumps({"status": "error", "error": str(e)}) + "\n"

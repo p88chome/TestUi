@@ -50,9 +50,17 @@ def init_db(db: Session) -> None:
             "provider": LLMProvider.AZURE,
             "deployment_name": "gpt-5.4",
             "api_version": "2024-12-01-preview",
-            "description": "Azure OpenAI GPT-5.1 (latest standard model, uses max_tokens)",
+            "description": "Azure OpenAI GPT-5.4 (latest standard model, uses max_tokens)",
             "is_active": False,
             "is_reasoning_model": False,
+        },
+        {
+            "name": "Gemini 3.1 Pro (High)",
+            "provider": LLMProvider.GOOGLE,
+            "model_name": "gemini-3-flash-preview",
+            "description": "Google Gemini 3 Flash Preview (Reasoning/Thinking enabled)",
+            "is_active": False,
+            "is_reasoning_model": True,
         },
     ]
 

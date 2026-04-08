@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from app.models.domain import AIModel, LLMProvider
 from app.models.stats import UsageLog
 from app.core.config import settings
+# google.genai is imported lazily inside _call_gemini_async to avoid
+# crashing the module on environments that don't have the package installed.
 
 
 # ---------------------------------------------------------------------------
@@ -65,62 +67,64 @@ def _build_azure_payload(
     return url, headers, payload
 
 
-def _build_gemini_payload(
+def _call_gemini_async(
     ai_model: AIModel,
     input_text: str | None,
     messages: list[dict] | None,
     system_prompt: str,
     temperature: float,
     max_tokens: int,
-) -> tuple[str, dict, dict]:
-    """Returns (url, headers, payload) for Google Gemini REST API."""
+):
+    """Builds the Gemini client + request objects. Imports google.genai lazily."""
+    try:
+        from google import genai  # noqa: PLC0415
+        from google.genai import types  # noqa: PLC0415
+    except ImportError as exc:
+        raise ImportError(
+            "google-genai package is not installed. Run: pip install google-genai"
+        ) from exc
+
     api_key = settings.GEMINI_API_KEY
     if not api_key:
         raise ValueError("Missing GEMINI_API_KEY in settings.")
-
+    client = genai.Client(api_key=api_key)
     model_name = ai_model.model_name or settings.GEMINI_MODEL_NAME
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
-    headers = {"Content-Type": "application/json"}
 
-    # Translate messages to Gemini `contents` format (user / model roles only)
-    contents: list[dict] = []
+    contents = []
     if messages:
         for msg in messages:
             if msg["role"] == "system":
-                # System messages are handled separately via system_instruction below
                 continue
-            role = "model" if msg["role"] == "assistant" else "user"
-            contents.append({"role": role, "parts": [{"text": msg["content"]}]})
+            role = "user" if msg["role"] == "user" else "model"
+            contents.append(types.Content(role=role, parts=[types.Part.from_text(text=msg["content"])]))
     else:
-        contents.append({"role": "user", "parts": [{"text": input_text}]})
+        contents.append(types.Content(role="user", parts=[types.Part.from_text(text=input_text or "")]))
 
-    payload: dict = {
-        "system_instruction": {"parts": [{"text": system_prompt}]},
-        "contents": contents,
-        "generationConfig": {
-            "temperature": temperature,
-            "maxOutputTokens": max_tokens,
-        },
-    }
+    thinking_config = None
+    if model_name and ("thinking" in model_name.lower() or "preview" in model_name.lower()):
+        thinking_config = types.ThinkingConfig(thinking_level="HIGH")
 
-    return url, headers, payload
+    config = types.GenerateContentConfig(
+        system_instruction=system_prompt,
+        temperature=temperature,
+        max_output_tokens=max_tokens,
+        thinking_config=thinking_config,
+    )
 
+    return client, model_name, contents, config
 
-def _parse_gemini_response(raw: dict) -> dict:
-    """Normalises a Gemini REST response to the OpenAI-compatible shape."""
-    try:
-        text = raw["candidates"][0]["content"]["parts"][0]["text"]
-    except (KeyError, IndexError) as exc:
-        raise ValueError(f"Unexpected Gemini response format: {exc}") from exc
-
+def _format_gemini_response(response) -> dict:
+    prompt_tokens = response.usage_metadata.prompt_token_count if response.usage_metadata else 0
+    completion_tokens = response.usage_metadata.candidates_token_count if response.usage_metadata else 0
+    total_tokens = response.usage_metadata.total_token_count if response.usage_metadata else 0
     return {
         "choices": [
             {
-                "message": {"role": "assistant", "content": text},
-                "finish_reason": raw["candidates"][0].get("finishReason", "stop").lower(),
+                "message": {"role": "assistant", "content": response.text},
+                "finish_reason": "stop",
             }
         ],
-        "usage": raw.get("usageMetadata", {"total_tokens": 0}),
+        "usage": {"prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens, "total_tokens": total_tokens},
     }
 
 
@@ -150,21 +154,21 @@ async def call_llm(
         url, headers, payload = _build_azure_payload(
             ai_model, input_text, messages, system_prompt, temperature, max_tokens
         )
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(url, json=payload, headers=headers)
+        if response.status_code != 200:
+            raise ValueError(f"LLM API Error [{ai_model.provider}] ({response.status_code}): {response.text}")
+        res = response.json()
     elif ai_model.provider == LLMProvider.GOOGLE:
-        url, headers, payload = _build_gemini_payload(
+        client, model_name, contents, config = _call_gemini_async(
             ai_model, input_text, messages, system_prompt, temperature, max_tokens
         )
+        response = await client.aio.models.generate_content(
+            model=model_name, contents=contents, config=config
+        )
+        res = _format_gemini_response(response)
     else:
         raise ValueError(f"Unsupported LLM provider: {ai_model.provider}")
-
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        response = await client.post(url, json=payload, headers=headers)
-
-    if response.status_code != 200:
-        raise ValueError(f"LLM API Error [{ai_model.provider}] ({response.status_code}): {response.text}")
-
-    raw = response.json()
-    res = raw if ai_model.provider == LLMProvider.AZURE else _parse_gemini_response(raw)
 
     # Log Usage
     _log_usage(db, user_id, ai_model.name, app_name, res)
@@ -198,21 +202,21 @@ def call_llm_sync(
         url, headers, payload = _build_azure_payload(
             ai_model, input_text, messages, system_prompt, temperature, max_tokens
         )
+        with httpx.Client(timeout=60.0) as client:
+            response = client.post(url, json=payload, headers=headers)
+        if response.status_code != 200:
+            raise ValueError(f"LLM API Error [{ai_model.provider}] ({response.status_code}): {response.text}")
+        res = response.json()
     elif ai_model.provider == LLMProvider.GOOGLE:
-        url, headers, payload = _build_gemini_payload(
+        client, model_name, contents, config = _call_gemini_async(
             ai_model, input_text, messages, system_prompt, temperature, max_tokens
         )
+        response = client.models.generate_content(
+            model=model_name, contents=contents, config=config
+        )
+        res = _format_gemini_response(response)
     else:
         raise ValueError(f"Unsupported LLM provider: {ai_model.provider}")
-
-    with httpx.Client(timeout=60.0) as client:
-        response = client.post(url, json=payload, headers=headers)
-
-    if response.status_code != 200:
-        raise ValueError(f"LLM API Error [{ai_model.provider}] ({response.status_code}): {response.text}")
-
-    raw = response.json()
-    res = raw if ai_model.provider == LLMProvider.AZURE else _parse_gemini_response(raw)
 
     # Log Usage
     _log_usage(db, user_id, ai_model.name, app_name, res)
