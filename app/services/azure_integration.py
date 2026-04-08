@@ -19,7 +19,8 @@ async def call_azure_openai(
     messages: list[dict] | None = None,
     system_prompt: str = "You are a helpful AI assistant.",
     model_id: str | None = None,
-    temperature: float = 0.7
+    temperature: float = 0.7,
+    app_name: str = "Assistant"
 ) -> dict:
     """
     Calls unified LLM service. 
@@ -32,7 +33,8 @@ async def call_azure_openai(
         messages=messages,
         system_prompt=system_prompt,
         model_id=model_id,
-        temperature=temperature
+        temperature=temperature,
+        app_name=app_name
     )
 
 

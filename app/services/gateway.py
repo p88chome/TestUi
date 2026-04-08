@@ -9,7 +9,7 @@ class LLMGateway:
     def __init__(self, db: Session):
         self.db = db
 
-    async def chat(self, messages: list[dict], user_id: int | None = None, temperature: float = 0.7, model_id: str = None) -> dict:
+    async def chat(self, messages: list[dict], user_id: int | None = None, temperature: float = 0.7, model_id: str = None, app_name: str = "Assistant") -> dict:
         """
         Unified Chat Interface.
         
@@ -30,5 +30,6 @@ class LLMGateway:
             input_text="", # Legacy param, ignored by call_azure_openai when messages is provided
             messages=messages,
             model_id=model_id,
-            temperature=temperature
+            temperature=temperature,
+            app_name=app_name
         )

@@ -94,6 +94,8 @@ def _call_gemini_async(
     if messages:
         for msg in messages:
             if msg["role"] == "system":
+                # If there are system messages in the array, override the system_prompt!
+                system_prompt = msg["content"]
                 continue
             role = "user" if msg["role"] == "user" else "model"
             contents.append(types.Content(role=role, parts=[types.Part.from_text(text=msg["content"])]))
@@ -101,7 +103,7 @@ def _call_gemini_async(
         contents.append(types.Content(role="user", parts=[types.Part.from_text(text=input_text or "")]))
 
     thinking_config = None
-    if model_name and ("thinking" in model_name.lower() or "preview" in model_name.lower()):
+    if ai_model.is_reasoning_model and ("thinking" in model_name.lower() or "gemini-2.0-flash-thinking" in model_name.lower()):
         thinking_config = types.ThinkingConfig(thinking_level="HIGH")
 
     config = types.GenerateContentConfig(
