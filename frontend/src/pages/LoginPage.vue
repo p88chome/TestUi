@@ -1,17 +1,38 @@
 <template>
   <div class="auth-wrapper">
-    <!-- Animated background -->
-    <div class="bg-orbs">
-      <div class="orb orb-1"></div>
-      <div class="orb orb-2"></div>
-      <div class="orb orb-3"></div>
+    <!-- Left Branding Panel -->
+    <div class="brand-panel">
+      <div class="brand-content">
+        <div class="brand-logo">
+          <span class="brand-symbol">Ɐ</span>
+          <span class="brand-name">Platform<span class="brand-dot">.</span></span>
+        </div>
+        <div class="brand-tagline">
+          <h1>Enterprise AI<br />Powered by Deloitte</h1>
+          <p>Intelligent workflows, models, and analytics — built for your organization.</p>
+        </div>
+        <div class="brand-features">
+          <div class="brand-feature"><span class="feature-dot"></span>Multi-model AI orchestration</div>
+          <div class="brand-feature"><span class="feature-dot"></span>Enterprise-grade security</div>
+          <div class="brand-feature"><span class="feature-dot"></span>Real-time cost analytics</div>
+        </div>
+      </div>
+      <div class="brand-footer">© {{ new Date().getFullYear() }} Deloitte. All rights reserved.</div>
     </div>
 
+    <!-- Right Form Panel -->
+    <div class="form-panel">
     <div class="auth-card">
-      <!-- Logo -->
+      <!-- Logo (mobile only) -->
       <div class="auth-logo">
         <span class="logo-symbol">Ɐ</span>
         <span class="logo-text">Platform<span class="logo-dot">.</span></span>
+      </div>
+
+      <!-- Card heading -->
+      <div class="card-heading">
+        <h2 class="card-title">{{ currentView === 'register' ? '建立帳號' : currentView === 'email-sent' ? '確認信箱' : '歡迎回來' }}</h2>
+        <p class="card-subtitle">{{ currentView === 'register' ? '加入 AI 平台，開始使用企業 AI 工具' : currentView === 'email-sent' ? '' : '登入以繼續使用平台' }}</p>
       </div>
 
       <!-- ═══ SUCCESS STATE: Email Sent ═══ -->
@@ -205,6 +226,7 @@
       <!-- Debug Info (remove in production) -->
       <div v-if="isDev" class="debug-bar">API: {{ apiUrl }}</div>
     </div>
+    </div><!-- /form-panel -->
   </div>
 </template>
 
@@ -389,69 +411,161 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ── Layout ── */
+/* ── Layout: Split Panel ── */
 .auth-wrapper {
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #080810;
-  position: relative;
-  overflow: hidden;
-  font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  background: #F4F4F4;
 }
 
-/* ── Animated Background Orbs ── */
-.bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-.orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.18;
-  animation: float 8s ease-in-out infinite;
+/* ── Left: Brand Panel ── */
+.brand-panel {
+  width: 480px;
+  min-height: 100vh;
+  background: #000000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 48px 52px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
 }
-.orb-1 { width: 500px; height: 500px; background: #4ade80; top: -150px; left: -150px; animation-delay: 0s; }
-.orb-2 { width: 400px; height: 400px; background: #3b82f6; bottom: -100px; right: -100px; animation-delay: -3s; }
-.orb-3 { width: 300px; height: 300px; background: #a855f7; top: 50%; left: 50%; transform: translate(-50%,-50%); animation-delay: -6s; }
-@keyframes float {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-30px) scale(1.05); }
+
+/* Subtle green accent line at top */
+.brand-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #86BC25;
+}
+
+.brand-content {
+  display: flex;
+  flex-direction: column;
+  gap: 52px;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand-symbol {
+  font-size: 32px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+}
+.brand-name {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+.brand-dot { color: #86BC25; }
+
+.brand-tagline h1 {
+  font-size: 36px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+  margin: 0 0 16px;
+  letter-spacing: -0.5px;
+}
+.brand-tagline p {
+  font-size: 15px;
+  color: #888888;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.brand-features {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.brand-feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #aaaaaa;
+  font-weight: 500;
+}
+.feature-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #86BC25;
+  flex-shrink: 0;
+}
+
+.brand-footer {
+  font-size: 12px;
+  color: #444444;
+}
+
+/* ── Right: Form Panel ── */
+.form-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  background: #F4F5F7;
 }
 
 /* ── Card ── */
 .auth-card {
-  position: relative;
-  z-index: 1;
   width: 100%;
   max-width: 420px;
-  margin: 24px;
-  background: rgba(18, 18, 28, 0.85);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 20px;
-  padding: 36px 36px 28px;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04) inset;
+  background: #ffffff;
+  border: 1px solid #E5E5E5;
+  border-radius: 4px;
+  padding: 40px 36px 32px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
-/* ── Logo ── */
+/* ── Logo (inside card, shown on mobile only via hidden on desktop) ── */
 .auth-logo {
+  display: none; /* Hidden: brand panel shows logo on desktop */
   text-align: center;
   margin-bottom: 28px;
-  display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
 }
-.logo-symbol { font-size: 28px; font-weight: 900; color: #fff; }
-.logo-text { font-size: 22px; font-weight: 800; color: #f1f5f9; letter-spacing: -0.5px; }
-.logo-dot { color: #4ade80; }
+.logo-symbol { font-size: 26px; font-weight: 900; color: #000; }
+.logo-text { font-size: 20px; font-weight: 800; color: #000; letter-spacing: -0.5px; }
+.logo-dot { color: #86BC25; }
+
+/* Card heading */
+.card-heading { margin-bottom: 24px; }
+.card-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 4px;
+  letter-spacing: -0.3px;
+}
+.card-subtitle {
+  font-size: 13px;
+  color: #666666;
+  margin: 0;
+}
 
 /* ── Tab Bar ── */
 .tab-bar {
   display: flex;
-  background: rgba(255,255,255,0.04);
-  border-radius: 10px;
-  padding: 4px;
+  background: #F4F4F4;
+  border: 1px solid #E5E5E5;
+  border-radius: 2px;
+  padding: 3px;
   margin-bottom: 24px;
   position: relative;
 }
@@ -460,24 +574,24 @@ onUnmounted(() => {
   padding: 9px;
   background: transparent;
   border: none;
-  color: #64748b;
-  font-size: 14px;
+  color: #666666;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 8px;
-  transition: color 0.25s;
+  border-radius: 1px;
+  transition: color 0.2s;
   position: relative;
   z-index: 1;
 }
-.tab-btn.active { color: #f1f5f9; }
+.tab-btn.active { color: #000000; }
 .tab-indicator {
   position: absolute;
-  top: 4px; bottom: 4px; left: 4px;
-  width: calc(50% - 4px);
-  background: rgba(74, 222, 128, 0.12);
-  border: 1px solid rgba(74, 222, 128, 0.25);
-  border-radius: 8px;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  top: 3px; bottom: 3px; left: 3px;
+  width: calc(50% - 3px);
+  background: #ffffff;
+  border: 1px solid #E5E5E5;
+  border-radius: 1px;
+  transition: transform 0.25s ease;
 }
 .tab-indicator.right { transform: translateX(100%); }
 
@@ -486,30 +600,31 @@ onUnmounted(() => {
 
 .field-group { display: flex; flex-direction: column; gap: 6px; }
 .field-group label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: #94a3b8;
-  letter-spacing: 0.3px;
+  color: #2C2C2C;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .field-group input {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid #D0D0D0;
+  border-radius: 2px;
   padding: 11px 14px;
-  color: #f1f5f9;
+  color: #000000;
   font-size: 14px;
   transition: border-color 0.2s, box-shadow 0.2s;
   outline: none;
   width: 100%;
   box-sizing: border-box;
 }
-.field-group input::placeholder { color: #475569; }
+.field-group input::placeholder { color: #AAAAAA; }
 .field-group input:focus {
-  border-color: rgba(74, 222, 128, 0.5);
-  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.08);
+  border-color: #86BC25;
+  box-shadow: 0 0 0 2px rgba(134, 188, 37, 0.12);
 }
-.field-group input.invalid { border-color: rgba(248, 113, 113, 0.6); }
+.field-group input.invalid { border-color: #D0021B; }
 
 .password-wrapper { position: relative; }
 .password-wrapper input { padding-right: 44px; }
@@ -520,31 +635,31 @@ onUnmounted(() => {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 15px;
   padding: 0;
   line-height: 1;
-  opacity: 0.6;
+  opacity: 0.5;
   transition: opacity 0.2s;
 }
-.pw-toggle:hover { opacity: 1; }
+.pw-toggle:hover { opacity: 0.9; }
 
 .field-error {
   font-size: 12px;
-  color: #f87171;
+  color: #D0021B;
   margin-top: 2px;
 }
 
 /* ── Password Strength ── */
 .pw-strength { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
-.pw-strength-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
-.pw-strength-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease, background 0.3s ease; }
-.pw-strength-fill.weak { background: #f87171; }
-.pw-strength-fill.fair { background: #fbbf24; }
-.pw-strength-fill.strong { background: #4ade80; }
+.pw-strength-bar { flex: 1; height: 3px; background: #E5E5E5; border-radius: 2px; overflow: hidden; }
+.pw-strength-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease, background 0.3s ease; }
+.pw-strength-fill.weak { background: #D0021B; }
+.pw-strength-fill.fair { background: #F5A623; }
+.pw-strength-fill.strong { background: #86BC25; }
 .pw-strength-label { font-size: 11px; font-weight: 600; min-width: 24px; }
-.pw-strength-label.weak { color: #f87171; }
-.pw-strength-label.fair { color: #fbbf24; }
-.pw-strength-label.strong { color: #4ade80; }
+.pw-strength-label.weak { color: #D0021B; }
+.pw-strength-label.fair { color: #F5A623; }
+.pw-strength-label.strong { color: #86BC25; }
 
 /* ── Buttons ── */
 .btn {
@@ -553,35 +668,34 @@ onUnmounted(() => {
   justify-content: center;
   gap: 8px;
   padding: 12px 20px;
-  border-radius: 10px;
+  border-radius: 2px;
   font-size: 14px;
   font-weight: 700;
   border: none;
   cursor: pointer;
   transition: all 0.2s;
+  letter-spacing: 0.02em;
 }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-primary {
-  background: linear-gradient(135deg, #4ade80, #22c55e);
-  color: #000;
-  box-shadow: 0 4px 16px rgba(74, 222, 128, 0.25);
+  background: #86BC25;
+  color: #000000;
 }
 .btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(74, 222, 128, 0.35);
+  background: #6B9C1E;
 }
 .btn-ghost {
-  background: rgba(255,255,255,0.05);
-  color: #94a3b8;
-  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: #666666;
+  border: 1px solid #D0D0D0;
 }
-.btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,0.08); color: #f1f5f9; }
+.btn-ghost:hover:not(:disabled) { background: #F4F4F4; color: #000000; }
 .w-full { width: 100%; }
 
 /* ── Spinner ── */
 .spinner {
   width: 16px; height: 16px;
-  border: 2px solid rgba(0,0,0,0.2);
+  border: 2px solid rgba(0,0,0,0.15);
   border-top-color: #000;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -590,12 +704,13 @@ onUnmounted(() => {
 
 /* ── Error Banner ── */
 .error-banner {
-  background: rgba(248, 113, 113, 0.08);
-  border: 1px solid rgba(248, 113, 113, 0.25);
-  border-radius: 10px;
+  background: rgba(208, 2, 27, 0.05);
+  border: 1px solid rgba(208, 2, 27, 0.2);
+  border-left: 3px solid #D0021B;
+  border-radius: 2px;
   padding: 10px 14px;
   font-size: 13px;
-  color: #fca5a5;
+  color: #D0021B;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -605,13 +720,13 @@ onUnmounted(() => {
 .form-footer {
   text-align: center;
   font-size: 13px;
-  color: #64748b;
+  color: #666666;
   margin-top: 4px;
 }
 .link-btn {
   background: none;
   border: none;
-  color: #4ade80;
+  color: #86BC25;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -619,7 +734,7 @@ onUnmounted(() => {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.link-btn:hover { color: #86efac; }
+.link-btn:hover { color: #6B9C1E; }
 
 /* ── Success View ── */
 .success-view { text-align: center; padding: 8px 0; }
@@ -629,21 +744,39 @@ onUnmounted(() => {
   70% { transform: scale(1.1); }
   100% { transform: scale(1); opacity: 1; }
 }
-.success-title { font-size: 20px; font-weight: 800; color: #f1f5f9; margin: 0 0 12px; }
-.success-desc { font-size: 14px; color: #94a3b8; line-height: 1.7; margin: 0 0 8px; }
-.highlight-email { color: #4ade80; font-size: 14px; }
-.success-hint { font-size: 12px; color: #475569; margin: 0 0 24px; }
+.success-title { font-size: 20px; font-weight: 700; color: #000000; margin: 0 0 12px; }
+.success-desc { font-size: 14px; color: #666666; line-height: 1.7; margin: 0 0 8px; }
+.highlight-email { color: #86BC25; font-size: 14px; }
+.success-hint { font-size: 12px; color: #999999; margin: 0 0 24px; }
 .success-actions { display: flex; flex-direction: column; gap: 10px; }
 
 /* ── Debug Bar ── */
 .debug-bar {
   margin-top: 20px;
   padding: 8px 12px;
-  background: rgba(255,255,255,0.03);
-  border-radius: 8px;
+  background: #F4F4F4;
+  border-radius: 2px;
   font-size: 11px;
-  color: #374151;
+  color: #999999;
   text-align: center;
+}
+
+/* ── Responsive: mobile hides brand panel ── */
+@media (max-width: 768px) {
+  .brand-panel { display: none; }
+  .form-panel { background: #000000; }
+  .auth-card {
+    background: rgba(18,18,18,0.95);
+    border-color: #1f1f1f;
+  }
+  .auth-card::before { color: #ffffff; }
+  .auth-logo { display: flex; }
+  .logo-symbol { color: #ffffff; }
+  .logo-text { color: #ffffff; }
+  .field-group label { color: #aaaaaa; }
+  .field-group input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); color: #ffffff; }
+  .field-group input::placeholder { color: #555555; }
+  .form-footer { color: #666666; }
 }
 
 /* ── Transitions ── */

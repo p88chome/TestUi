@@ -211,12 +211,14 @@ const chartData = ref({
     datasets: [
         {
             label: 'Tokens',
-            backgroundColor: '#10b981', 
+            backgroundColor: '#86BC25',
+            borderRadius: 2,
             data: [0, 0, 0, 0, 0, 0, 0]
         },
         {
             label: 'Cost ($)',
-            backgroundColor: '#3b82f6',
+            backgroundColor: '#2C2C2C',
+            borderRadius: 2,
             data: [0, 0, 0, 0, 0, 0, 0]
         }
     ]
@@ -226,28 +228,24 @@ const chartOptions = ref({
     plugins: {
         legend: {
             labels: {
-                color: '#495057'
+                color: '#2C2C2C',
+                font: { family: 'Inter, system-ui, sans-serif', size: 12, weight: '600' },
+                usePointStyle: true,
+                pointStyleWidth: 8
             }
         }
     },
     scales: {
         x: {
-            ticks: {
-                color: '#495057'
-            },
-            grid: {
-                color: '#ebedef'
-            }
+            ticks: { color: '#666666', font: { family: 'Inter, system-ui, sans-serif', size: 11 } },
+            grid: { color: '#F0F0F0', drawBorder: false }
         },
         y: {
-            ticks: {
-                color: '#495057'
-            },
-            grid: {
-                color: '#ebedef'
-            }
+            ticks: { color: '#666666', font: { family: 'Inter, system-ui, sans-serif', size: 11 } },
+            grid: { color: '#F0F0F0', drawBorder: false }
         }
-    }
+    },
+    borderRadius: 2
 });
 
 // Recent Activity Data
