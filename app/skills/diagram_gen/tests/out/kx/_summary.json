@@ -1,0 +1,90 @@
+[
+  {
+    "code": "CA-101",
+    "ok": true,
+    "nodes": 22,
+    "edges": 26,
+    "lanes": [
+      "需求單位",
+      "採購課",
+      "總務人員",
+      "財務部",
+      "會計人員"
+    ],
+    "starts": 3,
+    "decisions": 4,
+    "elapsed_s": 6.7
+  },
+  {
+    "code": "CA-102",
+    "ok": true,
+    "nodes": 34,
+    "edges": 39,
+    "lanes": [
+      "總務人員",
+      "財務部",
+      "業務部",
+      "資訊課"
+    ],
+    "starts": 6,
+    "decisions": 6,
+    "elapsed_s": 8.2
+  },
+  {
+    "code": "CA-103",
+    "ok": true,
+    "nodes": 13,
+    "edges": 13,
+    "lanes": [
+      "總務人員",
+      "資產保管單位"
+    ],
+    "starts": 4,
+    "decisions": 1,
+    "elapsed_s": 4.1
+  },
+  {
+    "code": "CA-104",
+    "ok": true,
+    "nodes": 20,
+    "edges": 22,
+    "lanes": [
+      "管理及保管單位",
+      "總務人員",
+      "財務部"
+    ],
+    "starts": 4,
+    "decisions": 3,
+    "elapsed_s": 5.6
+  },
+  {
+    "code": "CA-105",
+    "ok": true,
+    "nodes": 19,
+    "edges": 24,
+    "lanes": [
+      "財務部",
+      "保管單位",
+      "總務人員",
+      "稽核室"
+    ],
+    "starts": 1,
+    "decisions": 6,
+    "elapsed_s": 5.5
+  },
+  {
+    "code": "CA-106",
+    "ok": true,
+    "nodes": 46,
+    "edges": 55,
+    "lanes": [
+      "保管單位",
+      "總務人員",
+      "財務部",
+      "業務部"
+    ],
+    "starts": 9,
+    "decisions": 9,
+    "elapsed_s": 11.4
+  }
+]

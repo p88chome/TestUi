@@ -522,19 +522,46 @@ const parseApiPayloadToVueFlow = (apiNodes: any[], apiEdges: any[]) => {
   }));
 
   const vEdges = apiEdges.map((e: any, idx: number) => {
-    const isDoc = apiNodes.find((n: any) => n.id === e.to)?.type === 'document';
+    const fromNode = apiNodes.find((n: any) => n.id === e.from);
+    const toNode = apiNodes.find((n: any) => n.id === e.to);
+    const isDoc = toNode?.type === 'document';
+    const isFromDecision = fromNode?.type === 'control';
+    const label = (e.label || '').toString().trim().toUpperCase();
+    const isNo = label === 'N' || label === 'NO' || label === '否';
+    const isYes = label === 'Y' || label === 'YES' || label === '是';
+
+    // Handle routing:
+    //   Y / 順流 / 無標籤 → 底進頂(預設)
+    //   N / 退件回圈 → 從右側出,對方左側進(視覺上繞側邊,不壓主幹)
+    let sourceHandle: string | undefined;
+    let targetHandle: string | undefined;
+    if (isFromDecision && isNo) {
+      sourceHandle = 'right';
+      targetHandle = 'left';
+    }
+
+    // 樣式:doc 虛線橘、N 紅、Y 綠、其他灰
+    let stroke = '#475569';
+    let strokeDasharray: string | undefined;
+    if (isDoc) { stroke = '#ea580c'; strokeDasharray = '5 5'; }
+    else if (isNo) { stroke = '#dc2626'; }
+    else if (isYes) { stroke = '#16a34a'; }
+
     return {
       id: `e-${e.from}-${e.to}-${idx}`,
       source: e.from,
       target: e.to,
+      sourceHandle,
+      targetHandle,
       label: e.label || '',
       type: 'smoothstep',
       animated: !isDoc,
-      style: isDoc ? { strokeDasharray: '5 5', stroke: '#ea580c', strokeWidth: 2 } : { stroke: '#475569', strokeWidth: 2 },
+      style: { stroke, strokeWidth: 2, ...(strokeDasharray ? { strokeDasharray } : {}) },
+      markerEnd: { type: 'arrowclosed', color: stroke, width: 18, height: 18 },
       labelBgPadding: [6, 4],
       labelBgBorderRadius: 4,
       labelBgStyle: { fill: '#1e293b', fillOpacity: 0.9 },
-      labelStyle: { fill: '#cbd5e1', fontWeight: 600, fontSize: 12 }
+      labelStyle: { fill: '#cbd5e1', fontWeight: 700, fontSize: 13 },
     };
   });
 

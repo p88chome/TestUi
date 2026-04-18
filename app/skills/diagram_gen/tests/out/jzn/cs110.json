@@ -1,0 +1,420 @@
+{
+  "title": "CS-110 銷貨退回及折讓作業",
+  "lanes": [
+    "全通路營運部",
+    "財務部",
+    "倉管課",
+    "品保課",
+    "生管課",
+    "採購課"
+  ],
+  "nodes": [
+    {
+      "id": "start1",
+      "type": "start",
+      "label": "退款或折讓開始",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "start2",
+      "type": "start",
+      "label": "退貨開始",
+      "lane": "門市",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "了解詳情填寫折讓申請單",
+      "lane": "全通路營運部",
+      "docs": [
+        "折讓申請單"
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "權責主管核准",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "財務部確認開立證明單",
+      "lane": "財務部",
+      "docs": [
+        "銷貨退回、進貨退出或折讓證明單",
+        "AR發票貸項通知單"
+      ]
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "填寫請款單",
+      "lane": "全通路營運部",
+      "docs": [
+        "請款單"
+      ]
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "權責主管核准",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "財務部執行退款",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "點收退貨產品",
+      "lane": "門市",
+      "docs": [
+        "預生產訂單"
+      ]
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "通知營運部退貨訊息",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "品保課判別品質",
+      "lane": "品保課",
+      "docs": []
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "判別品質不良及過期",
+      "lane": "品保課",
+      "docs": []
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "填寫矯正處理單及報廢需求",
+      "lane": "權責單位",
+      "docs": [
+        "矯正處理單",
+        "報廢需求"
+      ]
+    },
+    {
+      "id": "d4",
+      "type": "decision",
+      "label": "權責主管核准",
+      "lane": "權責單位",
+      "docs": []
+    },
+    {
+      "id": "n9",
+      "type": "process",
+      "label": "倉管課調撥至報廢倉",
+      "lane": "倉管課",
+      "docs": []
+    },
+    {
+      "id": "n10",
+      "type": "process",
+      "label": "銷毀產品拍照交財務部",
+      "lane": "倉管課",
+      "docs": []
+    },
+    {
+      "id": "n11",
+      "type": "process",
+      "label": "財務部留存作帳",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n12",
+      "type": "process",
+      "label": "填寫銷貨退貨請求",
+      "lane": "全通路營運部",
+      "docs": [
+        "銷貨退貨請求"
+      ]
+    },
+    {
+      "id": "d5",
+      "type": "decision",
+      "label": "權責主管核准",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n13",
+      "type": "process",
+      "label": "生管課轉成銷貨退貨",
+      "lane": "生管課",
+      "docs": [
+        "銷貨退貨"
+      ]
+    },
+    {
+      "id": "n14",
+      "type": "process",
+      "label": "倉管課調撥至各倉別",
+      "lane": "倉管課",
+      "docs": []
+    },
+    {
+      "id": "n15",
+      "type": "process",
+      "label": "查核數量品項",
+      "lane": "倉管課",
+      "docs": []
+    },
+    {
+      "id": "n16",
+      "type": "process",
+      "label": "品保課檢驗退貨產品",
+      "lane": "品保課",
+      "docs": []
+    },
+    {
+      "id": "d6",
+      "type": "decision",
+      "label": "屬廠商責任",
+      "lane": "品保課",
+      "docs": []
+    },
+    {
+      "id": "n17",
+      "type": "process",
+      "label": "開立矯正處理單",
+      "lane": "品保課",
+      "docs": [
+        "矯正處理單"
+      ]
+    },
+    {
+      "id": "n18",
+      "type": "process",
+      "label": "採購課聯繫廠商",
+      "lane": "採購課",
+      "docs": []
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "財務部",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start1",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n2",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n1",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "label": null,
+      "annotation": "須退款"
+    },
+    {
+      "from": "n3",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n4",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n3",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start2",
+      "to": "n5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "n7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n7",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n8",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n12",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n8",
+      "to": "d4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n9",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n8",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n9",
+      "to": "n10",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n10",
+      "to": "n11",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n11",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n12",
+      "to": "d5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n13",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n12",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n13",
+      "to": "n14",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n14",
+      "to": "n15",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n15",
+      "to": "n16",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n16",
+      "to": "d6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n17",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "end",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n17",
+      "to": "n18",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n18",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    }
+  ]
+}

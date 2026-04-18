@@ -1,0 +1,505 @@
+{
+  "title": "CA-102 不動產、廠房及設備管理作業",
+  "lanes": [
+    "總務人員",
+    "財務部",
+    "業務部",
+    "資訊課"
+  ],
+  "nodes": [
+    {
+      "id": "start1",
+      "type": "start",
+      "label": "資產取得開始",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "認列資產並估計耐用年數",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "訂定折舊提列方式",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "維護財產目錄清冊",
+      "lane": "總務人員",
+      "docs": [
+        "財產目錄清冊"
+      ]
+    },
+    {
+      "id": "start2",
+      "type": "start",
+      "label": "資產移轉開始",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "填寫資產移轉單",
+      "lane": "總務人員",
+      "docs": [
+        "資產移轉單"
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "核准",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "確認資料已更新",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "start3",
+      "type": "start",
+      "label": "資產外借開始",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "填寫資產外借單",
+      "lane": "業務部",
+      "docs": [
+        "資產外借單"
+      ]
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "核准",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "確認狀態更新於清冊",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "start4",
+      "type": "start",
+      "label": "資產出租開始",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "通知租賃起訖日",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "n9",
+      "type": "process",
+      "label": "改列存貨於清冊",
+      "lane": "總務人員",
+      "docs": [
+        "財產目錄清冊"
+      ]
+    },
+    {
+      "id": "n10",
+      "type": "process",
+      "label": "填寫資產外借單",
+      "lane": "業務部",
+      "docs": [
+        "資產外借單"
+      ]
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "核准",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "n11",
+      "type": "process",
+      "label": "設備品質檢驗",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "n12",
+      "type": "process",
+      "label": "填寫資產收回單",
+      "lane": "業務部",
+      "docs": [
+        "資產收回單"
+      ]
+    },
+    {
+      "id": "d4",
+      "type": "decision",
+      "label": "核准",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "start5",
+      "type": "start",
+      "label": "融資租賃開始",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "n13",
+      "type": "process",
+      "label": "確認客戶需求並告知財務部",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "n14",
+      "type": "process",
+      "label": "評估融資租賃",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "d5",
+      "type": "decision",
+      "label": "判定融資租賃",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n15",
+      "type": "process",
+      "label": "簽訂租賃合約",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "n16",
+      "type": "process",
+      "label": "建立報價單及銷售訂單",
+      "lane": "業務部",
+      "docs": [
+        "報價單",
+        "銷售訂單"
+      ]
+    },
+    {
+      "id": "n17",
+      "type": "process",
+      "label": "建立銷貨單",
+      "lane": "業務部",
+      "docs": [
+        "銷貨單"
+      ]
+    },
+    {
+      "id": "n18",
+      "type": "process",
+      "label": "開立發票",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n19",
+      "type": "process",
+      "label": "帳務處理及揭露",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "start6",
+      "type": "start",
+      "label": "資產重估開始",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n20",
+      "type": "process",
+      "label": "擬定申辦文據及估價依據",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "d6",
+      "type": "decision",
+      "label": "核准",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n21",
+      "type": "process",
+      "label": "建立資產調整單",
+      "lane": "財務部",
+      "docs": [
+        "列管資產調整單",
+        "列帳資產調整單"
+      ]
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "財務部",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start1",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "n2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start2",
+      "to": "n4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n5",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n4",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start3",
+      "to": "n6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n7",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n6",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n7",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start4",
+      "to": "n8",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n8",
+      "to": "n9",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n9",
+      "to": "n10",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n10",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n11",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n10",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n11",
+      "to": "n12",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n12",
+      "to": "d4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "end",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n12",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "start5",
+      "to": "n13",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n13",
+      "to": "n14",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n14",
+      "to": "d5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n15",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "end",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n15",
+      "to": "n16",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n16",
+      "to": "n17",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n17",
+      "to": "n18",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n18",
+      "to": "n19",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n19",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start6",
+      "to": "n20",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n20",
+      "to": "d6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n21",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n20",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n21",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    }
+  ]
+}

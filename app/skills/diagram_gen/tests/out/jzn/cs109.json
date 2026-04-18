@@ -1,0 +1,329 @@
+{
+  "title": "CS-109 客訴處理作業",
+  "lanes": [
+    "客服單位",
+    "門市單位",
+    "品保課",
+    "製造事業部"
+  ],
+  "nodes": [
+    {
+      "id": "start",
+      "type": "start",
+      "label": "客訴發生開始",
+      "lane": "客服單位",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "判定問題性質及責任",
+      "lane": "客服單位",
+      "docs": []
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "回覆客戶處理對策",
+      "lane": "客服單位",
+      "docs": []
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "填寫客服電話",
+      "lane": "客服單位",
+      "docs": [
+        "客服電話"
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "權責主管核准",
+      "lane": "客服單位",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "辦理折讓/理賠/退換貨",
+      "lane": "客服單位",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "索取不良品交品保課",
+      "lane": "客服單位",
+      "docs": []
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "品保課檢驗評估",
+      "lane": "品保課",
+      "docs": []
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "達成品回收標準",
+      "lane": "品保課",
+      "docs": []
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "執行成品回收",
+      "lane": "品保課",
+      "docs": []
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "通報管理階層及主管機關",
+      "lane": "品保課",
+      "docs": []
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "品質異常且重大",
+      "lane": "品保課",
+      "docs": []
+    },
+    {
+      "id": "n9",
+      "type": "process",
+      "label": "製造事業部召集會議討論",
+      "lane": "製造事業部",
+      "docs": []
+    },
+    {
+      "id": "n10",
+      "type": "process",
+      "label": "記錄改善及預防對策",
+      "lane": "製造事業部",
+      "docs": []
+    },
+    {
+      "id": "d4",
+      "type": "decision",
+      "label": "牽涉訴訟或消保官介入",
+      "lane": "製造事業部",
+      "docs": []
+    },
+    {
+      "id": "n11",
+      "type": "process",
+      "label": "外部律師會同處理",
+      "lane": "製造事業部",
+      "docs": []
+    },
+    {
+      "id": "d5",
+      "type": "decision",
+      "label": "訴訟金額重大且影響商譽",
+      "lane": "製造事業部",
+      "docs": []
+    },
+    {
+      "id": "n12",
+      "type": "process",
+      "label": "執行CO-106管理作業",
+      "lane": "製造事業部",
+      "docs": []
+    },
+    {
+      "id": "n13",
+      "type": "process",
+      "label": "客戶確認問題改善",
+      "lane": "客服單位",
+      "docs": []
+    },
+    {
+      "id": "n14",
+      "type": "process",
+      "label": "主管於客服電話結案歸檔",
+      "lane": "客服單位",
+      "docs": [
+        "客服電話"
+      ]
+    },
+    {
+      "id": "n15",
+      "type": "process",
+      "label": "辦理矯正處理單結案",
+      "lane": "客服單位",
+      "docs": [
+        "矯正處理單"
+      ]
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "客服單位",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "n2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n4",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n3",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n7",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n6",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n7",
+      "to": "n8",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n8",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n9",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n13",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n9",
+      "to": "n10",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n10",
+      "to": "d4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n11",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n13",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n11",
+      "to": "d5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n12",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n13",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n12",
+      "to": "n13",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n13",
+      "to": "n14",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n14",
+      "to": "n15",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n15",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    }
+  ]
+}

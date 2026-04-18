@@ -1,0 +1,89 @@
+flowchart TD
+    %% CS-108 銷售發票開立及作廢作業
+    start1(["發票開立開始"])
+    start2(["紙本發票申請開始"])
+    start3(["發票作廢申請開始"])
+    n1["確認銷售資訊"]
+    n1_doc0[/"📄 銷售報價"/]
+    n1 -.-> n1_doc0
+    n1_doc1[/"📄 交貨單"/]
+    n1 -.-> n1_doc1
+    d1{"主管核對"}
+    n2["開立INVOICE"]
+    n2_doc0[/"📄 INVOICE"/]
+    n2 -.-> n2_doc0
+    n3["POS機開立電子發票"]
+    n4["填寫發票申請單"]
+    n4_doc0[/"📄 發票申請單"/]
+    n4 -.-> n4_doc0
+    d2{"主管核對"}
+    n5["開立紙本發票"]
+    n5_doc0[/"📄 INVOICE"/]
+    n5 -.-> n5_doc0
+    n6["回填發票資訊"]
+    n6_doc0[/"📄 銷售報價"/]
+    n6 -.-> n6_doc0
+    n7["填寫發票作廢申請單"]
+    n7_doc0[/"📄 發票申請單"/]
+    n7 -.-> n7_doc0
+    d3{"主管核准"}
+    n8["財務部辦理作廢及重開"]
+    d4{"銷售額是否已申報"}
+    n9["取得買受人承諾書"]
+    n10["向稅捐機關申請專案作廢"]
+    n11["編製調節表確認一致性"]
+    n11_doc0[/"📄 營業收入及發票金額調節"/]
+    n11 -.-> n11_doc0
+    _end(["結束"])
+    start1 --> n1
+    n1 --> d1
+    d1 -->|Y| n2
+    d1 -->|N| n1
+    n2 --> n6
+    n6 --> _end
+    start1 --> n3
+    %% annotation on start1->n3: 百貨、門市及高鐵
+    n3 --> _end
+    start2 --> n4
+    n4 --> d2
+    d2 -->|Y| n5
+    d2 -->|N| n4
+    n5 --> _end
+    start3 --> n7
+    n7 --> d3
+    d3 -->|Y| n8
+    d3 -->|N| n7
+    n8 --> d4
+    d4 -->|Y| n9
+    d4 -->|N| _end
+    n9 --> n10
+    n10 --> _end
+    _end --> n11
+    %% annotation on end->n11: 定期編製調節表
+
+    %% Lanes
+    subgraph 全通路營運部["全通路營運部"]
+        start1
+        start2
+        start3
+        n1
+        d1
+        n2
+        n4
+        n6
+        n7
+        d3
+        n9
+    end
+    subgraph 財務部["財務部"]
+        d2
+        n5
+        n8
+        d4
+        n10
+        n11
+        _end
+    end
+    subgraph 門市人員["門市人員"]
+        n3
+    end

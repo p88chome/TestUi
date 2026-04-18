@@ -1,0 +1,678 @@
+{
+  "title": "CS-105 銷售接單作業",
+  "lanes": [
+    "全通路營運部",
+    "製造事業部",
+    "行政管理部"
+  ],
+  "nodes": [
+    {
+      "id": "start1",
+      "type": "start",
+      "label": "單一商品牌價制訂開始",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "start2",
+      "type": "start",
+      "label": "優惠商品牌價制訂開始",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "start3",
+      "type": "start",
+      "label": "報價作業開始",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "start4",
+      "type": "start",
+      "label": "訂單處理開始",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "start5",
+      "type": "start",
+      "label": "訂單變更開始",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "提出新產品定價底稿",
+      "lane": "全通路營運部",
+      "docs": [
+        "新產品定價底稿"
+      ]
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "設定平台價格草稿",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "提出商品牌價申請單",
+      "lane": "全通路營運部",
+      "docs": [
+        "新增/修改SAP、POS、第三方平台商品牌價申請單",
+        "新產品定價底稿"
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "權責主管核准",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "價格資訊拋轉SAP",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "平台價格上架",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "提出新組合定價底稿",
+      "lane": "全通路營運部",
+      "docs": [
+        "新組合定價底稿"
+      ]
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "設定平台價格草稿",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "提出商品牌價申請單",
+      "lane": "全通路營運部",
+      "docs": [
+        "新增/修改SAP、POS、第三方平台商品牌價申請單",
+        "新組合定價底稿"
+      ]
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "權責主管核准",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n9",
+      "type": "process",
+      "label": "平台價格上架",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n10",
+      "type": "process",
+      "label": "建立報價單",
+      "lane": "全通路營運部",
+      "docs": [
+        "銷售報價"
+      ]
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "權責主管核准",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n11",
+      "type": "process",
+      "label": "提供報價單給客戶",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n12",
+      "type": "process",
+      "label": "成立銷售報價",
+      "lane": "全通路營運部",
+      "docs": [
+        "銷售報價"
+      ]
+    },
+    {
+      "id": "d4",
+      "type": "decision",
+      "label": "權責主管覆核",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n13",
+      "type": "process",
+      "label": "第三方平台訂單拋轉SAP",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n14",
+      "type": "process",
+      "label": "進SAP成立銷售報價",
+      "lane": "全通路營運部",
+      "docs": [
+        "銷售報價"
+      ]
+    },
+    {
+      "id": "d5",
+      "type": "decision",
+      "label": "權責主管簽核",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n15",
+      "type": "process",
+      "label": "商議特殊需求可行性",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "d6",
+      "type": "decision",
+      "label": "權責主管核准",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n16",
+      "type": "process",
+      "label": "提供特殊報價給客戶",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n17",
+      "type": "process",
+      "label": "合約審查",
+      "lane": "全通路營運部",
+      "docs": [
+        "合約審查或變更紀錄表"
+      ]
+    },
+    {
+      "id": "d7",
+      "type": "decision",
+      "label": "權責主管核准",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n18",
+      "type": "process",
+      "label": "法律顧問檢視",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n19",
+      "type": "process",
+      "label": "簽訂合約",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "d8",
+      "type": "decision",
+      "label": "行政管理部批准",
+      "lane": "行政管理部",
+      "docs": []
+    },
+    {
+      "id": "n20",
+      "type": "process",
+      "label": "記錄合約審查結果",
+      "lane": "行政管理部",
+      "docs": [
+        "合約審查或變更紀錄表"
+      ]
+    },
+    {
+      "id": "n21",
+      "type": "process",
+      "label": "訂單資訊入系統",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n22",
+      "type": "process",
+      "label": "研討大單應對措施",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n23",
+      "type": "process",
+      "label": "確認訂單變更需求",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "d9",
+      "type": "decision",
+      "label": "製造事業部同意",
+      "lane": "製造事業部",
+      "docs": []
+    },
+    {
+      "id": "n24",
+      "type": "process",
+      "label": "確認變更可行性",
+      "lane": "製造事業部",
+      "docs": []
+    },
+    {
+      "id": "n25",
+      "type": "process",
+      "label": "取得客戶變更通知",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n26",
+      "type": "process",
+      "label": "系統修改報價及訂單",
+      "lane": "全通路營運部",
+      "docs": [
+        "銷售報價",
+        "預生產訂單"
+      ]
+    },
+    {
+      "id": "d10",
+      "type": "decision",
+      "label": "權責主管核准",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n27",
+      "type": "process",
+      "label": "發出變更通知",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "全通路營運部",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start1",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "n2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n4",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n3",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start2",
+      "to": "n6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "n7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n7",
+      "to": "n8",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n8",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n9",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n8",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n9",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start3",
+      "to": "n10",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n10",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n11",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n10",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n11",
+      "to": "n12",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n12",
+      "to": "d4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "end",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n12",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "start3",
+      "to": "n13",
+      "label": null,
+      "annotation": "電商訂單有API"
+    },
+    {
+      "from": "n13",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start3",
+      "to": "n14",
+      "label": null,
+      "annotation": "電商訂單無API"
+    },
+    {
+      "from": "n14",
+      "to": "d5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "end",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n14",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "start3",
+      "to": "n15",
+      "label": null,
+      "annotation": "客戶需求特殊"
+    },
+    {
+      "from": "n15",
+      "to": "d6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n16",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n15",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n16",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start3",
+      "to": "n17",
+      "label": null,
+      "annotation": "需簽訂合約"
+    },
+    {
+      "from": "n17",
+      "to": "d7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n18",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n17",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n18",
+      "to": "n19",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n19",
+      "to": "d8",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d8",
+      "to": "n20",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d8",
+      "to": "n19",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n20",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start4",
+      "to": "n21",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n21",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start4",
+      "to": "n22",
+      "label": null,
+      "annotation": "訂單數量較大"
+    },
+    {
+      "from": "n22",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start5",
+      "to": "n23",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n23",
+      "to": "d9",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d9",
+      "to": "n24",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d9",
+      "to": "n23",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n24",
+      "to": "n25",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n25",
+      "to": "n26",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n26",
+      "to": "d10",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d10",
+      "to": "n27",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d10",
+      "to": "n26",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n27",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+[
+  {
+    "code": "CS-101",
+    "ok": true,
+    "nodes": 19,
+    "edges": 22,
+    "lanes": [
+      "全通路營運部",
+      "門市單位"
+    ],
+    "starts": 4,
+    "decisions": 4,
+    "elapsed_s": 5.7
+  },
+  {
+    "code": "CS-102",
+    "ok": true,
+    "nodes": 18,
+    "edges": 20,
+    "lanes": [
+      "全通路營運部"
+    ],
+    "starts": 5,
+    "decisions": 3,
+    "elapsed_s": 5.1
+  },
+  {
+    "code": "CS-103",
+    "ok": true,
+    "nodes": 12,
+    "edges": 16,
+    "lanes": [
+      "品牌營運部",
+      "全通路營運部"
+    ],
+    "starts": 1,
+    "decisions": 5,
+    "elapsed_s": 4.3
+  },
+  {
+    "code": "CS-104",
+    "ok": true,
+    "nodes": 31,
+    "edges": 38,
+    "lanes": [
+      "品牌營運部",
+      "全通路營運部",
+      "財務部"
+    ],
+    "starts": 3,
+    "decisions": 8,
+    "elapsed_s": 8.6
+  },
+  {
+    "code": "CS-105",
+    "ok": true,
+    "nodes": 43,
+    "edges": 57,
+    "lanes": [
+      "全通路營運部",
+      "製造事業部",
+      "行政管理部"
+    ],
+    "starts": 5,
+    "decisions": 10,
+    "elapsed_s": 11.0
+  },
+  {
+    "code": "CS-106",
+    "ok": true,
+    "nodes": 15,
+    "edges": 15,
+    "lanes": [
+      "門市單位",
+      "管理人員",
+      "財務部",
+      "保全業者"
+    ],
+    "starts": 1,
+    "decisions": 1,
+    "elapsed_s": 4.6
+  },
+  {
+    "code": "CS-107",
+    "ok": true,
+    "nodes": 29,
+    "edges": 31,
+    "lanes": [
+      "生管課",
+      "包裝課",
+      "物流課",
+      "門市單位",
+      "全通路營運部",
+      "財務部"
+    ],
+    "starts": 3,
+    "decisions": 3,
+    "elapsed_s": 7.3
+  },
+  {
+    "code": "CS-108",
+    "ok": true,
+    "nodes": 19,
+    "edges": 23,
+    "lanes": [
+      "全通路營運部",
+      "財務部",
+      "門市人員"
+    ],
+    "starts": 3,
+    "decisions": 4,
+    "elapsed_s": 6.0
+  },
+  {
+    "code": "CS-109",
+    "ok": true,
+    "nodes": 22,
+    "edges": 26,
+    "lanes": [
+      "客服單位",
+      "門市單位",
+      "品保課",
+      "製造事業部"
+    ],
+    "starts": 1,
+    "decisions": 5,
+    "elapsed_s": 6.5
+  },
+  {
+    "code": "CS-110",
+    "ok": true,
+    "nodes": 27,
+    "edges": 33,
+    "lanes": [
+      "全通路營運部",
+      "財務部",
+      "倉管課",
+      "品保課",
+      "生管課",
+      "採購課"
+    ],
+    "starts": 2,
+    "decisions": 6,
+    "elapsed_s": 7.6
+  },
+  {
+    "code": "CS-111",
+    "ok": true,
+    "nodes": 41,
+    "edges": 55,
+    "lanes": [
+      "財務部",
+      "全通路營運部",
+      "出納人員"
+    ],
+    "starts": 4,
+    "decisions": 10,
+    "elapsed_s": 12.1
+  },
+  {
+    "code": "CS-112",
+    "ok": true,
+    "nodes": 24,
+    "edges": 32,
+    "lanes": [
+      "全通路營運部",
+      "財務部"
+    ],
+    "starts": 2,
+    "decisions": 7,
+    "elapsed_s": 7.1
+  }
+]

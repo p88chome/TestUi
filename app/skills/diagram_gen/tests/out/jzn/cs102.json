@@ -1,0 +1,260 @@
+{
+  "title": "CS-102 授信管理作業",
+  "lanes": [
+    "全通路營運部"
+  ],
+  "nodes": [
+    {
+      "id": "start1",
+      "type": "start",
+      "label": "建立客戶主檔開始",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "start2",
+      "type": "start",
+      "label": "超額授信申請開始",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "start3",
+      "type": "start",
+      "label": "授信額度及條件變更開始",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "start4",
+      "type": "start",
+      "label": "定期評估開始",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "start5",
+      "type": "start",
+      "label": "不定期評估開始",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "調查客戶信用及財務狀況",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "填寫授信額度評核表",
+      "lane": "全通路營運部",
+      "docs": [
+        "企業客戶授信額度評核表"
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "主管核准",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "鍵入SAP系統",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "填寫授信申請表",
+      "lane": "全通路營運部",
+      "docs": [
+        "客戶授信申請(變更)表"
+      ]
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "主管核准",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "放行出貨",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "停止出貨",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "恢復正常送貨",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "重新評估授信條件",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "認定信用不良",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n9",
+      "type": "process",
+      "label": "採取適當措施",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "全通路營運部",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start1",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "n2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n3",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n2",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start2",
+      "to": "n4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n5",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n4",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start3",
+      "to": "n2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start4",
+      "to": "n8",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start5",
+      "to": "n8",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n8",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n9",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "end",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n9",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "n7",
+      "label": null,
+      "annotation": "危機解除後"
+    },
+    {
+      "from": "n7",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    }
+  ]
+}

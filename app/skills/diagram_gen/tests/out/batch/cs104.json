@@ -1,0 +1,535 @@
+{
+  "title": "CS-104 銷售接單作業",
+  "lanes": [
+    "營運業務部",
+    "財務單位"
+  ],
+  "nodes": [
+    {
+      "id": "start1",
+      "type": "start",
+      "label": "報價開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "start2",
+      "type": "start",
+      "label": "報價變更開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "start3",
+      "type": "start",
+      "label": "接單開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "start4",
+      "type": "start",
+      "label": "訂單變更/結案開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "編製產品牌價表",
+      "lane": "營運業務部",
+      "docs": [
+        "產品牌價表"
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "核准及會簽",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "公告產品牌價表",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "填寫報價單",
+      "lane": "營運業務部",
+      "docs": [
+        "報價單"
+      ]
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "核准",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "向客戶報價",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "客戶回覆確認",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "維護歷史報價紀錄",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "填寫報價單並附計算說明",
+      "lane": "營運業務部",
+      "docs": [
+        "報價單"
+      ]
+    },
+    {
+      "id": "d4",
+      "type": "decision",
+      "label": "核准",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "重新報價",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "重新填具報價單",
+      "lane": "營運業務部",
+      "docs": [
+        "報價單"
+      ]
+    },
+    {
+      "id": "d5",
+      "type": "decision",
+      "label": "核准",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n9",
+      "type": "process",
+      "label": "向客戶重新報價",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n10",
+      "type": "process",
+      "label": "確認訂單內容",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "d6",
+      "type": "decision",
+      "label": "符合交易條件",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n11",
+      "type": "process",
+      "label": "建立內部訂單",
+      "lane": "營運業務部",
+      "docs": [
+        "內部訂單"
+      ]
+    },
+    {
+      "id": "d7",
+      "type": "decision",
+      "label": "核准",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n12",
+      "type": "process",
+      "label": "取得客戶訂單或佐證",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n13",
+      "type": "process",
+      "label": "召開產銷會議",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n14",
+      "type": "process",
+      "label": "建立內部訂單(產銷會議)",
+      "lane": "營運業務部",
+      "docs": [
+        "內部訂單"
+      ]
+    },
+    {
+      "id": "d8",
+      "type": "decision",
+      "label": "核准",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n15",
+      "type": "process",
+      "label": "取得客戶訂單或佐證",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n16",
+      "type": "process",
+      "label": "建立訂單變更單",
+      "lane": "營運業務部",
+      "docs": [
+        "訂單變更單"
+      ]
+    },
+    {
+      "id": "d9",
+      "type": "decision",
+      "label": "核准",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n17",
+      "type": "process",
+      "label": "辦理後續作業",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n18",
+      "type": "process",
+      "label": "建立訂單變更單(結案)",
+      "lane": "營運業務部",
+      "docs": [
+        "訂單變更單"
+      ]
+    },
+    {
+      "id": "d10",
+      "type": "decision",
+      "label": "核准",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n19",
+      "type": "process",
+      "label": "辦理後續作業",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "營運業務部",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start1",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n2",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n1",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n4",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n3",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n5",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "end",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start2",
+      "to": "n6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "d4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n7",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n6",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n7",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start2",
+      "to": "n8",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n8",
+      "to": "d5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n9",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n8",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n9",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start3",
+      "to": "n10",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n10",
+      "to": "d6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n11",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n13",
+      "label": "N",
+      "annotation": "需跨部門協調或機台"
+    },
+    {
+      "from": "n11",
+      "to": "d7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n12",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n11",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n12",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n13",
+      "to": "n14",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n14",
+      "to": "d8",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d8",
+      "to": "n15",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d8",
+      "to": "n14",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n15",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start4",
+      "to": "n16",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n16",
+      "to": "d9",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d9",
+      "to": "n17",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d9",
+      "to": "n16",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n17",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start4",
+      "to": "n18",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n18",
+      "to": "d10",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d10",
+      "to": "n19",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d10",
+      "to": "n18",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n19",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    }
+  ]
+}

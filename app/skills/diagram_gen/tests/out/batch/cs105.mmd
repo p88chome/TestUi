@@ -1,0 +1,88 @@
+flowchart TD
+    %% CS-105 訂單出貨作業
+    start1(["外銷需驗收期開始"])
+    start2(["外銷不需驗收期開始"])
+    start3(["內銷需驗收期開始"])
+    start4(["內銷不需驗收期開始"])
+    n1["建立銷貨單及準備文件"]
+    n1_doc0[/"📄 銷貨單"/]
+    n1 -.-> n1_doc0
+    n1_doc1[/"📄 PACKING LIST"/]
+    n1 -.-> n1_doc1
+    n1_doc2[/"📄 出口報單"/]
+    n1 -.-> n1_doc2
+    n1_doc3[/"📄 INVOICE"/]
+    n1 -.-> n1_doc3
+    n2["倉管確認文件"]
+    d1{"主管核准"}
+    n3["財務用印 INVOICE"]
+    n3_doc0[/"📄 INVOICE"/]
+    n3 -.-> n3_doc0
+    n4["出貨及報關"]
+    n5["接機與客戶清點"]
+    n6["協助客戶入庫及試機"]
+    n7["客戶簽回證明"]
+    n8["確認客戶驗收完成"]
+    n9["建立銷貨單附證明"]
+    n9_doc0[/"📄 銷貨單"/]
+    n9 -.-> n9_doc0
+    n10["倉管確認銷貨單"]
+    n11["彙集單據核對憑證"]
+    n11_doc0[/"📄 內部訂單"/]
+    n11 -.-> n11_doc0
+    n11_doc1[/"📄 銷貨單"/]
+    n11 -.-> n11_doc1
+    n11_doc2[/"📄 PACKING LIST"/]
+    n11 -.-> n11_doc2
+    n11_doc3[/"📄 出口報單"/]
+    n11 -.-> n11_doc3
+    n11_doc4[/"📄 INVOICE"/]
+    n11 -.-> n11_doc4
+    n11_doc5[/"📄 發票"/]
+    n11 -.-> n11_doc5
+    n12["財務核對入帳"]
+    _end(["結束"])
+    start1 --> n1
+    n1 --> n2
+    n2 --> d1
+    d1 -->|Y| n3
+    d1 -->|N| n1
+    n3 --> n4
+    n4 --> n5
+    n5 --> n6
+    n6 --> n7
+    n7 --> n8
+    n8 --> n9
+    n9 --> n10
+    n10 --> n11
+    start2 --> n1
+    start3 --> n1
+    start4 --> n1
+    n11 --> n12
+    n12 --> _end
+
+    %% Lanes
+    subgraph 營運業務部["營運業務部"]
+        start1
+        start2
+        start3
+        start4
+        n1
+        d1
+        n4
+        n5
+        n6
+        n7
+        n8
+        n9
+        n11
+    end
+    subgraph 財務單位["財務單位"]
+        n3
+        n12
+        _end
+    end
+    subgraph 倉管["倉管"]
+        n2
+        n10
+    end

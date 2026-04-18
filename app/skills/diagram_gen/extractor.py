@@ -61,4 +61,20 @@ def extract_graph(text: str, *, temperature: float = 0.1, max_tokens: int = 3000
     except json.JSONDecodeError as e:
         raise ValueError(f"LLM 輸出非合法 JSON: {e}\n原始:\n{raw}") from e
 
-    return Graph.model_validate(obj)
+    g = Graph.model_validate(obj)
+    return _dedupe_edges(g)
+
+
+def _dedupe_edges(g: Graph) -> Graph:
+    """多起點合流時,LLM 常把共用下游 edge 重複寫。
+    去重鍵:(from, to, label) — 保留首次 annotation。"""
+    seen: set[tuple[str, str, str]] = set()
+    unique = []
+    for e in g.edges:
+        key = (e.from_, e.to, e.label or "")
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(e)
+    g.edges = unique
+    return g

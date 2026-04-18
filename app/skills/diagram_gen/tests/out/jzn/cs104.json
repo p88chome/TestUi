@@ -1,0 +1,473 @@
+{
+  "title": "CS-104 行銷企劃作業",
+  "lanes": [
+    "品牌營運部",
+    "全通路營運部",
+    "財務部"
+  ],
+  "nodes": [
+    {
+      "id": "start1",
+      "type": "start",
+      "label": "行銷活動提出開始",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "start2",
+      "type": "start",
+      "label": "兌換券發行開始",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "start3",
+      "type": "start",
+      "label": "門市銷售管理開始",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "提出行銷活動企劃",
+      "lane": "品牌營運部",
+      "docs": [
+        "業務聯繫函",
+        "提案簡報",
+        "企劃預算"
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "簽核",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "執行行銷活動",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "確認是否符合年度企劃表",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "公告活動",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "每週檢討執行狀況",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "活動結束後結案簡報",
+      "lane": "品牌營運部",
+      "docs": [
+        "結案簡報"
+      ]
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "簽核",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "提出請款單",
+      "lane": "品牌營運部",
+      "docs": [
+        "請款單"
+      ]
+    },
+    {
+      "id": "d4",
+      "type": "decision",
+      "label": "簽核",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "發行兌換券申請",
+      "lane": "全通路營運部",
+      "docs": [
+        "票券申請單"
+      ]
+    },
+    {
+      "id": "d5",
+      "type": "decision",
+      "label": "簽核",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "申請建立料號",
+      "lane": "全通路營運部",
+      "docs": [
+        "料號申請單"
+      ]
+    },
+    {
+      "id": "d6",
+      "type": "decision",
+      "label": "簽核",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n9",
+      "type": "process",
+      "label": "建立券號及品項",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n10",
+      "type": "process",
+      "label": "券號匯入CRM系統發送",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n11",
+      "type": "process",
+      "label": "教育訓練兌換券核銷",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n12",
+      "type": "process",
+      "label": "紙本兌換券核銷",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "d7",
+      "type": "decision",
+      "label": "確認系統紀錄同步",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n13",
+      "type": "process",
+      "label": "登錄兌換券發放紀錄",
+      "lane": "全通路營運部",
+      "docs": [
+        "兌換券發放紀錄"
+      ]
+    },
+    {
+      "id": "n14",
+      "type": "process",
+      "label": "集中存放已用或過期券",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n15",
+      "type": "process",
+      "label": "財務部銷毀兌換券",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n16",
+      "type": "process",
+      "label": "檢視兌換結果及效益",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "d8",
+      "type": "decision",
+      "label": "是否有異常",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "n17",
+      "type": "process",
+      "label": "提出對應措施",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "n18",
+      "type": "process",
+      "label": "開拓銷售管道",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n19",
+      "type": "process",
+      "label": "維護客戶資料於SAP",
+      "lane": "全通路營運部",
+      "docs": [
+        "活動"
+      ]
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "品牌營運部",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start1",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n2",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n1",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n3",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n2",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n6",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n5",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "d4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "end",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n6",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "start2",
+      "to": "n7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n7",
+      "to": "d5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n8",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n7",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n8",
+      "to": "d6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n9",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n8",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n9",
+      "to": "n10",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n10",
+      "to": "n11",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n11",
+      "to": "n12",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n12",
+      "to": "d7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n13",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n12",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n13",
+      "to": "n14",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n14",
+      "to": "n15",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n15",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start3",
+      "to": "n18",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n18",
+      "to": "n19",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n19",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n16",
+      "to": "d8",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d8",
+      "to": "n17",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d8",
+      "to": "end",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n17",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    }
+  ]
+}

@@ -1,0 +1,350 @@
+{
+  "title": "CS-108 客訴處理作業",
+  "lanes": [
+    "營運業務部",
+    "品管人員",
+    "研發部"
+  ],
+  "nodes": [
+    {
+      "id": "start",
+      "type": "start",
+      "label": "客訴受理開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "了解客訴原因",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "符合客訴定義",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "填寫客訴單及CRM申請單",
+      "lane": "營運業務部",
+      "docs": [
+        "客訴單",
+        "CRM客服資源申請單"
+      ]
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "主管簽核",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "設定會同處理",
+      "lane": "營運業務部",
+      "docs": [
+        "CRM客服資源申請單"
+      ]
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "品質異常判定",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "出具分析報告",
+      "lane": "品管人員",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "研發協助分析",
+      "lane": "研發部",
+      "docs": []
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "回覆客戶處理對策",
+      "lane": "營運業務部",
+      "docs": [
+        "客訴單"
+      ]
+    },
+    {
+      "id": "d4",
+      "type": "decision",
+      "label": "判定退換貨或折讓",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "辦理退換貨或折讓",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "d5",
+      "type": "decision",
+      "label": "需建立新訂單",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "建立內部訂單",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "d6",
+      "type": "decision",
+      "label": "需設計變更",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n9",
+      "type": "process",
+      "label": "執行設計變更",
+      "lane": "研發部",
+      "docs": []
+    },
+    {
+      "id": "n10",
+      "type": "process",
+      "label": "執行對策改善",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "d7",
+      "type": "decision",
+      "label": "客戶確認改善",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n11",
+      "type": "process",
+      "label": "結案及歸檔",
+      "lane": "營運業務部",
+      "docs": [
+        "客訴單",
+        "CRM客服資源申請單"
+      ]
+    },
+    {
+      "id": "d8",
+      "type": "decision",
+      "label": "責任判定歸屬本公司",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n12",
+      "type": "process",
+      "label": "主管懲戒責任人員",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "營運業務部",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n2",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "end",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n3",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n2",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n4",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n6",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "d4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n7",
+      "label": "Y",
+      "annotation": "依CS-100銷售及收入循環"
+    },
+    {
+      "from": "d4",
+      "to": "d5",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n7",
+      "to": "d5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n8",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "d6",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n8",
+      "to": "d6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n9",
+      "label": "Y",
+      "annotation": "依CR-100研發循環"
+    },
+    {
+      "from": "d6",
+      "to": "n10",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n9",
+      "to": "n10",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n10",
+      "to": "d7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n11",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n10",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n11",
+      "to": "d8",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d8",
+      "to": "n12",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d8",
+      "to": "end",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n12",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    }
+  ]
+}

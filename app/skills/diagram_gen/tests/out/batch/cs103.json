@@ -1,0 +1,372 @@
+{
+  "title": "CS-103 授信管理作業",
+  "lanes": [
+    "營運業務部",
+    "財務單位"
+  ],
+  "nodes": [
+    {
+      "id": "start1",
+      "type": "start",
+      "label": "首次授信額度申請開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "start2",
+      "type": "start",
+      "label": "定期評估授信額度開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "start3",
+      "type": "start",
+      "label": "不定期評估授信額度開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "start4",
+      "type": "start",
+      "label": "授信額度接單控管開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "start5",
+      "type": "start",
+      "label": "備貨期間信用異常開始",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "提出客戶評估表",
+      "lane": "營運業務部",
+      "docs": [
+        "客戶評估表"
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "核准",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "設定授信額度",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "評估授信額度",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "判斷是否需調整",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "提出調整客戶評估表",
+      "lane": "營運業務部",
+      "docs": [
+        "客戶評估表"
+      ]
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "核准",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "更新授信額度",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "接獲信用額度不足通知",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "催款",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "d4",
+      "type": "decision",
+      "label": "判斷是否仍須交易",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "填寫授信申請表",
+      "lane": "營運業務部",
+      "docs": [
+        "授信申請表"
+      ]
+    },
+    {
+      "id": "d5",
+      "type": "decision",
+      "label": "核准",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n9",
+      "type": "process",
+      "label": "受理訂單",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n10",
+      "type": "process",
+      "label": "接獲信用異常訊息",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "n11",
+      "type": "process",
+      "label": "查明證實",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "d6",
+      "type": "decision",
+      "label": "判斷危機是否解除",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "n12",
+      "type": "process",
+      "label": "停止出貨",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "n13",
+      "type": "process",
+      "label": "恢復正常送貨",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "財務單位",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start1",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n2",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n1",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start2",
+      "to": "n3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start3",
+      "to": "n3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n4",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "end",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n5",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n4",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start4",
+      "to": "n6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "n7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n7",
+      "to": "d4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n8",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "end",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n8",
+      "to": "d5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n9",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n8",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n9",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start5",
+      "to": "n10",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n10",
+      "to": "n11",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n11",
+      "to": "d6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n12",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n13",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "n12",
+      "to": "d6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n13",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    }
+  ]
+}

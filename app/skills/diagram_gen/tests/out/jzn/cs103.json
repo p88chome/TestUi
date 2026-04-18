@@ -1,0 +1,193 @@
+{
+  "title": "CS-103 銷售預測及目標作業",
+  "lanes": [
+    "品牌營運部",
+    "全通路營運部"
+  ],
+  "nodes": [
+    {
+      "id": "start",
+      "type": "start",
+      "label": "開始",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "擬定年度銷售預測報告",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "權責主管簽核",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "董事會核准",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "拓展預測至季度及月份",
+      "lane": "品牌營運部",
+      "docs": [
+        "營業目標預算表"
+      ]
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "向總經理報告",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "定期差異分析",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "是否需調整預測",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "擬定調整預測報告",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "d4",
+      "type": "decision",
+      "label": "權責主管簽核",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "d5",
+      "type": "decision",
+      "label": "董事會核准",
+      "lane": "品牌營運部",
+      "docs": []
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "品牌營運部",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "d2",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n1",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n2",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n1",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n5",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "end",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "d4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "d5",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n5",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "end",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n5",
+      "label": "N",
+      "annotation": null
+    }
+  ]
+}

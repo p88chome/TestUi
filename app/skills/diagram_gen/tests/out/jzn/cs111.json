@@ -1,0 +1,643 @@
+{
+  "title": "CS-111 帳務處理作業",
+  "lanes": [
+    "財務部",
+    "全通路營運部",
+    "出納人員"
+  ],
+  "nodes": [
+    {
+      "id": "start1",
+      "type": "start",
+      "label": "應收帳款處理開始",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "start2",
+      "type": "start",
+      "label": "預收貨款處理開始",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "start3",
+      "type": "start",
+      "label": "收款作業-票據開始",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "start4",
+      "type": "start",
+      "label": "收款作業-匯款開始",
+      "lane": "出納人員",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "審核銷售報價及交貨單",
+      "lane": "財務部",
+      "docs": [
+        "銷售報價",
+        "交貨單"
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "主管簽核",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "結轉應收帳款傳票",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "登錄應收帳款及銷貨收入",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "核對總帳與明細帳",
+      "lane": "財務部",
+      "docs": [
+        "應收帳款明細表"
+      ]
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "帳目是否相符",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "追查原因並調節",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "銷貨退回及折讓減少應收帳款",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "主管核准",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "帳齡分析及逾期控管",
+      "lane": "財務部",
+      "docs": [
+        "帳齡分析表",
+        "逾期帳款明細表"
+      ]
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "追查逾期原因並催收",
+      "lane": "全通路營運部",
+      "docs": []
+    },
+    {
+      "id": "n9",
+      "type": "process",
+      "label": "呆帳提列評估及批准",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "d4",
+      "type": "decision",
+      "label": "主管核決",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n10",
+      "type": "process",
+      "label": "呆帳沖銷及紀錄",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "d5",
+      "type": "decision",
+      "label": "主管核准",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n11",
+      "type": "process",
+      "label": "沖銷預收貨款",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n12",
+      "type": "process",
+      "label": "確認預收訂金與銷售報價一致",
+      "lane": "財務部",
+      "docs": [
+        "銷售報價"
+      ]
+    },
+    {
+      "id": "d6",
+      "type": "decision",
+      "label": "是否一致",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n13",
+      "type": "process",
+      "label": "與營運部確認並調整",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n14",
+      "type": "process",
+      "label": "月底檢視未沖銷預收貨款",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n15",
+      "type": "process",
+      "label": "票據檢查及審核",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "d7",
+      "type": "decision",
+      "label": "票據是否有效",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n16",
+      "type": "process",
+      "label": "票據託收及紀錄",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n17",
+      "type": "process",
+      "label": "票據更換或延兌",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "d8",
+      "type": "decision",
+      "label": "主管核准",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n18",
+      "type": "process",
+      "label": "退票轉回催收帳款",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n19",
+      "type": "process",
+      "label": "查詢銀行帳戶入款",
+      "lane": "出納人員",
+      "docs": []
+    },
+    {
+      "id": "n20",
+      "type": "process",
+      "label": "核對款項金額",
+      "lane": "出納人員",
+      "docs": []
+    },
+    {
+      "id": "n21",
+      "type": "process",
+      "label": "通知營運部核對款項",
+      "lane": "出納人員",
+      "docs": []
+    },
+    {
+      "id": "n22",
+      "type": "process",
+      "label": "營運部核對款項及明細表",
+      "lane": "全通路營運部",
+      "docs": [
+        "應收帳款明細表"
+      ]
+    },
+    {
+      "id": "n23",
+      "type": "process",
+      "label": "建立收款單",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "d9",
+      "type": "decision",
+      "label": "主管核准",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n24",
+      "type": "process",
+      "label": "應收帳款沖銷及入帳",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n25",
+      "type": "process",
+      "label": "傳票主管簽核",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n26",
+      "type": "process",
+      "label": "製作銀行調節表",
+      "lane": "財務部",
+      "docs": [
+        "銀行調節表"
+      ]
+    },
+    {
+      "id": "d10",
+      "type": "decision",
+      "label": "主管簽核",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "財務部",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start1",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n2",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n1",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "end",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n5",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "n4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "n6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "end",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n6",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "n7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n7",
+      "to": "n8",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "n9",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n9",
+      "to": "d4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "end",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n9",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "n10",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n10",
+      "to": "d5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "end",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n10",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "start2",
+      "to": "n11",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n11",
+      "to": "n12",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n12",
+      "to": "d6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "end",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n13",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n13",
+      "to": "n11",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n11",
+      "to": "n14",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n14",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start3",
+      "to": "n15",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n15",
+      "to": "d7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n16",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n15",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n16",
+      "to": "n17",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n17",
+      "to": "d8",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d8",
+      "to": "end",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d8",
+      "to": "n17",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n16",
+      "to": "n18",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n18",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start4",
+      "to": "n19",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n19",
+      "to": "n20",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n20",
+      "to": "n21",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n21",
+      "to": "n22",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n22",
+      "to": "n23",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n23",
+      "to": "d9",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d9",
+      "to": "n24",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d9",
+      "to": "n23",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n24",
+      "to": "n25",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n25",
+      "to": "n26",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n26",
+      "to": "d10",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d10",
+      "to": "end",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d10",
+      "to": "n26",
+      "label": "N",
+      "annotation": null
+    }
+  ]
+}

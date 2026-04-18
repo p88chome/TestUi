@@ -1,0 +1,613 @@
+{
+  "title": "CS-109 銷貨退回及折讓作業",
+  "lanes": [
+    "營運業務部",
+    "倉管人員",
+    "品管人員",
+    "財務單位",
+    "研發部",
+    "製造部"
+  ],
+  "nodes": [
+    {
+      "id": "start1",
+      "type": "start",
+      "label": "退換貨或折讓申請開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "填具銷退單",
+      "lane": "營運業務部",
+      "docs": [
+        "銷退單"
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "主管核准",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "確認處理方式",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "start2",
+      "type": "start",
+      "label": "換貨開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "與客戶確認換貨",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "收貨並存放",
+      "lane": "倉管人員",
+      "docs": []
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "退貨數量是否符合",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "註明於客訴單及銷退單",
+      "lane": "營運業務部",
+      "docs": [
+        "客訴單",
+        "銷退單"
+      ]
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "入庫銷退倉",
+      "lane": "倉管人員",
+      "docs": []
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "檢驗退貨",
+      "lane": "品管人員",
+      "docs": []
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "檢驗是否合格",
+      "lane": "品管人員",
+      "docs": []
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "入庫正常品倉",
+      "lane": "倉管人員",
+      "docs": []
+    },
+    {
+      "id": "n9",
+      "type": "process",
+      "label": "依不合格品管制辦理",
+      "lane": "品管人員",
+      "docs": []
+    },
+    {
+      "id": "n10",
+      "type": "process",
+      "label": "註明於內部訂單",
+      "lane": "營運業務部",
+      "docs": [
+        "內部訂單"
+      ]
+    },
+    {
+      "id": "d4",
+      "type": "decision",
+      "label": "主管核准",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n11",
+      "type": "process",
+      "label": "通知製造部生產",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n12",
+      "type": "process",
+      "label": "製造部執行生產",
+      "lane": "製造部",
+      "docs": []
+    },
+    {
+      "id": "start3",
+      "type": "start",
+      "label": "補貨開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n13",
+      "type": "process",
+      "label": "與客戶確認補貨",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n14",
+      "type": "process",
+      "label": "註明於內部訂單",
+      "lane": "營運業務部",
+      "docs": [
+        "內部訂單"
+      ]
+    },
+    {
+      "id": "d5",
+      "type": "decision",
+      "label": "主管核准",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n15",
+      "type": "process",
+      "label": "通知製造部生產",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n16",
+      "type": "process",
+      "label": "製造部執行生產",
+      "lane": "製造部",
+      "docs": []
+    },
+    {
+      "id": "start4",
+      "type": "start",
+      "label": "退貨開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n17",
+      "type": "process",
+      "label": "與客戶確認退貨",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n18",
+      "type": "process",
+      "label": "收貨並存放",
+      "lane": "倉管人員",
+      "docs": []
+    },
+    {
+      "id": "d6",
+      "type": "decision",
+      "label": "退貨數量是否符合",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n19",
+      "type": "process",
+      "label": "註明於客訴單及銷退單",
+      "lane": "營運業務部",
+      "docs": [
+        "客訴單",
+        "銷退單"
+      ]
+    },
+    {
+      "id": "n20",
+      "type": "process",
+      "label": "入庫銷退倉",
+      "lane": "倉管人員",
+      "docs": []
+    },
+    {
+      "id": "n21",
+      "type": "process",
+      "label": "檢驗退貨",
+      "lane": "品管人員",
+      "docs": []
+    },
+    {
+      "id": "d7",
+      "type": "decision",
+      "label": "檢驗是否合格",
+      "lane": "品管人員",
+      "docs": []
+    },
+    {
+      "id": "n22",
+      "type": "process",
+      "label": "入庫正常品倉",
+      "lane": "倉管人員",
+      "docs": []
+    },
+    {
+      "id": "n23",
+      "type": "process",
+      "label": "依不合格品管制辦理",
+      "lane": "品管人員",
+      "docs": []
+    },
+    {
+      "id": "n24",
+      "type": "process",
+      "label": "取得折讓證明",
+      "lane": "營運業務部",
+      "docs": [
+        "銷貨退回、進貨退出或折讓證明單"
+      ]
+    },
+    {
+      "id": "n25",
+      "type": "process",
+      "label": "提供財務單位帳務處理",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n26",
+      "type": "process",
+      "label": "財務單位帳務處理",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "start5",
+      "type": "start",
+      "label": "銷貨折讓開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n27",
+      "type": "process",
+      "label": "取得折讓證明",
+      "lane": "營運業務部",
+      "docs": [
+        "銷貨退回、進貨退出或折讓證明單"
+      ]
+    },
+    {
+      "id": "n28",
+      "type": "process",
+      "label": "提供財務單位帳務處理",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n29",
+      "type": "process",
+      "label": "財務單位帳務處理",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "財務單位",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start1",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n2",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n1",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start2",
+      "to": "n3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n5",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n6",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "n7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n7",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n8",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n9",
+      "label": "N",
+      "annotation": "廠商品質不良"
+    },
+    {
+      "from": "n8",
+      "to": "n10",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n9",
+      "to": "end",
+      "label": null,
+      "annotation": "詳不合格品管制程序書"
+    },
+    {
+      "from": "n10",
+      "to": "d4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n11",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n10",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n11",
+      "to": "n12",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n12",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start3",
+      "to": "n13",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n13",
+      "to": "n14",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n14",
+      "to": "d5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n15",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n14",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n15",
+      "to": "n16",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n16",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start4",
+      "to": "n17",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n17",
+      "to": "n18",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n18",
+      "to": "d6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n19",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n20",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "n19",
+      "to": "n20",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n20",
+      "to": "n21",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n21",
+      "to": "d7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n22",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n23",
+      "label": "N",
+      "annotation": "廠商品質不良"
+    },
+    {
+      "from": "n22",
+      "to": "n24",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n23",
+      "to": "end",
+      "label": null,
+      "annotation": "詳不合格品管制程序書"
+    },
+    {
+      "from": "n24",
+      "to": "n25",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n25",
+      "to": "n26",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n26",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start5",
+      "to": "n27",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n27",
+      "to": "n28",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n28",
+      "to": "n29",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n29",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    }
+  ]
+}

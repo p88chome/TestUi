@@ -1,0 +1,125 @@
+[
+  {
+    "code": "CS-101",
+    "ok": true,
+    "nodes": 10,
+    "edges": 13,
+    "lanes": [
+      "營運業務部"
+    ],
+    "starts": 1,
+    "decisions": 4,
+    "elapsed_s": 4.1
+  },
+  {
+    "code": "CS-102",
+    "ok": true,
+    "nodes": 24,
+    "edges": 30,
+    "lanes": [
+      "營運業務部",
+      "財務單位",
+      "法務單位"
+    ],
+    "starts": 3,
+    "decisions": 6,
+    "elapsed_s": 6.5
+  },
+  {
+    "code": "CS-103",
+    "ok": true,
+    "nodes": 25,
+    "edges": 30,
+    "lanes": [
+      "營運業務部",
+      "財務單位"
+    ],
+    "starts": 5,
+    "decisions": 6,
+    "elapsed_s": 6.2
+  },
+  {
+    "code": "CS-104",
+    "ok": true,
+    "nodes": 34,
+    "edges": 45,
+    "lanes": [
+      "營運業務部",
+      "財務單位"
+    ],
+    "starts": 4,
+    "decisions": 10,
+    "elapsed_s": 8.6
+  },
+  {
+    "code": "CS-105",
+    "ok": true,
+    "nodes": 18,
+    "edges": 18,
+    "lanes": [
+      "營運業務部",
+      "財務單位",
+      "倉管"
+    ],
+    "starts": 4,
+    "decisions": 1,
+    "elapsed_s": 5.0
+  },
+  {
+    "code": "CS-106",
+    "ok": true,
+    "nodes": 13,
+    "edges": 15,
+    "lanes": [
+      "營運業務部",
+      "財務單位"
+    ],
+    "starts": 3,
+    "decisions": 3,
+    "elapsed_s": 4.7
+  },
+  {
+    "code": "CS-107",
+    "ok": true,
+    "nodes": 29,
+    "edges": 33,
+    "lanes": [
+      "財務單位",
+      "營運業務部"
+    ],
+    "starts": 5,
+    "decisions": 5,
+    "elapsed_s": 7.3
+  },
+  {
+    "code": "CS-108",
+    "ok": true,
+    "nodes": 22,
+    "edges": 29,
+    "lanes": [
+      "營運業務部",
+      "品管人員",
+      "研發部"
+    ],
+    "starts": 1,
+    "decisions": 8,
+    "elapsed_s": 6.4
+  },
+  {
+    "code": "CS-109",
+    "ok": true,
+    "nodes": 42,
+    "edges": 48,
+    "lanes": [
+      "營運業務部",
+      "倉管人員",
+      "品管人員",
+      "財務單位",
+      "研發部",
+      "製造部"
+    ],
+    "starts": 5,
+    "decisions": 7,
+    "elapsed_s": 11.1
+  }
+]

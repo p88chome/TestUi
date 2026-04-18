@@ -1,0 +1,214 @@
+{
+  "title": "CS-106 銷貨發票開立及作廢作業",
+  "lanes": [
+    "營運業務部",
+    "財務單位"
+  ],
+  "nodes": [
+    {
+      "id": "start1",
+      "type": "start",
+      "label": "外銷INVOICE開立開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "start2",
+      "type": "start",
+      "label": "內銷發票開立開始",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "start3",
+      "type": "start",
+      "label": "發票作廢開始",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "開立INVOICE及填具用印申請單",
+      "lane": "營運業務部",
+      "docs": [
+        "INVOICE",
+        "用印申請單",
+        "內部訂單",
+        "銷貨單"
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "主管核准",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "核對文件及用印",
+      "lane": "財務單位",
+      "docs": [
+        "INVOICE",
+        "用印申請單",
+        "內部訂單",
+        "銷貨單"
+      ]
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "核對文件及開立發票",
+      "lane": "財務單位",
+      "docs": [
+        "發票",
+        "內部訂單",
+        "銷貨單"
+      ]
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "申請發票作廢",
+      "lane": "財務單位",
+      "docs": [
+        "發票",
+        "統一發票明細表"
+      ]
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "主管核准",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "是否已申報",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "取得買受人承諾書申請專案作廢",
+      "lane": "財務單位",
+      "docs": [
+        "承諾書"
+      ]
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "收回電子發票註明作廢並註記明細表",
+      "lane": "財務單位",
+      "docs": [
+        "發票",
+        "統一發票明細表"
+      ]
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "財務單位",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start1",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n2",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n1",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start2",
+      "to": "n3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start3",
+      "to": "n4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "d3",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n4",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n5",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n6",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    }
+  ]
+}

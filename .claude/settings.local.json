@@ -9,7 +9,14 @@
       "Bash(python -m app.skills.diagram_gen.tests.run_extract cs101)",
       "Bash(az account *)",
       "Bash(python -m app.skills.diagram_gen.tests.run_extract cs102)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(python -m app.skills.diagram_gen.tests.run_extract ca101)",
+      "Bash(python -m app.skills.diagram_gen.tests.batch_extract \"archive/竑騰_內部控制制度_銷售及收款循環_V.2.0.docx\")",
+      "Bash(python -m app.skills.diagram_gen.tests.batch_extract \"archive/卡訊電子_內部控制制度_CA-100_不動產、廠房及設備循環_v2.1.docx\" kx)",
+      "Bash(python -m app.skills.diagram_gen.tests.analyze_batch)",
+      "Bash(python -m app.skills.diagram_gen.tests.batch_extract archive/竑騰_內部控制制度_銷售及收款循環_V.2.0.docx batch)",
+      "Bash(python -m app.skills.diagram_gen.tests.batch_extract archive/舊振南_內部控制制度_銷售及收款循環.docx jzn)",
+      "Bash(python -m app.skills.diagram_gen.tests.batch_extract archive/卡訊_內部控制制度_不動產廠房及設備循環.docx kx)"
     ]
   }
 }

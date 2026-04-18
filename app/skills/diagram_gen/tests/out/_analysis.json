@@ -1,0 +1,321 @@
+[
+  {
+    "company": "竑騰(銷售)",
+    "code": "CS101",
+    "nodes": 10,
+    "edges": 13,
+    "starts": 1,
+    "ends": 1,
+    "decisions": 4,
+    "e_n_ratio": 1.3,
+    "issues": []
+  },
+  {
+    "company": "竑騰(銷售)",
+    "code": "CS102",
+    "nodes": 24,
+    "edges": 30,
+    "starts": 3,
+    "ends": 1,
+    "decisions": 6,
+    "e_n_ratio": 1.25,
+    "issues": []
+  },
+  {
+    "company": "竑騰(銷售)",
+    "code": "CS103",
+    "nodes": 25,
+    "edges": 30,
+    "starts": 5,
+    "ends": 1,
+    "decisions": 6,
+    "e_n_ratio": 1.2,
+    "issues": []
+  },
+  {
+    "company": "竑騰(銷售)",
+    "code": "CS104",
+    "nodes": 34,
+    "edges": 45,
+    "starts": 4,
+    "ends": 1,
+    "decisions": 10,
+    "e_n_ratio": 1.32,
+    "issues": []
+  },
+  {
+    "company": "竑騰(銷售)",
+    "code": "CS105",
+    "nodes": 18,
+    "edges": 18,
+    "starts": 4,
+    "ends": 1,
+    "decisions": 1,
+    "e_n_ratio": 1.0,
+    "issues": []
+  },
+  {
+    "company": "竑騰(銷售)",
+    "code": "CS106",
+    "nodes": 13,
+    "edges": 15,
+    "starts": 3,
+    "ends": 1,
+    "decisions": 3,
+    "e_n_ratio": 1.15,
+    "issues": []
+  },
+  {
+    "company": "竑騰(銷售)",
+    "code": "CS107",
+    "nodes": 29,
+    "edges": 33,
+    "starts": 5,
+    "ends": 1,
+    "decisions": 5,
+    "e_n_ratio": 1.14,
+    "issues": []
+  },
+  {
+    "company": "竑騰(銷售)",
+    "code": "CS108",
+    "nodes": 22,
+    "edges": 29,
+    "starts": 1,
+    "ends": 1,
+    "decisions": 8,
+    "e_n_ratio": 1.32,
+    "issues": []
+  },
+  {
+    "company": "竑騰(銷售)",
+    "code": "CS109",
+    "nodes": 42,
+    "edges": 48,
+    "starts": 5,
+    "ends": 1,
+    "decisions": 7,
+    "e_n_ratio": 1.14,
+    "issues": [
+      "節點爆炸(42)"
+    ]
+  },
+  {
+    "company": "舊振南(銷售)",
+    "code": "CS101",
+    "nodes": 19,
+    "edges": 22,
+    "starts": 4,
+    "ends": 1,
+    "decisions": 4,
+    "e_n_ratio": 1.16,
+    "issues": []
+  },
+  {
+    "company": "舊振南(銷售)",
+    "code": "CS102",
+    "nodes": 18,
+    "edges": 20,
+    "starts": 5,
+    "ends": 1,
+    "decisions": 3,
+    "e_n_ratio": 1.11,
+    "issues": [
+      "無前驅非 start 1"
+    ]
+  },
+  {
+    "company": "舊振南(銷售)",
+    "code": "CS103",
+    "nodes": 12,
+    "edges": 16,
+    "starts": 1,
+    "ends": 1,
+    "decisions": 5,
+    "e_n_ratio": 1.33,
+    "issues": []
+  },
+  {
+    "company": "舊振南(銷售)",
+    "code": "CS104",
+    "nodes": 31,
+    "edges": 38,
+    "starts": 3,
+    "ends": 1,
+    "decisions": 8,
+    "e_n_ratio": 1.23,
+    "issues": [
+      "無前驅非 start 1"
+    ]
+  },
+  {
+    "company": "舊振南(銷售)",
+    "code": "CS105",
+    "nodes": 43,
+    "edges": 57,
+    "starts": 5,
+    "ends": 1,
+    "decisions": 10,
+    "e_n_ratio": 1.33,
+    "issues": [
+      "節點爆炸(43)"
+    ]
+  },
+  {
+    "company": "舊振南(銷售)",
+    "code": "CS106",
+    "nodes": 15,
+    "edges": 15,
+    "starts": 1,
+    "ends": 1,
+    "decisions": 1,
+    "e_n_ratio": 1.0,
+    "issues": []
+  },
+  {
+    "company": "舊振南(銷售)",
+    "code": "CS107",
+    "nodes": 29,
+    "edges": 31,
+    "starts": 3,
+    "ends": 1,
+    "decisions": 3,
+    "e_n_ratio": 1.07,
+    "issues": [
+      "無前驅非 start 4"
+    ]
+  },
+  {
+    "company": "舊振南(銷售)",
+    "code": "CS108",
+    "nodes": 19,
+    "edges": 23,
+    "starts": 3,
+    "ends": 1,
+    "decisions": 4,
+    "e_n_ratio": 1.21,
+    "issues": [
+      "無後繼非 end 1"
+    ]
+  },
+  {
+    "company": "舊振南(銷售)",
+    "code": "CS109",
+    "nodes": 22,
+    "edges": 26,
+    "starts": 1,
+    "ends": 1,
+    "decisions": 5,
+    "e_n_ratio": 1.18,
+    "issues": []
+  },
+  {
+    "company": "舊振南(銷售)",
+    "code": "CS110",
+    "nodes": 27,
+    "edges": 33,
+    "starts": 2,
+    "ends": 1,
+    "decisions": 6,
+    "e_n_ratio": 1.22,
+    "issues": []
+  },
+  {
+    "company": "舊振南(銷售)",
+    "code": "CS111",
+    "nodes": 41,
+    "edges": 55,
+    "starts": 4,
+    "ends": 1,
+    "decisions": 10,
+    "e_n_ratio": 1.34,
+    "issues": [
+      "節點爆炸(41)",
+      "無後繼非 end 1"
+    ]
+  },
+  {
+    "company": "舊振南(銷售)",
+    "code": "CS112",
+    "nodes": 24,
+    "edges": 32,
+    "starts": 2,
+    "ends": 1,
+    "decisions": 7,
+    "e_n_ratio": 1.33,
+    "issues": []
+  },
+  {
+    "company": "卡訊(固資)",
+    "code": "CA101",
+    "nodes": 22,
+    "edges": 26,
+    "starts": 3,
+    "ends": 1,
+    "decisions": 4,
+    "e_n_ratio": 1.18,
+    "issues": []
+  },
+  {
+    "company": "卡訊(固資)",
+    "code": "CA102",
+    "nodes": 34,
+    "edges": 39,
+    "starts": 6,
+    "ends": 1,
+    "decisions": 6,
+    "e_n_ratio": 1.15,
+    "issues": [
+      "start 過多(6)"
+    ]
+  },
+  {
+    "company": "卡訊(固資)",
+    "code": "CA103",
+    "nodes": 13,
+    "edges": 13,
+    "starts": 4,
+    "ends": 1,
+    "decisions": 1,
+    "e_n_ratio": 1.0,
+    "issues": []
+  },
+  {
+    "company": "卡訊(固資)",
+    "code": "CA104",
+    "nodes": 20,
+    "edges": 22,
+    "starts": 4,
+    "ends": 1,
+    "decisions": 3,
+    "e_n_ratio": 1.1,
+    "issues": []
+  },
+  {
+    "company": "卡訊(固資)",
+    "code": "CA105",
+    "nodes": 19,
+    "edges": 24,
+    "starts": 1,
+    "ends": 1,
+    "decisions": 6,
+    "e_n_ratio": 1.26,
+    "issues": [
+      "無前驅非 start 1"
+    ]
+  },
+  {
+    "company": "卡訊(固資)",
+    "code": "CA106",
+    "nodes": 46,
+    "edges": 55,
+    "starts": 9,
+    "ends": 1,
+    "decisions": 9,
+    "e_n_ratio": 1.2,
+    "issues": [
+      "start 過多(9)",
+      "節點爆炸(46)"
+    ]
+  }
+]
