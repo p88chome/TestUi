@@ -1,0 +1,69 @@
+<h2>完整設計確認</h2>
+<p class="subtitle">基於文件範例，三個改動點的最終設計</p>
+
+<div class="section">
+  <h3>1. skill.md 內容規劃（A1）</h3>
+  <div class="mockup">
+    <div class="mockup-header">skill.md 的 few-shot 範例來源（真實文件）</div>
+    <div class="mockup-body" style="font-size:12px;padding:16px;line-height:1.8">
+      <p><strong>範例 1：CS-104 銷售接單作業</strong>（竑騰科技）</p>
+      <p style="color:#666">角色：營運業務部 → 財務單位 → 權責主管<br>
+      決策點：報價是否核准？訂單能否接受？<br>
+      產出表單：產品牌價表、報價單、內部訂單</p>
+      <hr style="border:none;border-top:1px solid #eee;margin:12px 0">
+      <p><strong>範例 2：CA-101 不動產取得作業</strong>（卡訊電子）</p>
+      <p style="color:#666">角色：保管單位 → 財務部 → 權責主管<br>
+      決策點：是否符合固資定義？是否在預算內？<br>
+      產出表單：列管固資請購單、固資盤點清冊</p>
+      <hr style="border:none;border-top:1px solid #eee;margin:12px 0">
+      <p><strong>ISO 9001 對應的業務規則（寫入 skill.md）</strong></p>
+      <ul style="color:#444;font-size:12px;line-height:2">
+        <li>每條流程必有一個 start / 一個 end</li>
+        <li>控制重點（核准/審查）→ <code>is_decision: true</code></li>
+        <li>使用表單 → <code>generates_document</code></li>
+        <li>泳道命名用職位（不用部門縮寫）</li>
+        <li>決策節點文字結尾必須是「？」</li>
+        <li>退回流程必須連回發起步驟，不得懸空</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>2. PPTX 修正清單（B1）</h3>
+  <div class="mockup">
+    <div class="mockup-header">程式碼改動點（flowchart.py export-pptx）</div>
+    <div class="mockup-body" style="font-size:12px;padding:16px;line-height:2;font-family:monospace">
+      <div style="color:#c62828">- oval double-add bug（start/end 節點加了兩次）</div>
+      <div style="color:#86BC25">+ 改用 MSO_AUTO_SHAPE_TYPE 常數，確保 oval/diamond 正確</div>
+      <div style="margin-top:8px;color:#c62828">- 節點純垂直堆疊（忽略 edges 連線）</div>
+      <div style="color:#86BC25">+ BFS 拓撲排序，依 start → end 連線順序決定 y 位置</div>
+      <div style="margin-top:8px;color:#c62828">- 泳道無背景色</div>
+      <div style="color:#86BC25">+ 每 lane 加淡色背景矩形（Deloitte 色系：綠/灰/白交替）</div>
+      <div style="margin-top:8px;color:#c62828">- 箭頭直線穿越節點</div>
+      <div style="color:#86BC25">+ 改用 ELBOW connector，避免重疊</div>
+      <div style="margin-top:8px;color:#c62828">- 顏色五顏六色</div>
+      <div style="color:#86BC25">+ 統一 Deloitte 配色：綠(start)、黑(end)、灰(process)、橘(control)、紫(document)</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>3. B2 備用匯出（複雜流程）</h3>
+  <div class="mockup">
+    <div class="mockup-header">新增 endpoint + 前端切換</div>
+    <div class="mockup-body" style="font-size:12px;padding:16px;line-height:1.9">
+      <p><strong>後端：</strong><code>POST /flowchart/export-pptx-image</code><br>
+      接收 <code>{ image_base64: string, title: string }</code><br>
+      → 圖片貼滿 slide，加標題文字框</p>
+      <p><strong>前端：</strong>匯出按鈕旁加 toggle<br>
+      「可編輯圖形（B1）」vs「高保真圖片（B2）」<br>
+      B2 觸發時：html2canvas 截圖 → base64 → POST</p>
+    </div>
+  </div>
+</div>
+
+<div style="background:#f0f7e6;border-left:3px solid #86BC25;padding:14px 18px;border-radius:2px;font-size:13px;margin-top:8px">
+  <strong>這個設計你認可嗎？</strong><br>
+  確認後我會寫成正式 spec 文件並存進 <code>docs/superpowers/specs/</code>，然後製作 implementation plan。
+</div>

@@ -1,0 +1,61 @@
+flowchart TD
+    %% CS-102 客戶及代理商之徵信及資料維護作業
+    start1(["客戶及代理商資料建立開始"])
+    start2(["客戶及代理商資料變更開始"])
+    n_reject["確認相關交易已結案"]
+    n1["取得客戶及代理商聯繫資料"]
+    n1_doc0[/"📄 客戶基本資料"/]
+    n1 -.-> n1_doc0
+    n2["重新填寫客戶及代理商資料"]
+    n2_doc0[/"📄 客戶基本資料"/]
+    n2 -.-> n2_doc0
+    n3["填寫簽呈內部聯絡單"]
+    n3_doc0[/"📄 簽呈"/]
+    n3 -.-> n3_doc0
+    d1{"簽核"}
+    d2{"簽核"}
+    d3{"簽核"}
+    n_fin["審核財務單位會簽"]
+    n_reg["登錄客戶主檔"]
+    n_upd["更新客戶主檔"]
+    n_mark["系統註記"]
+    _end(["結束"])
+    start1 --> n1
+    n1 --> d1
+    d1 -->|Y| n_fin
+    d1 -->|N| n1
+    start2 --> n2
+    n2 --> d2
+    d2 -->|Y| n_fin
+    d2 -->|N| n2
+    n_reject --> n3
+    %% annotation on n_reject->n3: 已不適用於拒絕往來之客戶
+    n3 --> d3
+    d3 -->|Y| n_fin
+    d3 -->|N| n3
+    n_fin --> n_reg
+    n_fin --> n_upd
+    n_fin --> n_mark
+    n_reg --> _end
+    n_upd --> _end
+    n_mark --> _end
+
+    %% Lanes
+    subgraph 營運業務部["營運業務部"]
+        start1
+        start2
+        n_reject
+        n1
+        n2
+        n3
+        d1
+        d2
+        d3
+        n_reg
+        n_upd
+        n_mark
+        _end
+    end
+    subgraph 財務單位["財務單位"]
+        n_fin
+    end

@@ -1,0 +1,307 @@
+{
+  "title": "CS-102 客戶及代理商之徵信及資料維護作業",
+  "lanes": [
+    "營運業務部",
+    "財務單位"
+  ],
+  "nodes": [
+    {
+      "id": "start1",
+      "type": "start",
+      "label": "資料建立開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "start2",
+      "type": "start",
+      "label": "資料變更開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "start3",
+      "type": "start",
+      "label": "拒絕往來開始",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "填寫客戶基本資料",
+      "lane": "營運業務部",
+      "docs": [
+        "客戶基本資料"
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "主管簽核",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "財務單位會簽",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "登錄客戶主檔",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "填寫簽呈",
+      "lane": "營運業務部",
+      "docs": [
+        "簽呈"
+      ]
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "確認往來結案",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "總經理簽核",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "系統註記拒絕往來",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "重新填寫客戶基本資料",
+      "lane": "營運業務部",
+      "docs": [
+        "客戶基本資料"
+      ]
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "主管簽核",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "財務單位會簽",
+      "lane": "財務單位",
+      "docs": []
+    },
+    {
+      "id": "n9",
+      "type": "process",
+      "label": "更新客戶主檔",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n10",
+      "type": "process",
+      "label": "說明代理商合作必要性",
+      "lane": "營運業務部",
+      "docs": [
+        "簽呈"
+      ]
+    },
+    {
+      "id": "d4",
+      "type": "decision",
+      "label": "總經理簽核",
+      "lane": "營運業務部",
+      "docs": []
+    },
+    {
+      "id": "n11",
+      "type": "process",
+      "label": "簽定代理商合約書",
+      "lane": "營運業務部",
+      "docs": [
+        "代理商合約書"
+      ]
+    },
+    {
+      "id": "n12",
+      "type": "process",
+      "label": "維護代理商管理明細表",
+      "lane": "營運業務部",
+      "docs": [
+        "代理商管理明細表"
+      ]
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "營運業務部",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start1",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n2",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n1",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "n10",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n10",
+      "to": "d4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n11",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n10",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n11",
+      "to": "n12",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n12",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start2",
+      "to": "n7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n7",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n8",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n7",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n8",
+      "to": "n9",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n9",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start3",
+      "to": "n4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n6",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n4",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    }
+  ]
+}

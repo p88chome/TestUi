@@ -1,0 +1,77 @@
+<h2>改善流程圖的兩條主線</h2>
+<p class="subtitle">AI 品質（A）和 PPTX 匯出（B）各有不同的改法。選你偏好的方向。</p>
+
+<div class="section">
+  <h3>🧠 主線 A：AI 生成品質</h3>
+
+  <div class="options">
+    <div class="option" data-choice="a1" onclick="toggleSelect(this)">
+      <div class="letter">A1</div>
+      <div class="content">
+        <h3>搬進 skill.md + 豐富 prompt（推薦）</h3>
+        <p>把兩個 prompt（DECOMPOSE + RENDER）移到 <code>flowchart_generator/skill.md</code>，加入：<br>
+        • 詳細的角色定義與範例 JSON<br>
+        • 內控流程圖的業務規則（COSO 框架、泳道命名規範）<br>
+        • Few-shot 範例（2-3 個標準案例）<br>
+        • 不改 code 即可迭代 prompt</p>
+        <div class="pros-cons">
+          <div class="pros"><h4>優點</h4><ul><li>快速可見效果</li><li>prompt 可在前端即時編輯</li><li>為 tenant 差異化打基礎</li></ul></div>
+          <div class="cons"><h4>缺點</h4><ul><li>skill.md 會變很長</li></ul></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option" data-choice="a2" onclick="toggleSelect(this)">
+      <div class="letter">A2</div>
+      <div class="content">
+        <h3>加中間驗證層（self-critique）</h3>
+        <p>在現有兩步（拆解 → 渲染）之間加一步驗證：<br>
+        • Step 1：拆解成步驟 JSON<br>
+        • Step 1.5：<strong>AI 自我審查</strong>（是否每條流程都有終點？決策點分支完整？）<br>
+        • Step 2：修正後再渲染</p>
+        <div class="pros-cons">
+          <div class="pros"><h4>優點</h4><ul><li>結構錯誤大幅減少</li><li>決策點漏 branch 問題消失</li></ul></div>
+          <div class="cons"><h4>缺點</h4><ul><li>多一次 LLM call，慢 2-4 秒</li><li>需多寫一段 API 邏輯</li></ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>📊 主線 B：PPTX 匯出品質</h3>
+
+  <div class="options">
+    <div class="option" data-choice="b1" onclick="toggleSelect(this)">
+      <div class="letter">B1</div>
+      <div class="content">
+        <h3>修 python-pptx 渲染邏輯（推薦）</h3>
+        <p>現有程式碼有幾個明顯 bug 和缺陷，直接修：<br>
+        • 修 oval shape 的 double-add bug<br>
+        • 加泳道背景色（每個 lane 淡色底）<br>
+        • 改用拓撲排序決定節點上下位置（依連線順序，非堆疊）<br>
+        • connector 改 elbow 型（彎折箭頭），避免穿越節點<br>
+        • 換 Deloitte 配色</p>
+        <div class="pros-cons">
+          <div class="pros"><h4>優點</h4><ul><li>改動範圍集中，風險低</li><li>效果立竿見影</li></ul></div>
+          <div class="cons"><h4>缺點</h4><ul><li>python-pptx connector routing 有限制，複雜流程仍難看</li></ul></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option" data-choice="b2" onclick="toggleSelect(this)">
+      <div class="letter">B2</div>
+      <div class="content">
+        <h3>前端截圖 → 嵌入 PPTX</h3>
+        <p>讓 Vue Flow 畫布用 <code>html2canvas</code> 截成高解析度圖片，後端直接把圖片嵌進 PPTX slide。<br>
+        匯出的 PPTX = 圖片（不可編輯節點，但外觀 100% 還原畫布效果）</p>
+        <div class="pros-cons">
+          <div class="pros"><h4>優點</h4><ul><li>外觀最好看（前端 CSS 樣式完整保留）</li><li>後端邏輯極簡</li></ul></div>
+          <div class="cons"><h4>缺點</h4><ul><li>PPTX 裡的圖形無法編輯（只是圖片）</li><li>使用者若要修改需回平台</li></ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:24px">💡 我的推薦：<strong>A1 + B1</strong> 組合 — 先讓 skill.md 讓 AI 更準，同時修 PPTX 渲染 bug 加泳道背景色。效果快，風險低。</p>

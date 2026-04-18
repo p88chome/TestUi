@@ -1,0 +1,49 @@
+{
+  "title": "CS-102 客戶及代理商之徵信及資料維護作業",
+  "lanes": ["營運業務部", "財務單位"],
+  "nodes": [
+    {"id": "start1", "type": "start", "label": "客戶及代理商資料建立開始", "lane": "營運業務部"},
+    {"id": "start2", "type": "start", "label": "客戶及代理商資料變更開始", "lane": "營運業務部"},
+    {"id": "n_reject", "type": "process", "label": "確認相關交易已結案", "lane": "營運業務部"},
+
+    {"id": "n1", "type": "process", "label": "取得客戶及代理商聯繫資料", "lane": "營運業務部", "docs": ["客戶基本資料"]},
+    {"id": "n2", "type": "process", "label": "重新填寫客戶及代理商資料", "lane": "營運業務部", "docs": ["客戶基本資料"]},
+    {"id": "n3", "type": "process", "label": "填寫簽呈內部聯絡單", "lane": "營運業務部", "docs": ["簽呈"]},
+
+    {"id": "d1", "type": "decision", "label": "簽核", "lane": "營運業務部"},
+    {"id": "d2", "type": "decision", "label": "簽核", "lane": "營運業務部"},
+    {"id": "d3", "type": "decision", "label": "簽核", "lane": "營運業務部"},
+
+    {"id": "n_fin", "type": "process", "label": "審核財務單位會簽", "lane": "財務單位"},
+
+    {"id": "n_reg", "type": "process", "label": "登錄客戶主檔", "lane": "營運業務部"},
+    {"id": "n_upd", "type": "process", "label": "更新客戶主檔", "lane": "營運業務部"},
+    {"id": "n_mark", "type": "process", "label": "系統註記", "lane": "營運業務部"},
+
+    {"id": "end", "type": "end", "label": "結束", "lane": "營運業務部"}
+  ],
+  "edges": [
+    {"from": "start1", "to": "n1"},
+    {"from": "n1", "to": "d1"},
+    {"from": "d1", "to": "n_fin", "label": "Y"},
+    {"from": "d1", "to": "n1", "label": "N"},
+
+    {"from": "start2", "to": "n2"},
+    {"from": "n2", "to": "d2"},
+    {"from": "d2", "to": "n_fin", "label": "Y"},
+    {"from": "d2", "to": "n2", "label": "N"},
+
+    {"from": "n_reject", "to": "n3", "annotation": "已不適用於拒絕往來之客戶"},
+    {"from": "n3", "to": "d3"},
+    {"from": "d3", "to": "n_fin", "label": "Y"},
+    {"from": "d3", "to": "n3", "label": "N"},
+
+    {"from": "n_fin", "to": "n_reg"},
+    {"from": "n_fin", "to": "n_upd"},
+    {"from": "n_fin", "to": "n_mark"},
+
+    {"from": "n_reg", "to": "end"},
+    {"from": "n_upd", "to": "end"},
+    {"from": "n_mark", "to": "end"}
+  ]
+}

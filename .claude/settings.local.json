@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd:*)",
+      "Bash(python -c ':*)",
+      "Bash(git -C \"C:/Users/user/OneDrive/桌面/All平台\" log --oneline -5)",
+      "Bash(git -C \"C:/Users/user/OneDrive/桌面/All平台\" show --stat 6fe19ba 520add0)",
+      "Bash(python -c ' *)",
+      "Bash(python -m app.skills.diagram_gen.tests.run_extract cs101)",
+      "Bash(az account *)",
+      "Bash(python -m app.skills.diagram_gen.tests.run_extract cs102)",
+      "Bash(xargs grep *)"
+    ]
+  }
+}

@@ -1,0 +1,61 @@
+<h2>設計概覽：流程圖改善計畫</h2>
+<p class="subtitle">三個改動點，各自獨立，可分批執行</p>
+
+<div class="section">
+  <h3>改動 1 — 建立 flowchart_generator skill</h3>
+  <div class="mockup">
+    <div class="mockup-header">檔案結構變化</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:13px;line-height:1.8;padding:16px">
+      <div style="color:#86BC25">+ app/skills/flowchart_generator/</div>
+      <div style="color:#86BC25">+   skill.md         ← 兩個 prompt + few-shot 範例 + 業務規則</div>
+      <div style="color:#86BC25">+   run.py           ← execute() 載入 skill.md 並呼叫 LLM</div>
+      <div style="color:#86BC25">+   examples/        ← 2-3 個標準內控流程範例 JSON</div>
+      <div style="color:#aaa">  app/routers/flowchart.py  ← 移除硬編碼 prompt，改從 skill 讀取</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>改動 2 — 修 PPTX 渲染（B1）</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">現在的問題</div>
+      <div class="mockup-body" style="padding:12px;font-size:13px;line-height:2">
+        <div>❌ oval shape double-add bug</div>
+        <div>❌ 節點純垂直堆疊，忽略流向</div>
+        <div>❌ 箭頭直線穿越其他節點</div>
+        <div>❌ 泳道無背景色，難以辨識</div>
+        <div>❌ 顏色非 Deloitte 品牌色</div>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">修完的樣子</div>
+      <div class="mockup-body" style="padding:12px;font-size:13px;line-height:2">
+        <div>✅ 修正 shape 建立邏輯</div>
+        <div>✅ 拓撲排序決定節點位置</div>
+        <div>✅ 彎折箭頭（elbow connector）</div>
+        <div>✅ 每個 lane 有淡色背景矩形</div>
+        <div>✅ Deloitte 綠 / 黑 / 灰配色</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>改動 3 — B2 備用匯出（複雜流程用）</h3>
+  <div class="mockup">
+    <div class="mockup-header">流程：前端截圖 → 嵌入 PPTX</div>
+    <div class="mockup-body" style="padding:16px;font-size:13px;line-height:1.9">
+      <div>1. 前端 Vue Flow 畫布 → <code>html2canvas</code> 截成 PNG (高解析度)</div>
+      <div>2. PNG base64 POST 到新 endpoint <code>POST /flowchart/export-pptx-image</code></div>
+      <div>3. 後端把圖片貼滿整張 slide，加上標題文字框</div>
+      <div>4. 前端 UI 新增切換：「可編輯圖形」vs「高保真圖片」</div>
+    </div>
+  </div>
+  <p style="font-size:13px;color:#666;margin-top:8px">⚠️ 圖片模式下 PPTX 內的形狀不可編輯，但外觀 100% 還原畫布</p>
+</div>
+
+<div style="background:#f0f7e6;border-left:3px solid #86BC25;padding:12px 16px;border-radius:2px;font-size:13px;margin-top:8px">
+  <strong>執行順序建議：</strong> 改動 1（skill.md）→ 改動 2（PPTX 修正）→ 改動 3（B2 備用）<br>
+  每個改動可獨立測試，不互相依賴。
+</div>

@@ -1,0 +1,26 @@
+{
+  "title": "CS-101 銷售預測及目標作業",
+  "lanes": ["營運業務部"],
+  "nodes": [
+    {"id": "start", "type": "start", "label": "開始", "lane": "營運業務部"},
+    {"id": "n1", "type": "process", "label": "制定次年銷售目標", "lane": "營運業務部", "docs": ["年度銷售計畫"]},
+    {"id": "d1", "type": "decision", "label": "簽核", "lane": "營運業務部"},
+    {"id": "n2", "type": "process", "label": "定期檢視", "lane": "營運業務部", "docs": ["年度銷售計畫"]},
+    {"id": "d2", "type": "decision", "label": "確認是否調整", "lane": "營運業務部"},
+    {"id": "n3", "type": "process", "label": "於主管會議提出調整計畫", "lane": "營運業務部", "docs": ["年度銷售計畫"]},
+    {"id": "d3", "type": "decision", "label": "簽核", "lane": "營運業務部"},
+    {"id": "end", "type": "end", "label": "結束", "lane": "營運業務部"}
+  ],
+  "edges": [
+    {"from": "start", "to": "n1"},
+    {"from": "n1", "to": "d1"},
+    {"from": "d1", "to": "n2", "label": "Y"},
+    {"from": "d1", "to": "n1", "label": "N"},
+    {"from": "n2", "to": "d2"},
+    {"from": "d2", "to": "n3", "label": "Y"},
+    {"from": "d2", "to": "end", "label": "N"},
+    {"from": "n3", "to": "d3"},
+    {"from": "d3", "to": "end", "label": "Y"},
+    {"from": "d3", "to": "n3", "label": "N"}
+  ]
+}

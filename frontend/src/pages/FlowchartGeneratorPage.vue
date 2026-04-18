@@ -23,57 +23,110 @@
             <Tag :value="step >= 1 ? '步驟 2 (對話中)' : '步驟 2'" :severity="step === 1 ? 'info' : 'secondary'" />
           </div>
 
-          <!-- ── Upload area (Step 0) ── -->
+          <!-- ── Upload / Paste area (Step 0) ── -->
           <div v-if="step === 0" class="flex-1 overflow-auto pr-2">
-            <h2 class="text-heading-md m-0 mb-3 deloitte-green-dot">
-              <i class="pi pi-upload mr-2 text-green-500"></i>上傳對應文件
-            </h2>
-            <div class="field mb-3">
-              <label class="font-semibold mb-2 block">選擇文件 <span class="text-red-500">*</span></label>
-              <FileUpload
-                mode="basic"
-                name="doc"
-                :auto="false"
-                accept=".docx,.pdf,.txt,.md"
-                :maxFileSize="15000000"
-                @select="onFileSelect"
-                chooseLabel="選擇文件"
-                class="w-full"
+            <!-- Input mode toggle -->
+            <div class="flex gap-2 mb-3">
+              <Button
+                :label="'📄 上傳檔案'"
+                :severity="inputMode === 'file' ? 'success' : 'secondary'"
+                :outlined="inputMode !== 'file'"
+                size="small"
+                @click="inputMode = 'file'"
+                class="flex-1"
               />
-              <small class="text-500 block mt-1">支援：DOCX、PDF、TXT（大於 15MB 將遭拒絕）</small>
+              <Button
+                :label="'✏️ 貼文字(單一子作業)'"
+                :severity="inputMode === 'text' ? 'success' : 'secondary'"
+                :outlined="inputMode !== 'text'"
+                size="small"
+                @click="inputMode = 'text'"
+                class="flex-1"
+              />
             </div>
 
-            <div v-if="selectedFile" class="surface-100 border-round p-3 mb-3">
-              <div class="flex align-items-center justify-content-between">
-                <div class="flex align-items-center gap-2">
-                  <i class="pi pi-file text-2xl text-primary"></i>
-                  <div>
-                    <div class="font-semibold text-sm">{{ selectedFile.name }}</div>
-                    <div class="text-xs text-500">{{ formatFileSize(selectedFile.size) }}</div>
-                  </div>
-                </div>
-                <Button icon="pi pi-times" text rounded severity="danger" @click="selectedFile = null" />
+            <!-- File mode -->
+            <template v-if="inputMode === 'file'">
+              <h2 class="text-heading-md m-0 mb-3 deloitte-green-dot">
+                <i class="pi pi-upload mr-2 text-green-500"></i>上傳對應文件
+              </h2>
+              <div class="field mb-3">
+                <label class="font-semibold mb-2 block">選擇文件 <span class="text-red-500">*</span></label>
+                <FileUpload
+                  mode="basic"
+                  name="doc"
+                  :auto="false"
+                  accept=".docx,.pdf,.txt,.md"
+                  :maxFileSize="15000000"
+                  @select="onFileSelect"
+                  chooseLabel="選擇文件"
+                  class="w-full"
+                />
+                <small class="text-500 block mt-1">支援：DOCX、PDF、TXT（大於 15MB 將遭拒絕）</small>
               </div>
-            </div>
 
-            <div class="field mb-4">
-              <label class="font-semibold mb-1 block">補充說明（可選）</label>
-              <Textarea
-                v-model="additionalContext"
-                rows="3"
+              <div v-if="selectedFile" class="surface-100 border-round p-3 mb-3">
+                <div class="flex align-items-center justify-content-between">
+                  <div class="flex align-items-center gap-2">
+                    <i class="pi pi-file text-2xl text-primary"></i>
+                    <div>
+                      <div class="font-semibold text-sm">{{ selectedFile.name }}</div>
+                      <div class="text-xs text-500">{{ formatFileSize(selectedFile.size) }}</div>
+                    </div>
+                  </div>
+                  <Button icon="pi pi-times" text rounded severity="danger" @click="selectedFile = null" />
+                </div>
+              </div>
+
+              <div class="field mb-4">
+                <label class="font-semibold mb-1 block">補充說明（可選）</label>
+                <Textarea
+                  v-model="additionalContext"
+                  rows="3"
+                  class="w-full"
+                  placeholder="例如：這是一份內控制度 CA-100 的不動產循環，請注意泳道與表單..."
+                />
+              </div>
+
+              <Button
+                label="開始分析"
+                icon="pi pi-sparkles"
+                :loading="isLoading"
+                :disabled="!selectedFile"
+                @click="analyzeDocument"
                 class="w-full"
-                placeholder="例如：這是一份內控制度 CA-100 的不動產循環，請注意泳道與表單..."
               />
-            </div>
+            </template>
 
-            <Button
-              label="開始分析"
-              icon="pi pi-sparkles"
-              :loading="isLoading"
-              :disabled="!selectedFile"
-              @click="analyzeDocument"
-              class="w-full"
-            />
+            <!-- Text paste mode -->
+            <template v-else>
+              <h2 class="text-heading-md m-0 mb-3 deloitte-green-dot">
+                <i class="pi pi-pencil mr-2 text-green-500"></i>貼上單一子作業說明
+              </h2>
+              <Message severity="info" :closable="false" class="mb-3">
+                💡 一次貼一個子作業(例如 CS-101)的「作業程序」段落,產第一版流程圖後可拖拉/編輯節點。
+              </Message>
+              <div class="field mb-3">
+                <label class="font-semibold mb-1 block">子作業文字 <span class="text-red-500">*</span></label>
+                <Textarea
+                  v-model="rawText"
+                  rows="14"
+                  class="w-full"
+                  style="font-family: monospace; font-size: 13px;"
+                  placeholder="CS-101 銷售預測及目標作業&#10;&#10;作業程序：&#10;1. ...&#10;2. ...&#10;&#10;使用表單：&#10;1. 年度銷售計畫"
+                />
+                <small class="text-500 block mt-1">純文字,建議 < 3000 字。AI 會產初版流程圖,你可在右側拖拉編輯。</small>
+              </div>
+
+              <Button
+                label="產生流程圖初版"
+                icon="pi pi-sparkles"
+                :loading="isLoading"
+                :disabled="!rawText.trim()"
+                @click="extractFromText"
+                class="w-full"
+              />
+            </template>
           </div>
 
           <!-- ── Chat area (Step 1+) ── -->
@@ -315,6 +368,8 @@ const errorMsg = ref('');
 
 const selectedFile = ref<File | null>(null);
 const additionalContext = ref('');
+const inputMode = ref<'file' | 'text'>('file');
+const rawText = ref('');
 
 const messages = ref<{ role: string; content: string }[]>([]);
 const displayMessages = ref<{ role: string; content: string }[]>([]);
@@ -568,6 +623,45 @@ const analyzeDocument = async () => {
   }
 };
 
+const extractFromText = async () => {
+  if (!rawText.value.trim()) return;
+  isLoading.value = true;
+  errorMsg.value = '';
+
+  try {
+    const res: any = await apiClient.post('/flowchart/extract-text', {
+      text: rawText.value,
+    }, { timeout: 120000 });
+
+    if (res.status === 'success') {
+      explanation.value = res.explanation;
+      currentSteps.value = null;
+      mermaidCode.value = res.mermaid ?? '';
+      messages.value = [
+        { role: 'system', content: '純文字抽取模式' },
+        { role: 'user', content: rawText.value },
+        { role: 'assistant', content: JSON.stringify({ nodes: res.nodes, edges: res.edges }) },
+      ];
+
+      parseApiPayloadToVueFlow(res.nodes || [], res.edges || []);
+
+      displayMessages.value = [{
+        role: 'assistant',
+        content: `✅ 已產出初版。\n\n${res.explanation}\n\n💡 雙擊節點可改文字,拖拉可移動位置。右上可切換 Mermaid 視圖。`,
+      }];
+
+      step.value = 1;
+      await scrollChat();
+      toast.add({ severity: 'success', summary: '初版已生成', detail: '可開始編輯', life: 3000 });
+    }
+  } catch (err: any) {
+    errorMsg.value = err.response?.data?.detail || err.message || '產生失敗';
+    toast.add({ severity: 'error', summary: '發生錯誤', detail: errorMsg.value, life: 5000 });
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 const sendMessage = async () => {
   if (!userInput.value.trim() || isLoading.value) return;
 
@@ -673,6 +767,7 @@ const restart = () => {
   selectedFile.value = null;
   additionalContext.value = '';
   userInput.value = '';
+  rawText.value = '';
   currentSteps.value = null;
   mermaidCode.value = '';
   viewMode.value = 'flow';

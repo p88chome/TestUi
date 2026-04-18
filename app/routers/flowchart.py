@@ -321,6 +321,48 @@ async def flowchart_chat(
     }
 
 
+# ─── Text-only Extract (diagram_gen skill) ──────────────────────────────────
+
+class ExtractTextRequest(BaseModel):
+    text: str
+    title: Optional[str] = None
+
+
+@router.post("/extract-text")
+async def extract_from_text(
+    request: ExtractTextRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """純文字輸入 → 走 diagram_gen skill 產初版流程圖
+    適合貼單一子作業說明,產第一版給使用者編輯"""
+    from app.skills.diagram_gen.extractor import extract_graph
+    from app.skills.diagram_gen.converters import to_vueflow_payload
+    from app.skills.diagram_gen.mermaid_renderer import to_mermaid
+
+    if not request.text.strip():
+        raise HTTPException(status_code=400, detail="文字內容不可為空")
+
+    try:
+        graph = extract_graph(request.text)
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=f"抽取失敗: {e}")
+
+    payload = to_vueflow_payload(graph)
+    mermaid = to_mermaid(graph)
+
+    return {
+        "status": "success",
+        "explanation": f"已抽取 {len(graph.nodes)} 節點 / {len(graph.edges)} 連線。",
+        "title": request.title or graph.title,
+        "lanes": payload["lanes"],
+        "nodes": payload["nodes"],
+        "edges": payload["edges"],
+        "mermaid": mermaid,
+        "messages": [],
+        "generated_at": datetime.now().isoformat(),
+    }
+
+
 # ─── PPTX Export ─────────────────────────────────────────────────────────────
 
 class ExportPptxRequest(BaseModel):
