@@ -520,7 +520,18 @@ const downloadWord = async () => {
     toast.add({ severity: 'success', summary: '匯出成功', detail: 'Word 檔案已下載', life: 2000 });
   } catch (err: any) {
     console.error('Export error:', err);
-    toast.add({ severity: 'error', summary: '匯出失敗', detail: err.message || '請重試', life: 5000 });
+    let detail = err.message || '請重試';
+    const errBlob = err?.response?.data;
+    if (errBlob instanceof Blob) {
+      try {
+        const text = await errBlob.text();
+        const parsed = JSON.parse(text);
+        if (parsed?.detail) detail = parsed.detail;
+      } catch {
+        // blob wasn't JSON - keep default detail
+      }
+    }
+    toast.add({ severity: 'error', summary: '匯出失敗', detail, life: 6000 });
   } finally {
     isExportingWord.value = false;
   }
