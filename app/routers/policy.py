@@ -578,14 +578,21 @@ async def export_policy_docx(
         doc.save(output)
         output.seek(0)
 
+        from urllib.parse import quote
         safe_name = request.policy_name.replace('/', '_').replace('\\', '_')
         date_str = datetime.now().strftime('%Y%m%d')
         filename = f"{safe_name}_{date_str}.docx"
+        encoded_filename = quote(filename, safe='')
 
         return StreamingResponse(
             output,
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            headers={"Content-Disposition": f"attachment; filename*=UTF-8''{filename}"}
+            headers={
+                "Content-Disposition": (
+                    f"attachment; filename=\"report.docx\"; "
+                    f"filename*=UTF-8''{encoded_filename}"
+                )
+            }
         )
 
     except Exception as e:
