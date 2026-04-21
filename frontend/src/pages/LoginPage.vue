@@ -8,16 +8,16 @@
           <span class="brand-name">Platform<span class="brand-dot">.</span></span>
         </div>
         <div class="brand-tagline">
-          <h1>Enterprise AI<br />Powered by Deloitte</h1>
-          <p>Intelligent workflows, models, and analytics — built for your organization.</p>
+          <h1>企業級人工智慧<br />由勤業眾信打造</h1>
+          <p>整合智能工作流、模型與分析，為您的組織量身擘劃。</p>
         </div>
         <div class="brand-features">
-          <div class="brand-feature"><span class="feature-dot"></span>Multi-model AI orchestration</div>
-          <div class="brand-feature"><span class="feature-dot"></span>Enterprise-grade security</div>
-          <div class="brand-feature"><span class="feature-dot"></span>Real-time cost analytics</div>
+          <div class="brand-feature"><span class="feature-dot"></span>多模型智能調度</div>
+          <div class="brand-feature"><span class="feature-dot"></span>企業級資訊安全</div>
+          <div class="brand-feature"><span class="feature-dot"></span>即時成本分析</div>
         </div>
       </div>
-      <div class="brand-footer">© {{ new Date().getFullYear() }} Deloitte. All rights reserved.</div>
+      <div class="brand-footer">© {{ new Date().getFullYear() }} 勤業眾信。版權所有。</div>
     </div>
 
     <!-- Right Form Panel -->
