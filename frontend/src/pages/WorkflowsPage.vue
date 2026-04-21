@@ -151,6 +151,10 @@ import { getComponents } from '../api/components';
 import { createWorkflow, runWorkflow, getWorkflows, updateWorkflow, getWorkflow, deleteWorkflow } from '../api/workflows';
 import type { ComponentOut, WorkflowStepConfig, WorkflowOut } from '../types';
 import { useRouter } from 'vue-router';
+import { useToast } from 'primevue/usetoast';
+import { notifyError, notifySuccess } from '../utils/notify';
+
+const toast = useToast();
 
 // PrimeVue Components
 import InputText from 'primevue/inputtext';
@@ -250,7 +254,7 @@ const loadWorkflow = async () => {
 
     } catch (e) {
         console.error("Error loading workflow", e);
-        alert("Failed to load workflow");
+        notifyError(toast, e, '載入失敗', '無法載入工作流程');
     }
 };
 
@@ -319,17 +323,16 @@ const saveWorkflow = async () => {
 
     if (savedId.value) {
         await updateWorkflow(savedId.value, payload);
-        alert('Workflow updated!');
+        notifySuccess(toast, '工作流程已更新');
     } else {
         const res = await createWorkflow(payload);
         savedId.value = res.id;
-        alert('Workflow created!');
+        notifySuccess(toast, '工作流程已建立');
     }
-    await fetchWorkflows(); // Refresh list
+    await fetchWorkflows();
   } catch (e: any) {
     console.error(e);
-    const msg = e.response?.data?.detail || e.message || 'Unknown error';
-    alert(`Error saving workflow: ${JSON.stringify(msg)}`);
+    notifyError(toast, e, '儲存失敗', '無法儲存工作流程');
   }
 };
 
@@ -347,8 +350,7 @@ const executeRun = async () => {
     router.push(`/runs/${run.id}`);
   } catch (e: any) {
     console.error(e);
-    const msg = e.response?.data?.detail || e.message || 'Unknown error';
-    alert(`Error starting run: ${JSON.stringify(msg)}`);
+    notifyError(toast, e, '執行失敗', '無法啟動工作流程');
   }
 };
 
@@ -358,12 +360,12 @@ const deleteCurrentWorkflow = async () => {
     
     try {
         await deleteWorkflow(savedId.value);
-        alert("Workflow deleted");
+        notifySuccess(toast, '工作流程已刪除');
         resetForm();
         await fetchWorkflows();
     } catch (e) {
         console.error(e);
-        alert("Failed to delete workflow");
+        notifyError(toast, e, '刪除失敗', '無法刪除工作流程');
     }
 };
 </script>

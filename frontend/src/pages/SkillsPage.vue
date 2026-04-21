@@ -226,7 +226,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useToast } from 'primevue/usetoast';
 import { getSkills, refreshSkills, runSkill, getSkillFiles, getSkillFile, updateSkillFile, type Skill } from '../api/skills';
+import { notifyError, notifySuccess } from '../utils/notify';
+
+const toast = useToast();
 
 // PrimeVue Components
 import Button from 'primevue/button';
@@ -265,7 +269,7 @@ const openEditor = async (skill: Skill) => {
             await openFile(skillFiles.value[0]!);
         }
     } catch (e) {
-        alert("Failed to load skill workspace");
+        notifyError(toast, e, '載入失敗', '無法載入技能工作區');
     }
 };
 
@@ -294,10 +298,9 @@ const saveSkillFile = async () => {
     try {
         saving.value = true;
         await updateSkillFile(editingSkill.value.name, currentFile.value, editorContent.value);
-        // Toast success? Using alert for MVP quick feedback
-        // alert("Saved!"); 
+        notifySuccess(toast, '檔案已儲存');
     } catch (e) {
-        alert("Failed to save file");
+        notifyError(toast, e, '儲存失敗', '無法儲存檔案');
     } finally {
         saving.value = false;
     }

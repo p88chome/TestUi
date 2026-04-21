@@ -107,30 +107,38 @@ const router = createRouter({
     routes,
 });
 
+const TOKEN_CHECK_TTL_MS = 60_000;
+let lastTokenCheck = { token: '' as string | null, at: 0, valid: false };
+
 router.beforeEach(async (to, _from, next) => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     let isAuthenticated = !!token;
 
-    // Validate token with backend if token exists
     if (token) {
-        try {
-            const { default: apiClient } = await import('../api/client');
-            await apiClient.get('/users/me');
-            // Token is valid, proceed
-        } catch (error: any) {
-            // Token invalid or expired - clear it from BOTH storage and memory
-            console.warn('Token validation failed:', error?.response?.status || error.message);
-            
+        const now = Date.now();
+        const cached = lastTokenCheck.token === token
+            && (now - lastTokenCheck.at) < TOKEN_CHECK_TTL_MS;
+
+        if (cached) {
+            isAuthenticated = lastTokenCheck.valid;
+        } else {
             try {
-                const { useAuthStore } = await import('../stores/auth');
-                const auth = useAuthStore();
-                auth.logout(); // This clears localStorage AND auth.state
-            } catch (authError) {
-                // Fail-safe if store import fails
-                localStorage.removeItem('token');
+                const { default: apiClient } = await import('../api/client');
+                await apiClient.get('/users/me');
+                lastTokenCheck = { token, at: now, valid: true };
+            } catch (error: any) {
+                console.warn('Token validation failed:', error?.response?.status || error.message);
+                lastTokenCheck = { token, at: now, valid: false };
+
+                try {
+                    const { useAuthStore } = await import('../stores/auth');
+                    useAuthStore().logout();
+                } catch {
+                    sessionStorage.removeItem('token');
+                }
+
+                isAuthenticated = false;
             }
-            
-            isAuthenticated = false;
         }
     }
 
@@ -143,7 +151,7 @@ router.beforeEach(async (to, _from, next) => {
     // 2. Check authentication requirement
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     const adminOnly = to.matched.some(record => record.meta.adminOnly);
-    // const requiresPro = to.matched.some(record => record.meta.requiresPro); // Temporarily disabled
+    const requiresPro = to.matched.some(record => record.meta.requiresPro);
 
     if ((requiresAuth || adminOnly) && !isAuthenticated) {
         next('/login');
@@ -151,14 +159,11 @@ router.beforeEach(async (to, _from, next) => {
     }
 
     // 3. Check Plan requirement (Pro/Enterprise)
-    // TEMPORARY: Allow all users to access Pro features for demo/dev purposes
-    /*
     if (requiresPro && isAuthenticated) {
         try {
             const { useAuthStore } = await import('../stores/auth');
             const auth = useAuthStore();
 
-            // If user is loaded and is on Starter plan, block access
             if (auth.state.user && auth.state.user.plan_name === 'Starter') {
                 next('/profile');
                 return;
@@ -167,7 +172,6 @@ router.beforeEach(async (to, _from, next) => {
             console.error("Auth store access error in router", e);
         }
     }
-    */
 
     // 4. Proceed to route
     next();

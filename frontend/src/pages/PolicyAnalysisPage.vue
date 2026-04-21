@@ -186,9 +186,13 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import mermaid from 'mermaid';
 import { useToast } from 'primevue/usetoast';
+import { useRouter } from 'vue-router';
 import apiClient from '../api/client';
+
+const router = useRouter();
 
 // PrimeVue Components
 import Button from 'primevue/button';
@@ -244,8 +248,7 @@ const fixedOutput = computed(() => {
 
 const renderedOutput = computed(() => {
   if (!fixedOutput.value) return '';
-  // Configure marked if needed, though default usually works
-  return marked(fixedOutput.value);
+  return DOMPurify.sanitize(marked(fixedOutput.value) as string);
 });
 
 // Watch for output changes and render Mermaid
@@ -383,7 +386,7 @@ const analyzeGap = async () => {
       ? (import.meta.env.VITE_API_URL.endsWith('/') ? import.meta.env.VITE_API_URL + 'api/v1' : import.meta.env.VITE_API_URL + '/api/v1')
       : '/api/v1';
     
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     const response = await fetch(`${baseUrl}/policy/analyze`, {
       method: 'POST',
       body: formData,
@@ -393,8 +396,8 @@ const analyzeGap = async () => {
     });
 
     if (response.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      sessionStorage.removeItem('token');
+      router.push('/login');
       throw new Error('登入已過期，請重新登入');
     }
 

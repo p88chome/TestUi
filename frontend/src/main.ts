@@ -13,6 +13,31 @@ import ToastService from 'primevue/toastservice';
 
 import { createPinia } from 'pinia'
 
+import {
+    Chart as ChartJS,
+    Title,
+    Tooltip as ChartTooltip,
+    Legend,
+    BarElement,
+    CategoryScale,
+    LinearScale,
+    LineElement,
+    PointElement,
+    ArcElement,
+} from 'chart.js';
+
+ChartJS.register(
+    Title,
+    ChartTooltip,
+    Legend,
+    BarElement,
+    CategoryScale,
+    LinearScale,
+    LineElement,
+    PointElement,
+    ArcElement,
+);
+
 const app = createApp(App)
 
 app.use(createPinia())

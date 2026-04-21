@@ -140,6 +140,7 @@ import { ref, nextTick } from 'vue';
 import { runAgent } from '../api/agent';
 import apiClient from '../api/client';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 // PrimeVue Components
 import Avatar from 'primevue/avatar';
@@ -189,7 +190,7 @@ const scrollToBottom = async () => {
 };
 
 const renderMarkdown = (text: string) => {
-    return marked.parse(text);
+    return DOMPurify.sanitize(marked.parse(text) as string);
 };
 
 const triggerFileUpload = () => {

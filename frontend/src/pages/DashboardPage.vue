@@ -128,7 +128,7 @@
     <div class="col-12">
         <div class="deloitte-card p-4">
             <div class="text-heading-lg mb-4 deloitte-green-dot">Recent Activity</div>
-            <DataTable :value="recentActivity" responsiveLayout="scroll">
+            <DataTable :value="recentActivity" responsiveLayout="scroll" paginator :rows="10" :rowsPerPageOptions="[10, 25, 50]">
                 <Column field="action" header="Action"></Column>
                 <Column field="app" header="Application">
                     <template #body="slotProps">
@@ -156,11 +156,6 @@ import Chart from 'primevue/chart';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Tag from 'primevue/tag';
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
-
-// Register ChartJS components
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
-
 const auth = useAuthStore();
 const userPlan = computed(() => auth.state.user?.plan_name || 'Starter');
 const isAdmin = computed(() => auth.state.user?.is_superuser);
@@ -169,9 +164,10 @@ import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
-// import { useToast } from 'primevue/usetoast';
+import { useToast } from 'primevue/usetoast';
+import { notifyError } from '../utils/notify';
 
-// const toast = useToast(); // Removed unused toast to fix build error 
+const toast = useToast();
 const showPublishDialog = ref(false);
 const newsItems = ref<any[]>([]);
 const newsForm = ref({ title: '', content: '' });
@@ -197,7 +193,7 @@ const publishNews = async () => {
         loadNews(); // Reload
     } catch (e) {
         console.error("Failed to publish news", e);
-        alert("Failed to publish news");
+        notifyError(toast, e, '發布失敗', '無法發布最新消息');
     }
 };
 
