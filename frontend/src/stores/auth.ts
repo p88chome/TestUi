@@ -1,18 +1,19 @@
 import { reactive } from 'vue';
 import { useThemeStore } from './theme';
+import type { User } from '../api/users';
 
 interface AuthState {
     token: string | null;
-    user: any | null;
+    user: User | null;
     isAuthenticated: boolean;
     isSuperuser: boolean;
     avatarUrl: string | null;
 }
 
 const state = reactive<AuthState>({
-    token: localStorage.getItem('token'),
+    token: sessionStorage.getItem('token'),
     user: null,
-    isAuthenticated: !!localStorage.getItem('token'),
+    isAuthenticated: !!sessionStorage.getItem('token'),
     isSuperuser: false,
     avatarUrl: null
 });
@@ -21,10 +22,10 @@ export const useAuthStore = () => {
     const setToken = (token: string) => {
         state.token = token;
         state.isAuthenticated = true;
-        localStorage.setItem('token', token);
+        sessionStorage.setItem('token', token);
     };
 
-    const setUser = (user: any) => {
+    const setUser = (user: User) => {
         state.user = user;
         state.isSuperuser = user?.is_superuser || false;
 
@@ -73,7 +74,7 @@ export const useAuthStore = () => {
         state.isAuthenticated = false;
         state.isSuperuser = false;
         state.avatarUrl = null;
-        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
     };
 
     return {

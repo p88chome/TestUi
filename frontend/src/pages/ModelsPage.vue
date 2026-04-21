@@ -8,7 +8,7 @@
 
     <!-- Models Table -->
     <div class="card bg-white border-round shadow-1">
-      <DataTable :value="models" tableStyle="min-width: 50rem">
+      <DataTable :value="models" tableStyle="min-width: 50rem" paginator :rows="10" :rowsPerPageOptions="[10, 25, 50]">
         <Column field="name" header="Friendly Name" />
         <Column header="Provider">
           <template #body="slotProps">
@@ -146,6 +146,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useToast } from 'primevue/usetoast';
+import { notifyError } from '../utils/notify';
+
+const toast = useToast();
 import {
   getModels,
   createModel,
@@ -212,7 +216,7 @@ const loadModels = async () => {
     models.value = await getModels();
   } catch (e) {
     console.error(e);
-    alert('Failed to load models');
+    notifyError(toast, e, '載入失敗', '無法載入模型清單');
   }
 };
 
@@ -263,7 +267,7 @@ const saveModel = async () => {
     await loadModels();
   } catch (e: any) {
     console.error(e);
-    alert(`Error: ${e.response?.data?.detail || e.message}`);
+    notifyError(toast, e, '儲存失敗', '無法儲存模型');
   }
 };
 
@@ -275,7 +279,7 @@ const activateModel = async (model: AIModel) => {
     await setActiveModel(model.id);
     await loadModels();
   } catch (e: any) {
-    alert(`Failed to activate: ${e.response?.data?.detail || e.message}`);
+    notifyError(toast, e, '啟用失敗', '無法啟用此模型');
   }
 };
 
@@ -286,7 +290,7 @@ const confirmDelete = async (model: AIModel) => {
       await loadModels();
     } catch (e) {
       console.error(e);
-      alert('Failed to delete');
+      notifyError(toast, e, '刪除失敗', '無法刪除此模型');
     }
   }
 };

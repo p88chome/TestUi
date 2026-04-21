@@ -118,8 +118,12 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '../stores/auth';
 import { updateMe } from '../api/users';
+import { notifyError, notifySuccess } from '../utils/notify';
+
+const toast = useToast();
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Password from 'primevue/password';
@@ -218,11 +222,11 @@ const saveProfile = async () => {
         }
         const updatedUser = await updateMe(payload);
         auth.setUser(updatedUser);
-        alert('Profile updated successfully!');
-        form.value.password = ''; 
+        notifySuccess(toast, '個人資料已更新');
+        form.value.password = '';
     } catch (e) {
         console.error(e);
-        alert('Failed to update profile.');
+        notifyError(toast, e, '更新失敗', '無法更新個人資料');
     } finally {
         loading.value = false;
     }
@@ -242,10 +246,10 @@ const renewSubscription = async () => {
         const updatedUser = await updateMe(payload);
         auth.setUser(updatedUser);
 
-        alert('Subscription successfully renewed for 1 year!');
+        notifySuccess(toast, '訂閱已成功續訂 1 年');
     } catch (e) {
         console.error(e);
-        alert('Failed to renew subscription');
+        notifyError(toast, e, '續訂失敗', '無法續訂訂閱');
     } finally {
         renewing.value = false;
     }
@@ -266,10 +270,10 @@ const selectPlan = async (plan: any) => {
             auth.setUser(updatedUser);
             
             pricingDialog.value = false;
-            alert(`Successfully switched to ${plan.name}!`);
+            notifySuccess(toast, `已成功切換至 ${plan.name} 方案`);
         } catch (e) {
             console.error(e);
-            alert('Failed to switch plan.');
+            notifyError(toast, e, '切換失敗', '無法切換方案');
         }
     }
 };

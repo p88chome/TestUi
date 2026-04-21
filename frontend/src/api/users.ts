@@ -9,6 +9,8 @@ export interface User {
     plan_name?: string;
     plan_price?: string;
     plan_expiry?: string;
+    organization?: string;
+    tenant_id?: string;
 }
 
 export interface UserCreate {

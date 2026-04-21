@@ -27,13 +27,14 @@
 import { ref, onMounted, computed } from 'vue';
 import apiClient from '../api/client';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 const loading = ref(true);
 const content = ref('');
 const error = ref('');
 
 const renderedContent = computed(() => {
-    return marked.parse(content.value);
+    return DOMPurify.sanitize(marked.parse(content.value) as string);
 });
 
 onMounted(async () => {

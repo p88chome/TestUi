@@ -6,7 +6,7 @@
     </div>
 
     <!-- User List -->
-    <DataTable :value="users" :loading="loading" class="p-datatable-sm" tableStyle="min-width: 50rem">
+    <DataTable :value="users" :loading="loading" class="p-datatable-sm" tableStyle="min-width: 50rem" paginator :rows="10" :rowsPerPageOptions="[10, 25, 50]">
         <Column field="id" header="ID" style="width: 5%"></Column>
         <Column field="email" header="Email"></Column>
         <Column field="full_name" header="Full Name"></Column>
@@ -96,7 +96,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useToast } from 'primevue/usetoast';
 import { getUsers, createUser, updateUser, deleteUser, type User, type UserCreate } from '../api/users';
+import { notifyError } from '../utils/notify';
+
+const toast = useToast();
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
@@ -177,7 +181,7 @@ const confirmDeleteUser = async (data: User) => {
             loadUsers();
         } catch (error) {
             console.error('Failed to delete user', error);
-            alert('Failed to delete user.');
+            notifyError(toast, error, '刪除失敗', '無法刪除使用者');
         }
     }
 }
@@ -215,7 +219,7 @@ const saveUser = async () => {
         loadUsers(); 
     } catch (error) {
         console.error('Failed to save user', error);
-        alert('Failed to save user. Email might be already taken or other error.');
+        notifyError(toast, error, '儲存失敗', '使用者儲存失敗，Email 可能已被使用');
     }
 };
 </script>

@@ -247,6 +247,7 @@ Tony: 好，那我們決議...
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import { useToast } from 'primevue/usetoast';
 import apiClient from '../api/client';
 
@@ -284,7 +285,7 @@ const form = ref({
 // Computed
 const renderedOutput = computed(() => {
   if (!output.value) return '';
-  return marked(output.value);
+  return DOMPurify.sanitize(marked(output.value) as string);
 });
 
 // Export options

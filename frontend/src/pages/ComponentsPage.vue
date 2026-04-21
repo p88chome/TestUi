@@ -7,7 +7,7 @@
 
     <!-- Components List -->
     <div class="card">
-        <DataTable :value="components" tableStyle="min-width: 50rem" showGridlines stripedRows>
+        <DataTable :value="components" tableStyle="min-width: 50rem" showGridlines stripedRows paginator :rows="10" :rowsPerPageOptions="[10, 25, 50]">
             <Column field="name" header="Name">
                 <template #body="slotProps">
                     <div style="font-weight: 500;">{{ slotProps.data.name }}</div>
@@ -91,8 +91,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useToast } from 'primevue/usetoast';
 import { getComponents, createComponent, updateComponent, deleteComponent } from '../api/components';
+import { notifyError } from '../utils/notify';
 import type { ComponentOut, ComponentCreate } from '../types';
+
+const toast = useToast();
 
 // PrimeVue Components
 import DataTable from 'primevue/datatable';
@@ -185,7 +189,7 @@ const saveComponent = async () => {
     await fetchComponents();
     closeModal();
   } catch (error) {
-    alert('Error saving component. Check JSON format.');
+    notifyError(toast, error, '儲存失敗', '元件儲存失敗，請檢查 JSON 格式');
     console.error(error);
   }
 };
