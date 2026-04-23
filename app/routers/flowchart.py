@@ -368,6 +368,7 @@ async def extract_from_text(
 class ExportPptxRequest(BaseModel):
     nodes: List[dict]
     edges: List[dict]
+    lanes: Optional[List[dict]] = None  # 可選:前端送的 swimlane 位置
     title: str = "內控流程圖"
 
 
@@ -377,175 +378,217 @@ async def export_pptx(
     current_user: User = Depends(get_current_user),
 ):
     """
-    將 AI 產出的 nodes/edges 轉換為真正可編輯的 PowerPoint 流程圖（圖形非圖片）
+    將 AI 產出的 nodes/edges 轉換為真正可編輯的 PowerPoint 流程圖。
+    若前端提供 nodes[i].x/y 與 lanes[i] 座標(Vue Flow 佈局),
+    產出會盡量貼合畫面;否則退回 lane-grouping 簡易版。
     """
     from pptx import Presentation
-    from pptx.util import Inches, Pt
+    from pptx.util import Inches, Pt, Emu
     from pptx.dml.color import RGBColor
     from pptx.enum.text import PP_ALIGN
-    from collections import defaultdict
+    from pptx.enum.shapes import MSO_SHAPE
 
     prs = Presentation()
     prs.slide_width = Inches(13.33)
     prs.slide_height = Inches(7.5)
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
 
-    slide = prs.slides.add_slide(prs.slide_layouts[6])  # Blank layout
+    SLIDE_W = int(prs.slide_width)
+    SLIDE_H = int(prs.slide_height)
 
-    # ── Color palette ──
-    COLORS = {
-        "start":    RGBColor(0x2E, 0x7D, 0x32),
-        "end":      RGBColor(0xC6, 0x28, 0x28),
-        "process":  RGBColor(0x15, 0x65, 0xC0),
-        "control":  RGBColor(0xF5, 0x7F, 0x17),
-        "document": RGBColor(0x6A, 0x1B, 0x9A),
+    # ── 色盤(白底+彩邊, 貼近 Vue Flow 風格) ──
+    BORDER = {
+        "start":   RGBColor(0x16, 0xa3, 0x4a),
+        "end":     RGBColor(0xdc, 0x26, 0x26),
+        "process": RGBColor(0x33, 0x41, 0x55),
+        "control": RGBColor(0x33, 0x41, 0x55),
     }
-    TEXT_COLOR = RGBColor(0xFF, 0xFF, 0xFF)
-    EDGE_COLOR = RGBColor(0x42, 0x42, 0x42)
-
-    # ── Group nodes by swimlane ──
-    lane_groups: dict[str, list] = defaultdict(list)
-    for node in request.nodes:
-        lane = node.get("lane", "") or "未分類"
-        lane_groups[lane].append(node)
-
-    lanes = list(lane_groups.keys())
-    n_lanes = max(len(lanes), 1)
-
-    SLIDE_W = prs.slide_width
-    SLIDE_H = prs.slide_height
-    MARGIN_TOP = Inches(0.8)
-    MARGIN_LEFT = Inches(0.4)
-    HEADER_H = Inches(0.4)
-    LANE_W = (SLIDE_W - MARGIN_LEFT * 2) / n_lanes
-    NODE_W = Inches(1.8)
-    NODE_H = Inches(0.55)
-    node_positions: dict[str, tuple] = {}
+    DOC_BORDER = RGBColor(0xea, 0x58, 0x0c)
+    EDGE_GRAY = RGBColor(0x47, 0x55, 0x69)
+    EDGE_RED = RGBColor(0xdc, 0x26, 0x26)
+    TEXT_DARK = RGBColor(0x1e, 0x29, 0x3b)
+    LANE_HEADER_BG = RGBColor(0xf1, 0xf5, 0xf9)
+    LANE_BORDER = RGBColor(0x94, 0xa3, 0xb8)
 
     # ── Slide title ──
-    txBox = slide.shapes.add_textbox(MARGIN_LEFT, Inches(0.1), SLIDE_W - MARGIN_LEFT * 2, Inches(0.55))
-    tf = txBox.text_frame
+    tbox = slide.shapes.add_textbox(Inches(0.3), Inches(0.05), SLIDE_W - Inches(0.6), Inches(0.45))
+    tf = tbox.text_frame
     tf.text = request.title
     tf.paragraphs[0].alignment = PP_ALIGN.CENTER
-    run = tf.paragraphs[0].runs[0]
-    run.font.size = Pt(18)
-    run.font.bold = True
-    run.font.color.rgb = RGBColor(0x1A, 0x1A, 0x2E)
+    _r = tf.paragraphs[0].runs[0]
+    _r.font.size = Pt(16); _r.font.bold = True; _r.font.color.rgb = TEXT_DARK
 
-    # ── Lane headers + nodes ──
+    # ── 計算座標轉換 (frontend px → slide EMU) ──
+    nodes = list(request.nodes)
+    lanes = list(request.lanes or [])
+    has_layout = all(("x" in n and "y" in n) for n in nodes) and len(nodes) > 0
 
-    def add_node_shape(slide, node, cx, cy):
-        node_type = node.get("type", "process")
-        label = node.get("label", "")
-        color = COLORS.get(node_type, COLORS["process"])
+    TOP_OFFSET = Inches(0.6)
+    AREA_W = SLIDE_W - Inches(0.4)
+    AREA_H = SLIDE_H - Inches(0.7)
 
-        left = int(cx - NODE_W / 2)
-        top = int(cy - NODE_H / 2)
-        w = int(NODE_W)
-        h = int(NODE_H)
+    # Default node box sizes (px, match frontend dagre baseDim)
+    DEFAULT_W = {"start": 120, "end": 120, "process": 160, "control": 160}
+    DEFAULT_H = {"start": 48, "end": 48, "process": 60, "control": 100}
 
-        if node_type in ("start", "end"):
-            # Rounded rectangle (stadium)
-            shape = slide.shapes.add_shape(
-                9,  # MSO_SHAPE_TYPE rounded rectangle ≈ 9 but we'll use oval for start/end
-                left, top, w, h
+    def node_px_size(n: dict) -> tuple[int, int]:
+        t = n.get("type", "process")
+        w = DEFAULT_W.get(t, 160)
+        h = DEFAULT_H.get(t, 60)
+        return w, h
+
+    if has_layout:
+        xs = []
+        ys = []
+        for n in nodes:
+            w, h = node_px_size(n)
+            xs.append(n["x"]); xs.append(n["x"] + w + (200 if n.get("docs") else 0))
+            ys.append(n["y"]); ys.append(n["y"] + h)
+        for l in lanes:
+            xs.append(l["x"]); xs.append(l["x"] + l.get("width", 400))
+            ys.append(l["y"]); ys.append(l["y"] + l.get("height", 800))
+        min_x, max_x = min(xs), max(xs)
+        min_y, max_y = min(ys), max(ys)
+        scale_x = AREA_W / max(max_x - min_x, 1)
+        scale_y = AREA_H / max(max_y - min_y, 1)
+        scale = min(scale_x, scale_y) * 0.95
+
+        def to_emu(px_x: float, px_y: float) -> tuple[int, int]:
+            return (
+                int(Inches(0.2) + (px_x - min_x) * scale),
+                int(TOP_OFFSET + (px_y - min_y) * scale),
             )
-            # Use oval for true oval
-            from pptx.util import Emu
-            sp = shape._element
-            sp.getparent().remove(sp)
-            # Re-add as oval
-            shape = slide.shapes.add_shape(9, left, top, w, h)  # 9 = oval in add_shape
-        elif node_type == "control":
-            # Diamond — rotated rectangle workaround via freeform
-            shape = slide.shapes.add_shape(4, left, top, w, h)  # 4 = diamond in MSO_AUTO_SHAPE_TYPE
-        elif node_type == "document":
-            shape = slide.shapes.add_shape(3, left, top, w, h)  # 3 = parallelogram
+    else:
+        scale = 1.0
+        def to_emu(px_x: float, px_y: float) -> tuple[int, int]:
+            return (int(Inches(0.2) + px_x), int(TOP_OFFSET + px_y))
+
+    # ── 畫 swimlane 背景 + header (若前端有送) ──
+    if has_layout and lanes:
+        for lane in lanes:
+            lx, ly = to_emu(lane["x"], lane["y"])
+            lw = int(lane.get("width", 400) * scale)
+            lh = int(lane.get("height", 800) * scale)
+            # Lane 外框
+            box = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, lx, ly, lw, lh)
+            box.fill.background()
+            box.line.color.rgb = LANE_BORDER
+            box.line.width = Pt(0.75)
+            box.shadow.inherit = False
+            # Header 條
+            hh = int(Inches(0.3))
+            hdr = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, lx, ly, lw, hh)
+            hdr.fill.solid(); hdr.fill.fore_color.rgb = LANE_HEADER_BG
+            hdr.line.color.rgb = LANE_BORDER
+            htf = hdr.text_frame
+            htf.text = lane.get("label", "")
+            hp = htf.paragraphs[0]; hp.alignment = PP_ALIGN.CENTER
+            hr = hp.runs[0]; hr.font.size = Pt(11); hr.font.bold = True; hr.font.color.rgb = TEXT_DARK
+
+    # ── 畫 nodes ──
+    node_boxes: dict[str, tuple[int, int, int, int]] = {}  # id -> (left, top, w, h) of main shape
+
+    for n in nodes:
+        t = n.get("type", "process")
+        label = n.get("label", "")
+        docs = n.get("docs") or []
+        px_x = n.get("x", 0); px_y = n.get("y", 0)
+        left, top = to_emu(px_x, px_y)
+        pw, ph = node_px_size(n)
+        w = int(pw * scale); h = int(ph * scale)
+
+        if t == "start" or t == "end":
+            shp = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, w, h)
+        elif t == "control":
+            shp = slide.shapes.add_shape(MSO_SHAPE.DIAMOND, left, top, w, h)
         else:
-            shape = slide.shapes.add_shape(1, left, top, w, h)  # 1 = rectangle
+            shp = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top, w, h)
 
-        shape.fill.solid()
-        shape.fill.fore_color.rgb = color
-        shape.line.color.rgb = color
+        shp.fill.solid(); shp.fill.fore_color.rgb = RGBColor(0xff, 0xff, 0xff)
+        shp.line.color.rgb = BORDER.get(t, BORDER["process"]); shp.line.width = Pt(1.75)
+        tf = shp.text_frame; tf.word_wrap = True; tf.text = label
+        p = tf.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
+        r = p.runs[0]; r.font.size = Pt(10); r.font.bold = True; r.font.color.rgb = TEXT_DARK
 
-        tf = shape.text_frame
-        tf.word_wrap = True
-        tf.text = label
-        p = tf.paragraphs[0]
-        p.alignment = PP_ALIGN.CENTER
-        run = p.runs[0]
-        run.font.size = Pt(9)
-        run.font.bold = True
-        run.font.color.rgb = TEXT_COLOR
+        node_boxes[n["id"]] = (left, top, w, h)
 
-        return shape
+        # ── Doc 貼紙(parallelogram) 放在節點右側 ──
+        if docs:
+            gap = int(Inches(0.12))
+            doc_w = int(160 * scale)
+            doc_h = int((46 + 22 * len(docs)) * scale)
+            doc_left = left + w + gap
+            doc_top = top + h // 2 - doc_h // 2
+            dshp = slide.shapes.add_shape(MSO_SHAPE.PARALLELOGRAM, doc_left, doc_top, doc_w, doc_h)
+            dshp.fill.solid(); dshp.fill.fore_color.rgb = RGBColor(0xff, 0xff, 0xff)
+            dshp.line.color.rgb = DOC_BORDER; dshp.line.width = Pt(1.5)
+            dtf = dshp.text_frame; dtf.word_wrap = True
+            dtf.text = docs[0]
+            dtf.paragraphs[0].alignment = PP_ALIGN.CENTER
+            dr = dtf.paragraphs[0].runs[0]
+            dr.font.size = Pt(8); dr.font.color.rgb = TEXT_DARK
+            for extra in docs[1:]:
+                p2 = dtf.add_paragraph()
+                p2.text = extra; p2.alignment = PP_ALIGN.CENTER
+                er = p2.runs[0]; er.font.size = Pt(8); er.font.color.rgb = TEXT_DARK
 
-    for lane_idx, lane_name in enumerate(lanes):
-        nodes_in_lane = lane_groups[lane_name]
-        lane_left = MARGIN_LEFT + LANE_W * lane_idx
-        lane_center_x = lane_left + LANE_W / 2
-
-        # Lane header
-        header_box = slide.shapes.add_textbox(
-            int(lane_left) + 4, int(MARGIN_TOP),
-            int(LANE_W) - 8, int(HEADER_H)
-        )
-        htf = header_box.text_frame
-        htf.text = lane_name
-        hp = htf.paragraphs[0]
-        hp.alignment = PP_ALIGN.CENTER
-        hrun = hp.runs[0]
-        hrun.font.size = Pt(10)
-        hrun.font.bold = True
-        hrun.font.color.rgb = RGBColor(0x42, 0x42, 0x42)
-
-        # Lane divider line
-        line = slide.shapes.add_connector(
-            1,  # STRAIGHT
-            int(lane_left), int(MARGIN_TOP),
-            int(lane_left), int(SLIDE_H - Inches(0.3))
-        )
-        line.line.color.rgb = RGBColor(0xCC, 0xCC, 0xCC)
-        line.line.width = Pt(0.5)
-
-        # Place nodes top → down
-        node_content_top = MARGIN_TOP + HEADER_H + Inches(0.15)
-        available_h = SLIDE_H - node_content_top - Inches(0.3)
-        n_nodes = len(nodes_in_lane)
-        step = available_h / max(n_nodes, 1)
-
-        for node_idx, node in enumerate(nodes_in_lane):
-            cy = node_content_top + step * node_idx + step / 2
-            cx = lane_center_x
-            add_node_shape(slide, node, int(cx), int(cy))
-            node_positions[node["id"]] = (int(cx), int(cy))
-
-    # ── Edges (connectors) ──
-    for edge in request.edges:
-        from_id = edge.get("from", "")
-        to_id = edge.get("to", "")
-        if from_id not in node_positions or to_id not in node_positions:
+    # ── 畫 edges (elbow connector + N 紅虛線) ──
+    for e in request.edges:
+        fb = node_boxes.get(e.get("from", ""))
+        tb = node_boxes.get(e.get("to", ""))
+        if not fb or not tb:
             continue
-        x1, y1 = node_positions[from_id]
-        x2, y2 = node_positions[to_id]
+        fl, ft, fw, fh = fb
+        tl, tt, tw, th = tb
+        raw_label = str(e.get("label", "") or "").strip()
+        is_no = raw_label.upper() in ("N", "NO") or raw_label == "否"
+        is_yes = raw_label.upper() in ("Y", "YES") or raw_label == "是"
 
-        connector = slide.shapes.add_connector(1, x1, y1, x2, y2)
-        connector.line.color.rgb = EDGE_COLOR
-        connector.line.width = Pt(1.5)
+        # 起終錨點: N 走左側, 其他底/頂
+        if is_no:
+            x1 = fl
+            y1 = ft + fh // 2
+            x2 = tl
+            y2 = tt + th // 2
+        else:
+            x1 = fl + fw // 2
+            y1 = ft + fh
+            x2 = tl + tw // 2
+            y2 = tt
 
-        label = edge.get("label", "")
-        if label:
+        # 2 = ELBOW_CONNECTOR
+        conn = slide.shapes.add_connector(2, x1, y1, x2, y2)
+        if is_no:
+            conn.line.color.rgb = EDGE_RED
+            conn.line.width = Pt(1.25)
+        else:
+            conn.line.color.rgb = EDGE_GRAY
+            conn.line.width = Pt(1.5)
+
+        # 加箭頭 + N 虛線樣式 (OXML manipulation)
+        from pptx.oxml.ns import qn
+        ln = conn.line._get_or_add_ln()
+        # Dashed for N
+        if is_no and ln.find(qn("a:prstDash")) is None:
+            dash = ln.makeelement(qn("a:prstDash"), {"val": "dash"})
+            ln.append(dash)
+        # 箭頭 (只加一次)
+        if ln.find(qn("a:tailEnd")) is None:
+            tail = ln.makeelement(qn("a:tailEnd"), {"type": "triangle", "w": "sm", "h": "sm"})
+            ln.append(tail)
+
+        # label (主幹 Y 不顯示)
+        if raw_label and not is_yes:
             mid_x = (x1 + x2) // 2
             mid_y = (y1 + y2) // 2
-            lbl = slide.shapes.add_textbox(mid_x - Inches(0.4), mid_y - Inches(0.15), Inches(0.8), Inches(0.3))
-            ltf = lbl.text_frame
-            ltf.text = label
-            lp = ltf.paragraphs[0]
-            lp.alignment = PP_ALIGN.CENTER
-            lr = lp.runs[0]
-            lr.font.size = Pt(8)
-            lr.font.color.rgb = RGBColor(0x75, 0x75, 0x75)
+            lbl = slide.shapes.add_textbox(
+                mid_x - Inches(0.35), mid_y - Inches(0.12), Inches(0.7), Inches(0.25)
+            )
+            ltf = lbl.text_frame; ltf.text = raw_label
+            lp = ltf.paragraphs[0]; lp.alignment = PP_ALIGN.CENTER
+            lr = lp.runs[0]; lr.font.size = Pt(8); lr.font.bold = True
+            lr.font.color.rgb = EDGE_RED if is_no else TEXT_DARK
 
-    # ── Save and stream ──
     output = io.BytesIO()
     prs.save(output)
     output.seek(0)

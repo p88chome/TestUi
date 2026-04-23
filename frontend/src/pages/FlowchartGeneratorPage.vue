@@ -764,19 +764,51 @@ const downloadPptx = async () => {
   if (!chartNodes.value.length) return;
   isExportingPptx.value = true;
   
-  // Transform Vue Flow nodes back to API format, preserving the layout positions!
-  const apiNodes = chartNodes.value.map(n => ({
-    id: n.id,
-    type: n.type,
-    label: n.data.label,
-    lane: n.data.lane,
-    position: n.position // Send the latest coordinates back to server!
-  }));
+  // Transform Vue Flow nodes back to API format, sending ABSOLUTE layout positions
+  const laneById: Record<string, any> = {};
+  chartNodes.value.filter(n => n.type === 'swimlane').forEach(l => { laneById[l.id] = l; });
+  const toAbs = (n: any) => {
+    if (!n.parentNode) return { x: n.position.x, y: n.position.y };
+    const p = laneById[n.parentNode];
+    if (!p) return { x: n.position.x, y: n.position.y };
+    return { x: n.position.x + p.position.x, y: n.position.y + p.position.y };
+  };
+  const parseSize = (v: any, d: number) => {
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string') return parseInt(v, 10) || d;
+    return d;
+  };
+
+  const apiLanes = chartNodes.value
+    .filter(n => n.type === 'swimlane')
+    .map(l => ({
+      id: l.id,
+      label: l.data.label,
+      x: l.position.x,
+      y: l.position.y,
+      width: parseSize(l.style?.width, 400),
+      height: parseSize(l.style?.height, 800),
+    }));
+
+  const apiNodes = chartNodes.value
+    .filter(n => n.type !== 'swimlane')
+    .map(n => {
+      const abs = toAbs(n);
+      return {
+        id: n.id,
+        type: n.type,
+        label: n.data.label,
+        lane: n.data.lane,
+        docs: Array.isArray(n.data.docs) ? n.data.docs : [],
+        x: abs.x,
+        y: abs.y,
+      };
+    });
 
   const apiEdges = chartEdges.value.map(e => ({
     from: e.source,
     to: e.target,
-    label: e.label || ''
+    label: e.label || '',
   }));
 
   try {
@@ -785,6 +817,7 @@ const downloadPptx = async () => {
       {
         nodes: apiNodes,
         edges: apiEdges,
+        lanes: apiLanes,
         title: selectedFile.value?.name?.replace(/\.[^.]+$/, '') ?? '內控流程圖',
       },
       { responseType: 'blob', timeout: 60000 }
