@@ -1,0 +1,20 @@
+{
+  "title": "CA-103 不動產、廠房及設備保全作業",
+  "lanes": ["管理單位"],
+  "nodes": [
+    {"id": "start", "type": "start", "label": "開始", "lane": "管理單位"},
+    {"id": "n1", "type": "process", "label": "評估受保資產之價值", "lane": "管理單位", "docs": ["財產目錄清冊"]},
+    {"id": "n2", "type": "process", "label": "填寫投保需求", "lane": "管理單位", "docs": ["簽呈"]},
+    {"id": "d1", "type": "decision", "label": "簽核", "lane": "管理單位"},
+    {"id": "n3", "type": "process", "label": "投保", "lane": "管理單位"},
+    {"id": "end", "type": "end", "label": "結束", "lane": "管理單位"}
+  ],
+  "edges": [
+    {"from": "start", "to": "n1"},
+    {"from": "n1", "to": "n2"},
+    {"from": "n2", "to": "d1"},
+    {"from": "d1", "to": "n3", "label": "Y"},
+    {"from": "d1", "to": "n2", "label": "N"},
+    {"from": "n3", "to": "end"}
+  ]
+}

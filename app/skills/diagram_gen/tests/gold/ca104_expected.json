@@ -1,0 +1,41 @@
+{
+  "title": "CA-104 不動產、廠房及設備保養維修作業",
+  "lanes": ["保管單位", "財務部", "總務人員"],
+  "nodes": [
+    {"id": "start", "type": "start", "label": "開始", "lane": "保管單位"},
+    {"id": "n1", "type": "process", "label": "檢修/維修需求", "lane": "保管單位"},
+    {"id": "n2", "type": "process", "label": "提出維修申請", "lane": "保管單位", "docs": ["費用請購單"]},
+    {"id": "d1", "type": "decision", "label": "簽核", "lane": "保管單位"},
+    {"id": "n3", "type": "process", "label": "聯絡廠商維修", "lane": "保管單位"},
+    {"id": "d2", "type": "decision", "label": "廠內/廠外", "lane": "保管單位"},
+    {"id": "n4", "type": "process", "label": "提出送修申請", "lane": "保管單位", "docs": ["資產送修單"]},
+    {"id": "d3", "type": "decision", "label": "簽核", "lane": "保管單位"},
+    {"id": "n5", "type": "process", "label": "設備實體轉移至公司外", "lane": "保管單位"},
+    {"id": "n7", "type": "process", "label": "驗收設備並檢附維修相關憑證並將資產收回", "lane": "保管單位", "docs": ["資產收回單"]},
+    {"id": "n6", "type": "process", "label": "驗收、記錄保養內容並檢附維修相關", "lane": "保管單位"},
+    {"id": "n8", "type": "process", "label": "入帳作業", "lane": "財務部"},
+    {"id": "d4", "type": "decision", "label": "資本化", "lane": "財務部"},
+    {"id": "n9", "type": "process", "label": "更新財產目錄清冊", "lane": "總務人員", "docs": ["財產目錄清冊"]},
+    {"id": "end", "type": "end", "label": "結束", "lane": "財務部"}
+  ],
+  "edges": [
+    {"from": "start", "to": "n1"},
+    {"from": "n1", "to": "n2"},
+    {"from": "n2", "to": "d1"},
+    {"from": "d1", "to": "n3", "label": "Y"},
+    {"from": "d1", "to": "n2", "label": "N"},
+    {"from": "n3", "to": "d2"},
+    {"from": "d2", "to": "n4", "label": "廠外"},
+    {"from": "d2", "to": "n6", "label": "廠內"},
+    {"from": "n4", "to": "d3"},
+    {"from": "d3", "to": "n5", "label": "Y"},
+    {"from": "d3", "to": "n4", "label": "N"},
+    {"from": "n5", "to": "n7"},
+    {"from": "n7", "to": "n8"},
+    {"from": "n6", "to": "n8"},
+    {"from": "n8", "to": "d4"},
+    {"from": "d4", "to": "n9", "label": "Y"},
+    {"from": "d4", "to": "end", "label": "N"},
+    {"from": "n9", "to": "end"}
+  ]
+}

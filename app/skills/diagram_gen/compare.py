@@ -1,49 +1,137 @@
 # -*- coding: utf-8 -*-
-"""Graph 比對(gold vs actual)"""
+"""Graph 比對 (gold vs actual) — semantic matching by type + fuzzy label."""
+
+import re
+import unicodedata
+from difflib import SequenceMatcher
 
 from .schema import Graph
 
 
-def _edge_set(g: Graph) -> set[tuple[str, str, str]]:
-    return {(e.from_, e.to, (e.label or "")) for e in g.edges}
+# 同義詞歸一化 — 內控文件常見同義詞
+SYNONYMS = {
+    "核准": "簽核",
+    "核決": "簽核",
+    "審核": "簽核",
+    "批准": "簽核",
+    "審批": "簽核",
+    "確認": "簽核",
+    # 業務同義
+    "檢修": "維修",
+    "採購": "進貨",
+    "紀錄": "記錄",
+    "製作": "建立",
+    "更新": "建立",
+    "擬定": "制定",
+    "入帳": "帳務",
+    "資訊": "處理",
+    "送交": "提交",
+}
+
+FUZZY_THRESHOLD = 0.35
 
 
-def _node_map(g: Graph) -> dict[str, str]:
-    # id → (type, label) 正規化:label 去空白
-    return {n.id: f"{n.type}:{n.label.strip()}" for n in g.nodes}
+def _jaccard(a: str, b: str) -> float:
+    sa, sb = set(a), set(b)
+    if not sa or not sb:
+        return 0.0
+    return len(sa & sb) / len(sa | sb)
+
+
+def _norm_label(s: str) -> str:
+    if not s:
+        return ""
+    s = unicodedata.normalize("NFKC", s)
+    s = re.sub(r"[\s、。,.:;!?/()\[\]「」【】『』]", "", s)
+    s = s.lower()
+    for k, v in SYNONYMS.items():
+        s = s.replace(k, v)
+    return s
+
+
+def _ratio(a: str, b: str) -> float:
+    return max(SequenceMatcher(None, a, b).ratio(), _jaccard(a, b))
+
+
+def _build_id_map(gold: Graph, actual: Graph) -> dict[str, str]:
+    """Match actual → gold by (type, label). 先 exact, 再 fuzzy >= threshold。
+    每個 gold 節點最多配到一個 actual。greedy by best ratio。"""
+    gold_used: set[str] = set()
+    gold_by_type: dict[str, list] = {}
+    for n in gold.nodes:
+        gold_by_type.setdefault(n.type, []).append(n)
+
+    mapping: dict[str, str] = {}
+
+    # Pass 1: exact normalized label match
+    for a in actual.nodes:
+        a_norm = _norm_label(a.label)
+        candidates = [g for g in gold_by_type.get(a.type, []) if g.id not in gold_used]
+        exact = next((g for g in candidates if _norm_label(g.label) == a_norm), None)
+        if exact:
+            mapping[a.id] = exact.id
+            gold_used.add(exact.id)
+
+    # Pass 2: fuzzy label match for remaining actuals
+    for a in actual.nodes:
+        if a.id in mapping:
+            continue
+        a_norm = _norm_label(a.label)
+        candidates = [g for g in gold_by_type.get(a.type, []) if g.id not in gold_used]
+        if not candidates:
+            continue
+        best = max(candidates, key=lambda g: _ratio(a_norm, _norm_label(g.label)))
+        best_score = _ratio(a_norm, _norm_label(best.label))
+        if best_score >= FUZZY_THRESHOLD:
+            mapping[a.id] = best.id
+            gold_used.add(best.id)
+
+    return mapping
+
+
+def _edge_set(g: Graph, remap: dict[str, str] | None = None) -> set[tuple[str, str, str]]:
+    out = set()
+    for e in g.edges:
+        f = remap.get(e.from_, e.from_) if remap else e.from_
+        t = remap.get(e.to, e.to) if remap else e.to
+        out.add((f, t, _norm_label(e.label or "")))
+    return out
 
 
 def compare(gold: Graph, actual: Graph) -> dict:
-    g_nodes = _node_map(gold)
-    a_nodes = _node_map(actual)
+    id_map = _build_id_map(gold, actual)
 
-    common_ids = set(g_nodes) & set(a_nodes)
-    missing = set(g_nodes) - set(a_nodes)
-    extra = set(a_nodes) - set(g_nodes)
+    matched_gold_ids = set(id_map.values())
+    gold_coverage = len(matched_gold_ids) / max(len(gold.nodes), 1)
 
-    type_match = sum(
-        1 for i in common_ids if g_nodes[i].split(":")[0] == a_nodes[i].split(":")[0]
-    )
+    matched_actual_ids = set(id_map.keys())
+    precision = len(matched_actual_ids) / max(len(actual.nodes), 1)
+
+    # Missing (in gold, no match in actual)
+    missing = [(n.type, n.label) for n in gold.nodes if n.id not in matched_gold_ids]
+    extra = [(n.type, n.label) for n in actual.nodes if n.id not in matched_actual_ids]
 
     g_edges = _edge_set(gold)
-    a_edges = _edge_set(actual)
+    a_edges = _edge_set(actual, remap=id_map)
     edge_common = g_edges & a_edges
+    edge_missing = g_edges - a_edges
+    edge_extra = a_edges - g_edges
 
-    node_score = len(common_ids) / max(len(g_nodes), 1)
+    node_score = gold_coverage  # recall of gold
     edge_score = len(edge_common) / max(len(g_edges), 1)
 
     return {
-        "gold_nodes": len(g_nodes),
-        "actual_nodes": len(a_nodes),
-        "node_id_overlap": len(common_ids),
-        "node_type_match": type_match,
-        "missing_node_ids": sorted(missing),
-        "extra_node_ids": sorted(extra),
+        "gold_nodes": len(gold.nodes),
+        "actual_nodes": len(actual.nodes),
+        "matched_nodes": len(matched_gold_ids),
+        "node_precision": round(precision, 3),
+        "missing_nodes": [f"{t}:{l}" for t, l in missing],
+        "extra_nodes": [f"{t}:{l}" for t, l in extra],
         "gold_edges": len(g_edges),
         "actual_edges": len(a_edges),
-        "edge_exact_match": len(edge_common),
-        "missing_edges": sorted(g_edges - a_edges),
-        "extra_edges": sorted(a_edges - g_edges),
+        "edge_match": len(edge_common),
+        "missing_edges": sorted(edge_missing),
+        "extra_edges": sorted(edge_extra),
         "node_score": round(node_score, 3),
         "edge_score": round(edge_score, 3),
         "overall": round((node_score + edge_score) / 2, 3),

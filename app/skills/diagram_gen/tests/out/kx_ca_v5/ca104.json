@@ -1,0 +1,239 @@
+{
+  "title": "CA-104 不動產、廠房及設備保養維修作業",
+  "lanes": [
+    "保管單位",
+    "總務人員",
+    "財務部"
+  ],
+  "nodes": [
+    {
+      "id": "start",
+      "type": "start",
+      "label": "開始",
+      "lane": "保管單位",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "提出檢修需求",
+      "lane": "保管單位",
+      "docs": [
+        "費用請購單"
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "簽核",
+      "lane": "保管單位",
+      "docs": []
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "聯絡廠商維修",
+      "lane": "保管單位",
+      "docs": []
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "廠內/廠外",
+      "lane": "保管單位",
+      "docs": []
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "提出送修申請",
+      "lane": "保管單位",
+      "docs": [
+        "資產送修單"
+      ]
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "簽核",
+      "lane": "保管單位",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "設備外送檢修",
+      "lane": "保管單位",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "建立收回單",
+      "lane": "保管單位",
+      "docs": [
+        "資產收回單"
+      ]
+    },
+    {
+      "id": "d4",
+      "type": "decision",
+      "label": "簽核",
+      "lane": "保管單位",
+      "docs": []
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "驗收設備",
+      "lane": "保管單位",
+      "docs": []
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "送交憑證辦理財務作業",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "d5",
+      "type": "decision",
+      "label": "資本化",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "更新設備清冊",
+      "lane": "總務人員",
+      "docs": [
+        "儀器設備一覽表"
+      ]
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "財務部",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n2",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n1",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n3",
+      "label": "廠外",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n6",
+      "label": "廠內",
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n4",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n3",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "d4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n6",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n5",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "n7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n7",
+      "to": "d5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n8",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "end",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n8",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    }
+  ]
+}

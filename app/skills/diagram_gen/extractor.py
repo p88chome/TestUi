@@ -15,7 +15,7 @@ def load_prompt() -> str:
         return f.read()
 
 
-def extract_graph(text: str, *, temperature: float = 0.1, max_tokens: int = 3000) -> Graph:
+def extract_graph(text: str, *, temperature: float = 0.0, max_tokens: int = 3000) -> Graph:
     """
     輸入子作業純文字 → 回 Graph 物件
     失敗 raise ValueError

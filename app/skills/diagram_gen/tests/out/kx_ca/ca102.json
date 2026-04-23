@@ -1,0 +1,568 @@
+{
+  "title": "CA-102 不動產、廠房及設備管理作業",
+  "lanes": [
+    "總務人員",
+    "財務部",
+    "業務部",
+    "資訊課"
+  ],
+  "nodes": [
+    {
+      "id": "start1",
+      "type": "start",
+      "label": "資產取得入帳開始",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "start2",
+      "type": "start",
+      "label": "資產移轉開始",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "start3",
+      "type": "start",
+      "label": "資產外借開始",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "start4",
+      "type": "start",
+      "label": "短期出租開始",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "start5",
+      "type": "start",
+      "label": "融資租賃開始",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "start6",
+      "type": "start",
+      "label": "資產重估開始",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "認列資產及折舊",
+      "lane": "財務部",
+      "docs": [
+        "財產目錄清冊"
+      ]
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "維護財產目錄清冊",
+      "lane": "總務人員",
+      "docs": [
+        "財產目錄清冊"
+      ]
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "設定保管單位及人",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "設定資訊設備保管人",
+      "lane": "資訊課",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "異動保管人/單位/區域",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "確認紀錄已更新",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "提報資產遺失損壞",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "資訊設備提報資訊課",
+      "lane": "資訊課",
+      "docs": []
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "填寫資產移轉單",
+      "lane": "總務人員",
+      "docs": [
+        "資產移轉單"
+      ]
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "核准",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "n9",
+      "type": "process",
+      "label": "確認資料已更新",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "n10",
+      "type": "process",
+      "label": "填寫資產外借單",
+      "lane": "總務人員",
+      "docs": [
+        "資產外借單"
+      ]
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "核准",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "n11",
+      "type": "process",
+      "label": "資訊設備會簽資訊課",
+      "lane": "資訊課",
+      "docs": []
+    },
+    {
+      "id": "n12",
+      "type": "process",
+      "label": "更新財產目錄清冊",
+      "lane": "總務人員",
+      "docs": [
+        "財產目錄清冊"
+      ]
+    },
+    {
+      "id": "n13",
+      "type": "process",
+      "label": "接獲出租需求",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "n14",
+      "type": "process",
+      "label": "通知總務人員租賃日",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "n15",
+      "type": "process",
+      "label": "改列財產目錄清冊",
+      "lane": "總務人員",
+      "docs": [
+        "財產目錄清冊"
+      ]
+    },
+    {
+      "id": "n16",
+      "type": "process",
+      "label": "設備離廠前填寫外借單",
+      "lane": "業務部",
+      "docs": [
+        "資產外借單"
+      ]
+    },
+    {
+      "id": "d4",
+      "type": "decision",
+      "label": "核准",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "n17",
+      "type": "process",
+      "label": "設備收回品質檢驗",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "n18",
+      "type": "process",
+      "label": "填寫資產收回單",
+      "lane": "業務部",
+      "docs": [
+        "資產收回單"
+      ]
+    },
+    {
+      "id": "d5",
+      "type": "decision",
+      "label": "核准",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "n19",
+      "type": "process",
+      "label": "釐清融資租賃需求",
+      "lane": "業務部",
+      "docs": []
+    },
+    {
+      "id": "n20",
+      "type": "process",
+      "label": "財務部評估融資租賃",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "d6",
+      "type": "decision",
+      "label": "判定融資租賃",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n21",
+      "type": "process",
+      "label": "建立報價單及訂單",
+      "lane": "業務部",
+      "docs": [
+        "報價單",
+        "銷售訂單"
+      ]
+    },
+    {
+      "id": "n22",
+      "type": "process",
+      "label": "建立銷貨單",
+      "lane": "業務部",
+      "docs": [
+        "銷貨單"
+      ]
+    },
+    {
+      "id": "n23",
+      "type": "process",
+      "label": "財務部開立發票",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n24",
+      "type": "process",
+      "label": "帳務處理及揭露",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n25",
+      "type": "process",
+      "label": "擬定重估申辦文據",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "d7",
+      "type": "decision",
+      "label": "核准",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n26",
+      "type": "process",
+      "label": "建立資產調整單",
+      "lane": "財務部",
+      "docs": [
+        "列管資產調整單/列帳資產調整單"
+      ]
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "財務部",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start1",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "n2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start2",
+      "to": "n8",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n8",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n9",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n8",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n9",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start3",
+      "to": "n10",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n10",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n11",
+      "label": "Y",
+      "annotation": "資訊設備"
+    },
+    {
+      "from": "d3",
+      "to": "n12",
+      "label": "Y",
+      "annotation": "非資訊設備"
+    },
+    {
+      "from": "d3",
+      "to": "n10",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n11",
+      "to": "n12",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n12",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start4",
+      "to": "n13",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n13",
+      "to": "n14",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n14",
+      "to": "n15",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n15",
+      "to": "n16",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n16",
+      "to": "d4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n17",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n16",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n17",
+      "to": "n18",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n18",
+      "to": "d5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "end",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n18",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "start5",
+      "to": "n19",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n19",
+      "to": "n20",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n20",
+      "to": "d6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n21",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "end",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n21",
+      "to": "n22",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n22",
+      "to": "n23",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n23",
+      "to": "n24",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n24",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "start6",
+      "to": "n25",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n25",
+      "to": "d7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n26",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n25",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n26",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    }
+  ]
+}
