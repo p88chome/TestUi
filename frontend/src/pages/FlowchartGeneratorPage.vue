@@ -547,11 +547,12 @@ const parseApiPayloadToVueFlow = (apiNodes: any[], apiEdges: any[]) => {
 
     // Handle routing:
     //   Y / 順流 / 無標籤 → 底進頂(預設)
-    //   N / 退件回圈 → 從右側出,對方左側進(視覺上繞側邊,不壓主幹)
+    //   N / 退件回圈 → 全部走左側通道 (decision 左出 → process 左進),
+    //     右側留給 doc 貼紙, 避免退件線壓過紙張
     let sourceHandle: string | undefined;
     let targetHandle: string | undefined;
     if (isFromDecision && isNo) {
-      sourceHandle = 'right';
+      sourceHandle = 'left';
       targetHandle = 'left';
     }
 
