@@ -1,0 +1,345 @@
+{
+  "title": "CA-105 不動產、廠房及設備盤點作業",
+  "lanes": [
+    "財務部",
+    "保管單位",
+    "總務人員",
+    "稽核室"
+  ],
+  "nodes": [
+    {
+      "id": "start",
+      "type": "start",
+      "label": "開始",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "擬定盤點計畫",
+      "lane": "財務部",
+      "docs": [
+        "不動產、廠房及設備盤點計畫"
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "核准",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "初盤",
+      "lane": "保管單位",
+      "docs": []
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "複盤",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "記錄盤點結果",
+      "lane": "財務部",
+      "docs": [
+        "固資盤點清冊"
+      ]
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "簽核",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "更新財產清冊",
+      "lane": "財務部",
+      "docs": [
+        "財產目錄清冊"
+      ]
+    },
+    {
+      "id": "d3",
+      "type": "decision",
+      "label": "盤點結果是否相符",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "追查不符原因",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "d4",
+      "type": "decision",
+      "label": "是否人員失職",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "適當處置",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "d5",
+      "type": "decision",
+      "label": "是否大量盤盈虧且無法說明",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "稽核查核",
+      "lane": "稽核室",
+      "docs": []
+    },
+    {
+      "id": "n9",
+      "type": "process",
+      "label": "辦理帳務處理",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n10",
+      "type": "process",
+      "label": "提示管理單位",
+      "lane": "保管單位",
+      "docs": []
+    },
+    {
+      "id": "n11",
+      "type": "process",
+      "label": "記錄遺失毀損於盤點清冊",
+      "lane": "保管單位",
+      "docs": [
+        "固資盤點清冊"
+      ]
+    },
+    {
+      "id": "d6",
+      "type": "decision",
+      "label": "核准",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n12",
+      "type": "process",
+      "label": "填寫處分申請單",
+      "lane": "保管單位",
+      "docs": [
+        "資產/存貨處分申請單"
+      ]
+    },
+    {
+      "id": "d7",
+      "type": "decision",
+      "label": "簽核",
+      "lane": "財務部",
+      "docs": []
+    },
+    {
+      "id": "n13",
+      "type": "process",
+      "label": "送交總務人員",
+      "lane": "保管單位",
+      "docs": []
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "財務部",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n2",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n1",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n5",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n4",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "d3",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "end",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d3",
+      "to": "n6",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "d4",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "n7",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d4",
+      "to": "d5",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n7",
+      "to": "n9",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n8",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d5",
+      "to": "n9",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n8",
+      "to": "n9",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n9",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n10",
+      "to": "n11",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n11",
+      "to": "d6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n12",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d6",
+      "to": "n11",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n12",
+      "to": "d7",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n13",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d7",
+      "to": "n12",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n13",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    }
+  ]
+}

@@ -23,7 +23,11 @@
       "Bash('/c/Program Files/GitHub CLI/gh.exe' pr create --title 'feat\\(login\\): brand panel zh-TW \\(Deloitte tone\\)' --body ' *)",
       "Bash(git stash *)",
       "Bash(git checkout *)",
-      "Bash(git pull *)"
+      "Bash(git pull *)",
+      "Bash(python -m app.skills.diagram_gen.tests.run_extract ca106)",
+      "Bash(python -m app.skills.diagram_gen.tests.run_extract ca105)",
+      "Bash(python -m app.skills.diagram_gen.tests.batch_extract \"archive/卡訊電子_內部控制制度_CA-100_不動產、廠房及設備循環_v2.1.docx\" kx_ca)",
+      "Bash(python -m app.skills.diagram_gen.tests.batch_extract \"archive/卡訊電子_內部控制制度_CA-100_不動產、廠房及設備循環_v2.1.docx\" kx_ca_v2)"
     ]
   }
 }

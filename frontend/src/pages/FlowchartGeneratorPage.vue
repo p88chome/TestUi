@@ -268,7 +268,7 @@
               v-model:nodes="chartNodes"
               v-model:edges="chartEdges"
               :node-types="nodeTypes"
-              :default-edge-options="{ type: 'smoothstep', animated: true }"
+              :default-edge-options="{ type: 'step', animated: false }"
               fit-view-on-init
               class="vue-flow-theme"
               @nodeDoubleClick="onNodeDoubleClick"
@@ -418,15 +418,24 @@ const applyAutoLayout = () => {
   if (!chartNodes.value.length) return;
   
   const g = new dagre.graphlib.Graph({ compound: true });
-  g.setGraph({ rankdir: 'TB', nodesep: 100, ranksep: 120, edgesep: 40 });
+  g.setGraph({ rankdir: 'TB', nodesep: 80, ranksep: 90, edgesep: 30 });
   g.setDefaultEdgeLabel(() => ({}));
 
-  const nodeDimensions: Record<string, { w: number, h: number }> = {
+  const baseDim: Record<string, { w: number, h: number }> = {
     start: { w: 120, h: 48 },
     end: { w: 120, h: 48 },
     process: { w: 160, h: 60 },
     control: { w: 160, h: 100 },
     document: { w: 150, h: 80 }
+  };
+  const dimFor = (n: any) => {
+    const base = baseDim[n.type] || { w: 150, h: 50 };
+    const docCount = n.data?.docs?.length || 0;
+    if (docCount && (n.type === 'process' || n.type === 'control')) {
+      // 貼紙貼在右側: 增寬 ~190, 每多一筆增高一點
+      return { w: base.w + 200, h: Math.max(base.h, 46 + docCount * 22) };
+    }
+    return base;
   };
 
   // 1. Add Swimlanes as clusters
@@ -438,7 +447,7 @@ const applyAutoLayout = () => {
   // 2. Add normal nodes and attach to parents
   const childNodes = chartNodes.value.filter(n => n.type !== 'swimlane');
   childNodes.forEach((n) => {
-    const dim = nodeDimensions[n.type] || { w: 150, h: 50 };
+    const dim = dimFor(n);
     g.setNode(n.id, { width: dim.w, height: dim.h });
     if (n.parentNode) {
       g.setParent(n.id, n.parentNode);
@@ -470,8 +479,9 @@ const applyAutoLayout = () => {
         style: { width: `${nodeData.width + 40}px`, height: `${nodeData.height + 60}px` }
       };
     } else {
-      let relativeX = nodeData.x - (nodeDimensions[n.type]?.w || 150) / 2;
-      let relativeY = nodeData.y - (nodeDimensions[n.type]?.h || 50) / 2;
+      const dim = dimFor(n);
+      let relativeX = nodeData.x - dim.w / 2;
+      let relativeY = nodeData.y - dim.h / 2;
 
       if (n.parentNode) {
         const parentData = g.node(n.parentNode);
@@ -515,7 +525,13 @@ const parseApiPayloadToVueFlow = (apiNodes: any[], apiEdges: any[]) => {
   const vNodes = apiNodes.map((n: any) => ({
     id: n.id,
     type: n.type,
-    data: { label: n.label, lane: n.lane, isStart: n.type === 'start', isEnd: n.type === 'end' },
+    data: {
+      label: n.label,
+      lane: n.lane,
+      docs: Array.isArray(n.docs) ? n.docs : [],
+      isStart: n.type === 'start',
+      isEnd: n.type === 'end',
+    },
     position: { x: 0, y: 0 },
     parentNode: `lane-${n.lane || '預設部門'}`,
     extent: 'parent'
@@ -523,12 +539,11 @@ const parseApiPayloadToVueFlow = (apiNodes: any[], apiEdges: any[]) => {
 
   const vEdges = apiEdges.map((e: any, idx: number) => {
     const fromNode = apiNodes.find((n: any) => n.id === e.from);
-    const toNode = apiNodes.find((n: any) => n.id === e.to);
-    const isDoc = toNode?.type === 'document';
     const isFromDecision = fromNode?.type === 'control';
-    const label = (e.label || '').toString().trim().toUpperCase();
-    const isNo = label === 'N' || label === 'NO' || label === '否';
-    const isYes = label === 'Y' || label === 'YES' || label === '是';
+    const rawLabel = (e.label || '').toString().trim();
+    const upper = rawLabel.toUpperCase();
+    const isNo = upper === 'N' || upper === 'NO' || rawLabel === '否';
+    const isYes = upper === 'Y' || upper === 'YES' || rawLabel === '是';
 
     // Handle routing:
     //   Y / 順流 / 無標籤 → 底進頂(預設)
@@ -540,12 +555,18 @@ const parseApiPayloadToVueFlow = (apiNodes: any[], apiEdges: any[]) => {
       targetHandle = 'left';
     }
 
-    // 樣式:doc 虛線橘、N 紅、Y 綠、其他灰
+    // 樣式分層:主幹灰實線、N 退件紅虛線、其他分類決策保留灰
     let stroke = '#475569';
     let strokeDasharray: string | undefined;
-    if (isDoc) { stroke = '#ea580c'; strokeDasharray = '5 5'; }
-    else if (isNo) { stroke = '#dc2626'; }
-    else if (isYes) { stroke = '#16a34a'; }
+    let strokeWidth = 2;
+    if (isNo) {
+      stroke = '#dc2626';
+      strokeDasharray = '6 4';
+      strokeWidth = 1.5;
+    }
+
+    // 主幹 Y 不顯示 label (減少視覺雜訊), 分類決策 (廠內/廠外/資本化) 或 N 保留顯示
+    const showLabel = !isYes && rawLabel !== '';
 
     return {
       id: `e-${e.from}-${e.to}-${idx}`,
@@ -553,15 +574,15 @@ const parseApiPayloadToVueFlow = (apiNodes: any[], apiEdges: any[]) => {
       target: e.to,
       sourceHandle,
       targetHandle,
-      label: e.label || '',
-      type: 'smoothstep',
-      animated: !isDoc,
-      style: { stroke, strokeWidth: 2, ...(strokeDasharray ? { strokeDasharray } : {}) },
-      markerEnd: { type: 'arrowclosed', color: stroke, width: 18, height: 18 },
+      label: showLabel ? rawLabel : '',
+      type: 'step',
+      animated: false,
+      style: { stroke, strokeWidth, ...(strokeDasharray ? { strokeDasharray } : {}) },
+      markerEnd: { type: 'arrowclosed', color: stroke, width: 16, height: 16 },
       labelBgPadding: [6, 4],
       labelBgBorderRadius: 4,
       labelBgStyle: { fill: '#1e293b', fillOpacity: 0.9 },
-      labelStyle: { fill: '#cbd5e1', fontWeight: 700, fontSize: 13 },
+      labelStyle: { fill: '#cbd5e1', fontWeight: 700, fontSize: 12 },
     };
   });
 

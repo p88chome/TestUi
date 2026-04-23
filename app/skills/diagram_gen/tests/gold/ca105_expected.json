@@ -1,0 +1,32 @@
+{
+  "title": "CA-105 不動產、廠房及設備盤點作業",
+  "lanes": ["財務部", "保管單位", "總務人員"],
+  "nodes": [
+    {"id": "start", "type": "start", "label": "開始", "lane": "財務部"},
+    {"id": "n1", "type": "process", "label": "擬定盤點計畫", "lane": "財務部", "docs": ["不動產、廠房及設備盤點計畫"]},
+    {"id": "d1", "type": "decision", "label": "簽核", "lane": "財務部"},
+    {"id": "n2", "type": "process", "label": "依計畫執行盤點", "lane": "保管單位"},
+    {"id": "n2b", "type": "process", "label": "執行複盤", "lane": "總務人員", "docs": ["固資盤點清冊"]},
+    {"id": "n3", "type": "process", "label": "盤點結果確認及追查盤盈虧原因", "lane": "保管單位"},
+    {"id": "d2", "type": "decision", "label": "簽核", "lane": "保管單位"},
+    {"id": "n4", "type": "process", "label": "有遺失或需報廢者做報廢申請", "lane": "保管單位", "docs": ["資產/存貨處分申請單"]},
+    {"id": "d3", "type": "decision", "label": "簽核", "lane": "保管單位"},
+    {"id": "n5", "type": "process", "label": "盤盈虧帳務處理", "lane": "財務部"},
+    {"id": "end", "type": "end", "label": "結束", "lane": "財務部"}
+  ],
+  "edges": [
+    {"from": "start", "to": "n1"},
+    {"from": "n1", "to": "d1"},
+    {"from": "d1", "to": "n2", "label": "Y"},
+    {"from": "d1", "to": "n1", "label": "N"},
+    {"from": "n2", "to": "n2b"},
+    {"from": "n2b", "to": "n3"},
+    {"from": "n3", "to": "d2"},
+    {"from": "d2", "to": "n4", "label": "Y"},
+    {"from": "d2", "to": "n3", "label": "N"},
+    {"from": "n4", "to": "d3"},
+    {"from": "d3", "to": "n5", "label": "Y"},
+    {"from": "d3", "to": "n4", "label": "N"},
+    {"from": "n5", "to": "end"}
+  ]
+}

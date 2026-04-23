@@ -1,0 +1,190 @@
+{
+  "title": "CA-103 不動產、廠房及設備保全作業",
+  "lanes": [
+    "總務人員",
+    "資產保管單位"
+  ],
+  "nodes": [
+    {
+      "id": "start",
+      "type": "start",
+      "label": "開始",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "n1",
+      "type": "process",
+      "label": "評估資產價值",
+      "lane": "總務人員",
+      "docs": [
+        "財產目錄清冊"
+      ]
+    },
+    {
+      "id": "n2",
+      "type": "process",
+      "label": "填寫投保申請",
+      "lane": "總務人員",
+      "docs": [
+        "簽呈"
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "decision",
+      "label": "簽核",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "n3",
+      "type": "process",
+      "label": "辦理投保/續保/退保",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "n4",
+      "type": "process",
+      "label": "定期檢查資產",
+      "lane": "資產保管單位",
+      "docs": []
+    },
+    {
+      "id": "n5",
+      "type": "process",
+      "label": "回報檢查結果",
+      "lane": "資產保管單位",
+      "docs": []
+    },
+    {
+      "id": "n6",
+      "type": "process",
+      "label": "確認投保狀況",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "d2",
+      "type": "decision",
+      "label": "是否需調整保險",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "n7",
+      "type": "process",
+      "label": "辦理保險調整",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "n8",
+      "type": "process",
+      "label": "通知保險公司處理損害",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "n9",
+      "type": "process",
+      "label": "辦理契約變更",
+      "lane": "總務人員",
+      "docs": []
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "label": "結束",
+      "lane": "總務人員",
+      "docs": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "n1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n1",
+      "to": "n2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n2",
+      "to": "d1",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n3",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d1",
+      "to": "n2",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n3",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n6",
+      "to": "d2",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "n7",
+      "label": "Y",
+      "annotation": null
+    },
+    {
+      "from": "d2",
+      "to": "end",
+      "label": "N",
+      "annotation": null
+    },
+    {
+      "from": "n7",
+      "to": "end",
+      "label": null,
+      "annotation": null
+    },
+    {
+      "from": "n8",
+      "to": "end",
+      "label": null,
+      "annotation": "資產遭受損害時"
+    },
+    {
+      "from": "n9",
+      "to": "end",
+      "label": null,
+      "annotation": "資產發生變動時"
+    }
+  ]
+}
