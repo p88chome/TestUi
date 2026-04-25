@@ -1,7 +1,10 @@
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from app.core.limiter import limiter
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from alembic.config import Config as AlembicConfig
 from alembic import command as alembic_command
@@ -82,6 +85,8 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     lifespan=lifespan
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # CORS — 根據環境自動決定允許的來源
 origins = [settings.CLIENT_ORIGIN]

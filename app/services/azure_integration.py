@@ -1,7 +1,7 @@
+import asyncio
 import os
 import json
 import httpx
-import time
 from sqlalchemy.orm import Session
 from app.models.domain import AIModel
 from app.core.config import settings
@@ -82,7 +82,7 @@ async def call_azure_ocr(file_content: bytes) -> dict:
         poll_interval = 1
         
         for _ in range(max_retries):
-            time.sleep(poll_interval)
+            await asyncio.sleep(poll_interval)
             
             poll_res = await client.get(operation_url, headers={"Ocp-Apim-Subscription-Key": api_key})
             
