@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
@@ -5,6 +6,8 @@ from app.services.azure_integration import call_azure_openai, call_azure_ocr
 from app.api import deps
 from app.models.user import User
 import json
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -33,31 +36,39 @@ async def chat_message(
     - Uses Auto-Detection to select the best persona (Legal/Finance/General).
     """
     
-    context_text = message
-    
     # 1. Handle File Upload (OCR)
+    # OCR content is passed as a separate message (not appended to user input)
+    # to prevent prompt injection via crafted document content.
+    messages = None
     if file:
         try:
             content = await file.read()
             ocr_result = await call_azure_ocr(content)
-            
-            # Append OCR context to the user message
-            # We format it clearly so the LLM knows what is user text and what is document text
-            context_text += f"\n\n[ATTACHED DOCUMENT CONTENT (OCR)]:\n{ocr_result['full_text']}\n[END DOCUMENT]"
-            
+            doc_text = ocr_result['full_text'][:8000]  # cap to avoid token abuse
+            messages = [
+                {"role": "system", "content": SMART_SYSTEM_PROMPT},
+                {"role": "user", "content": message},
+                {"role": "user", "content": f"[Attached document content for analysis]\n{doc_text}"},
+            ]
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"File Analysis Failed: {str(e)}")
+            logger.error("OCR processing failed", exc_info=True)
+            raise HTTPException(status_code=500, detail="File analysis failed")
 
     # 2. Call Azure OpenAI with Smart Prompt
     try:
-        response = await call_azure_openai(
+        call_kwargs = dict(
             db=db,
-            user_id=current_user.id, # Added: Crucial for per-user dashboard
-            input_text=context_text,
+            user_id=current_user.id,
             system_prompt=SMART_SYSTEM_PROMPT,
             temperature=0.5,
-            app_name="Enterprise Chat" # Added for better analytics
+            app_name="Enterprise Chat",
         )
+        if messages:
+            call_kwargs["messages"] = messages
+        else:
+            call_kwargs["input_text"] = message
+
+        response = await call_azure_openai(**call_kwargs)
         
         # Extract the assistant's reply
         reply = response.get("choices", [])[0].get("message", {}).get("content", "")
@@ -83,7 +94,5 @@ async def chat_message(
         }
         
     except Exception as e:
-        # Log error but don't crash if stats fail? 
-        # Ideally we want to know, so let it raise or print
-        print(f"Error processing chat or logging stats: {e}")
-        raise HTTPException(status_code=500, detail=f"AI Processing Failed: {str(e)}")
+        logger.error("Chat processing failed", exc_info=True)
+        raise HTTPException(status_code=500, detail="AI processing failed")

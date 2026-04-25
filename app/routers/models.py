@@ -1,9 +1,14 @@
+import logging
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.domain import AIModel, LLMProvider
+from app.api import deps
+from app.models.user import User
 from pydantic import BaseModel, ConfigDict
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/models", tags=["models"])
 
@@ -16,7 +21,7 @@ class AIModelBase(BaseModel):
     api_version: str | None = None
     description: str | None = None
     is_active: bool = False
-    is_reasoning_model: bool = False  # True for o1/o3/o4-mini → uses max_completion_tokens
+    is_reasoning_model: bool = False
 
 class AIModelCreate(AIModelBase):
     pass
@@ -37,19 +42,22 @@ class AIModelOut(AIModelBase):
 
 # Endpoints
 @router.get("/", response_model=list[AIModelOut])
-def list_models(db: Session = Depends(get_db)):
+def list_models(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user),
+):
     try:
-        models = db.query(AIModel).order_by(AIModel.name).all()
-        return models
+        return db.query(AIModel).order_by(AIModel.name).all()
     except Exception as e:
-        import traceback
-        error_detail = traceback.format_exc()
-        raise HTTPException(status_code=500, detail=f"Database Error in /models/: {str(e)}\nTraceback: {error_detail}")
-
+        logger.error("Failed to list models", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/", response_model=AIModelOut)
-def create_model(model: AIModelCreate, db: Session = Depends(get_db)):
-    # If creating as active, deactivate all others first
+def create_model(
+    model: AIModelCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_superuser),
+):
     if model.is_active:
         db.query(AIModel).update({AIModel.is_active: False})
     db_obj = AIModel(**model.model_dump())
@@ -59,12 +67,16 @@ def create_model(model: AIModelCreate, db: Session = Depends(get_db)):
     return db_obj
 
 @router.put("/{model_id}", response_model=AIModelOut)
-def update_model(model_id: UUID, model: AIModelUpdate, db: Session = Depends(get_db)):
+def update_model(
+    model_id: UUID,
+    model: AIModelUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_superuser),
+):
     obj = db.query(AIModel).filter(AIModel.id == model_id).first()
     if not obj:
         raise HTTPException(status_code=404, detail="Model not found")
 
-    # If activating this model, deactivate all others first
     if model.is_active is True:
         db.query(AIModel).filter(AIModel.id != model_id).update({AIModel.is_active: False})
 
@@ -78,8 +90,11 @@ def update_model(model_id: UUID, model: AIModelUpdate, db: Session = Depends(get
     return obj
 
 @router.post("/{model_id}/set-active", response_model=AIModelOut)
-def set_active_model(model_id: UUID, db: Session = Depends(get_db)):
-    """Atomically sets one model as active and deactivates all others."""
+def set_active_model(
+    model_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_superuser),
+):
     obj = db.query(AIModel).filter(AIModel.id == model_id).first()
     if not obj:
         raise HTTPException(status_code=404, detail="Model not found")
@@ -92,7 +107,11 @@ def set_active_model(model_id: UUID, db: Session = Depends(get_db)):
     return obj
 
 @router.delete("/{model_id}")
-def delete_model(model_id: UUID, db: Session = Depends(get_db)):
+def delete_model(
+    model_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_superuser),
+):
     obj = db.query(AIModel).filter(AIModel.id == model_id).first()
     if not obj:
         raise HTTPException(status_code=404, detail="Model not found")

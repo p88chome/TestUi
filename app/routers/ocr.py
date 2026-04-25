@@ -1,14 +1,16 @@
-import time
+import asyncio
 import httpx
-from fastapi import APIRouter, File, UploadFile, HTTPException, Form
-from typing import Optional
+from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
 from app.core.config import settings
+from app.api import deps
+from app.models.user import User
 
 router = APIRouter(prefix="/ocr", tags=["ocr"])
 
 @router.post("/analyze")
 async def analyze_image(
     file: UploadFile = File(...),
+    current_user: User = Depends(deps.get_current_user),
 ):
     """
     Analyzes an image or PDF using Azure Computer Vision (Read API).
@@ -67,8 +69,7 @@ async def analyze_image(
         poll_interval = 1
         
         for _ in range(max_retries):
-            # Wait before polling
-            time.sleep(poll_interval)
+            await asyncio.sleep(poll_interval)
             
             poll_res = await client.get(operation_url, headers={"Ocp-Apim-Subscription-Key": api_key})
             
