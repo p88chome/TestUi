@@ -63,13 +63,16 @@ def update_user_me(
     """
     current_user_data = jsonable_encoder(current_user)
     user_data = user_in.model_dump(exclude_unset=True)
-    
+
+    # 防止一般使用者自行提升權限
+    for protected in ("is_superuser", "is_active", "tenant_id"):
+        user_data.pop(protected, None)
+
     if user_in.password:
-        password = user_in.password
-        hashed_password = security.get_password_hash(password)
+        hashed_password = security.get_password_hash(user_in.password)
         del user_data["password"]
         user_data["hashed_password"] = hashed_password
-        
+
     for field in user_data:
         if field in current_user_data:
             setattr(current_user, field, user_data[field])
