@@ -163,7 +163,6 @@ router.beforeEach(async (to, _from, next) => {
         try {
             const { useAuthStore } = await import('../stores/auth');
             const auth = useAuthStore();
-
             if (auth.state.user && auth.state.user.plan_name === 'Starter') {
                 next('/profile');
                 return;

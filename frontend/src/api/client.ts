@@ -3,6 +3,8 @@ import router from '../router';
 import { useAuthStore } from '../stores/auth';
 
 const apiClient = axios.create({
+  // Always use relative path - Azure SWA linked backend proxies this to the App Service.
+  // This eliminates http/https issues since the browser inherits the page's protocol.
   baseURL: '/api/v1'
 });
 
@@ -17,7 +19,7 @@ apiClient.interceptors.request.use((config: any) => {
 
 apiClient.interceptors.response.use(
   (response: any) => response.data,
-  (error: any) => {
+  async (error: any) => {
     if (error.response && error.response.status === 401) {
       try {
         useAuthStore().logout();
