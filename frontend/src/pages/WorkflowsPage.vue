@@ -9,9 +9,9 @@
       </IconField>
       
       <div class="component-list flex-1 overflow-y-auto flex flex-column gap-2">
-        <div 
-          v-for="comp in filteredComponents" 
-          :key="comp.id" 
+        <div
+          v-for="comp in pagedComponents"
+          :key="comp.id"
           class="component-item p-3 border-round cursor-move hover:surface-100 transition-colors border-1 surface-border"
           draggable="true"
           @dragstart="onDragStart($event, comp)"
@@ -24,6 +24,15 @@
           <p class="m-0 text-sm text-600 line-height-3">{{ comp.description }}</p>
         </div>
       </div>
+      <Paginator
+        v-if="filteredComponents.length > compPageSize"
+        :rows="compPageSize"
+        :totalRecords="filteredComponents.length"
+        @page="compPage = $event.page"
+        template="PrevPageLink PageLinks NextPageLink"
+        class="mt-1 p-0"
+        style="font-size: 0.75rem"
+      />
     </div>
 
     <!-- Center Column: Workflow Steps -->
@@ -146,7 +155,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { getComponents } from '../api/components';
 import { createWorkflow, runWorkflow, getWorkflows, updateWorkflow, getWorkflow, deleteWorkflow } from '../api/workflows';
 import type { ComponentOut, WorkflowStepConfig, WorkflowOut } from '../types';
@@ -167,6 +176,7 @@ import Divider from 'primevue/divider';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import Dropdown from 'primevue/dropdown';
+import Paginator from 'primevue/paginator';
 
 const router = useRouter();
 const components = ref<ComponentOut[]>([]);
@@ -268,11 +278,20 @@ const resetForm = () => {
 
 const filteredComponents = computed(() => {
   const txt = filterText.value.toLowerCase();
-  return components.value.filter(c => 
-    c.name.toLowerCase().includes(txt) || 
+  return components.value.filter(c =>
+    c.name.toLowerCase().includes(txt) ||
     c.tags.some(t => t.includes(txt))
   );
 });
+
+const compPageSize = 10;
+const compPage = ref(0);
+const pagedComponents = computed(() =>
+  filteredComponents.value.slice(compPage.value * compPageSize, (compPage.value + 1) * compPageSize)
+);
+
+// 搜尋時重置到第一頁
+watch(filteredComponents, () => { compPage.value = 0; });
 
 const getComponentName = (id: string) => {
   return components.value.find(c => c.id === id)?.name || id;
