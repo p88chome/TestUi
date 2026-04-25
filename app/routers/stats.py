@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -6,6 +7,8 @@ from app.api import deps
 from app.models.user import User
 from app.models.stats import UsageLog
 from datetime import datetime, timedelta
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/stats", tags=["stats"])
 
@@ -96,7 +99,6 @@ def get_dashboard_stats(
             "recent_activity": recent_activity
         }
     except Exception as e:
-        import traceback
-        error_detail = traceback.format_exc()
-        raise HTTPException(status_code=500, detail=f"Stats Error: {str(e)}\nTraceback: {error_detail}")
+        logger.error("Failed to fetch dashboard stats", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
