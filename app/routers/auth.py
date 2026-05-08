@@ -3,7 +3,7 @@ import logging
 from datetime import timedelta, datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Query
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -14,6 +14,7 @@ from app.core.database import get_db
 from app.models.user import User
 from app.schemas.user import Token, User as UserSchema, UserRegister
 from app.services.email_service import get_email_service
+from app.core.limiter import limiter
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,9 @@ router = APIRouter()
 # ─── 現有功能：登入 ────────────────────────────────────────────────────────────
 
 @router.post("/login/access-token", response_model=Token)
+@limiter.limit("10/minute")
 def login_access_token(
+    request: Request,
     db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
     """
@@ -77,7 +80,9 @@ def read_users_me(
 # ─── 新功能：公開註冊 ──────────────────────────────────────────────────────────
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/minute")
 async def register(
+    request: Request,
     user_in: UserRegister,
     db: Session = Depends(get_db),
 ) -> Any:
@@ -95,7 +100,7 @@ async def register(
             )
         else:
             # 帳號已存在但未驗證 → 重新寄一封驗證信
-            _refresh_and_send_verification(existing, db)
+            await _refresh_and_send_verification(existing, db)
             return {
                 "message": "驗證信已重新寄出，請至信箱確認。",
                 "email": user_in.email
@@ -209,16 +214,14 @@ async def resend_verification(
     if not user or user.is_verified:
         return generic_message
 
-    _refresh_and_send_verification(user, db)
+    await _refresh_and_send_verification(user, db)
     return generic_message
 
 
 # ─── 輔助函式 ──────────────────────────────────────────────────────────────────
 
-def _refresh_and_send_verification(user: User, db: Session):
-    """更新驗證 token 並寄信（同步包裝）"""
-    import asyncio
-
+async def _refresh_and_send_verification(user: User, db: Session):
+    """更新驗證 token 並寄出驗證信"""
     token = str(uuid.uuid4())
     expires = datetime.now(timezone.utc) + timedelta(hours=24)
 
@@ -228,22 +231,8 @@ def _refresh_and_send_verification(user: User, db: Session):
 
     verification_url = f"{settings.CLIENT_ORIGIN}/verify-email?token={token}"
     email_svc = get_email_service()
-
-    # 如果在非 async 環境呼叫，用 asyncio.run；否則建立 task
-    try:
-        loop = asyncio.get_running_loop()
-        loop.create_task(
-            email_svc.send_verification_email(
-                to_email=user.email,
-                full_name=user.full_name or user.email,
-                verification_url=verification_url,
-            )
-        )
-    except RuntimeError:
-        asyncio.run(
-            email_svc.send_verification_email(
-                to_email=user.email,
-                full_name=user.full_name or user.email,
-                verification_url=verification_url,
-            )
-        )
+    await email_svc.send_verification_email(
+        to_email=user.email,
+        full_name=user.full_name or user.email,
+        verification_url=verification_url,
+    )
